@@ -1,6 +1,8 @@
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import FeaturedContent from "@/components/FeaturedContent";
+import ProgramSchedule from "@/components/ProgramSchedule";
+import BlogPreview from "@/components/BlogPreview";
 
 const Index = () => {
   return (
@@ -29,6 +31,20 @@ const Index = () => {
             Nos Programmes
           </h2>
           <FeaturedContent />
+        </div>
+      </section>
+
+      {/* Program Schedule Section */}
+      <section className="py-12 px-4 bg-gray-100">
+        <div className="container mx-auto">
+          <ProgramSchedule />
+        </div>
+      </section>
+
+      {/* Blog Preview Section */}
+      <section className="py-12 px-4">
+        <div className="container mx-auto">
+          <BlogPreview />
         </div>
       </section>
     </div>
