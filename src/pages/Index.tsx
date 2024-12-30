@@ -3,6 +3,8 @@ import RadioPlayer from "@/components/RadioPlayer";
 import FeaturedContent from "@/components/FeaturedContent";
 import ProgramSchedule from "@/components/ProgramSchedule";
 import BlogPreview from "@/components/BlogPreview";
+import Contact from "@/components/Contact";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
@@ -47,6 +49,15 @@ const Index = () => {
           <BlogPreview />
         </div>
       </section>
+
+      {/* Contact Section */}
+      <section className="py-12 px-4 bg-gray-100">
+        <div className="container mx-auto">
+          <Contact />
+        </div>
+      </section>
+
+      <Footer />
     </div>
   );
 };
