@@ -1,43 +1,48 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-const blogPosts = [
-  {
-    title: "L'impact de la musique africaine dans le monde",
-    date: "2024-02-15",
-    excerpt: "Découvrez comment les artistes africains révolutionnent la scène musicale mondiale...",
-    image: "https://source.unsplash.com/random/800x600/?african-music",
-    featured: true,
-  },
-  {
-    title: "Les nouveaux défis des médias en Afrique",
-    date: "2024-02-14",
-    excerpt: "Analyse des transformations digitales dans le paysage médiatique africain...",
-    image: "https://source.unsplash.com/random/400x400/?media",
-  },
-  {
-    title: "Portrait: Les voix qui font PANA RADIO",
-    date: "2024-02-13",
-    excerpt: "Rencontrez les animateurs qui donnent vie à vos émissions préférées...",
-    image: "https://source.unsplash.com/random/400x400/?radio-host",
-  },
-  {
-    title: "La révolution du podcast en Afrique",
-    date: "2024-02-12",
-    excerpt: "Comment le podcast transforme la consommation des médias...",
-    image: "https://source.unsplash.com/random/400x400/?podcast",
-  },
-  {
-    title: "Les tendances musicales de 2024",
-    date: "2024-02-11",
-    excerpt: "Les nouveaux sons qui façonnent la musique africaine...",
-    image: "https://source.unsplash.com/random/400x400/?music-trend",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { fetchPosts, type WordPressPost } from "@/services/wordpress";
+import { useToast } from "@/components/ui/use-toast";
 
 const BlogPreview = () => {
-  const featuredPost = blogPosts[0];
-  const otherPosts = blogPosts.slice(1, 5);
+  const { toast } = useToast();
+  const { data: posts, isLoading, error } = useQuery({
+    queryKey: ["posts"],
+    queryFn: fetchPosts,
+    onError: () => {
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les articles",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-bold text-pana-purple">Chargement des articles...</h2>
+      </div>
+    );
+  }
+
+  if (!posts) {
+    return null;
+  }
+
+  const featuredPost = posts[0];
+  const otherPosts = posts.slice(1, 5);
+
+  const getImageUrl = (post: WordPressPost) => {
+    return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
+      "https://source.unsplash.com/random/800x600/?african-music";
+  };
+
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
 
   return (
     <div className="space-y-6">
@@ -46,12 +51,14 @@ const BlogPreview = () => {
         {/* Featured Post */}
         <Card className="lg:col-span-3 overflow-hidden hover:shadow-lg transition-shadow duration-200">
           <img
-            src={featuredPost.image}
-            alt={featuredPost.title}
+            src={getImageUrl(featuredPost)}
+            alt={stripHtml(featuredPost.title.rendered)}
             className="w-full h-[400px] object-cover"
           />
           <CardHeader>
-            <CardTitle className="text-2xl">{featuredPost.title}</CardTitle>
+            <CardTitle className="text-2xl">
+              {stripHtml(featuredPost.title.rendered)}
+            </CardTitle>
             <p className="text-sm text-gray-500">
               {new Date(featuredPost.date).toLocaleDateString("fr-FR", {
                 year: "numeric",
@@ -61,7 +68,9 @@ const BlogPreview = () => {
             </p>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 mb-4">{featuredPost.excerpt}</p>
+            <p className="text-gray-600 mb-4">
+              {stripHtml(featuredPost.excerpt.rendered)}
+            </p>
             <Button
               variant="outline"
               className="w-full hover:bg-pana-red hover:text-white transition-colors"
@@ -74,14 +83,19 @@ const BlogPreview = () => {
         {/* Other Posts Grid */}
         <div className="lg:col-span-2 grid grid-cols-2 gap-6">
           {otherPosts.map((post) => (
-            <Card key={post.title} className="overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <Card
+              key={post.id}
+              className="overflow-hidden hover:shadow-lg transition-shadow duration-200"
+            >
               <img
-                src={post.image}
-                alt={post.title}
+                src={getImageUrl(post)}
+                alt={stripHtml(post.title.rendered)}
                 className="w-full h-32 object-cover"
               />
               <CardHeader className="p-4">
-                <CardTitle className="text-sm">{post.title}</CardTitle>
+                <CardTitle className="text-sm">
+                  {stripHtml(post.title.rendered)}
+                </CardTitle>
                 <p className="text-xs text-gray-500">
                   {new Date(post.date).toLocaleDateString("fr-FR", {
                     year: "numeric",
