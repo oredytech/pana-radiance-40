@@ -9,12 +9,14 @@ const BlogPreview = () => {
   const { data: posts, isLoading, error } = useQuery({
     queryKey: ["posts"],
     queryFn: fetchPosts,
-    onError: () => {
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les articles",
-        variant: "destructive",
-      });
+    meta: {
+      onError: () => {
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les articles",
+          variant: "destructive",
+        });
+      },
     },
   });
 
