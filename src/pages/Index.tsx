@@ -5,19 +5,13 @@ import ProgramSchedule from "@/components/ProgramSchedule";
 import BlogPreview from "@/components/BlogPreview";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import Sidebar from "@/components/Sidebar";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      {/* Blog Preview Section */}
-      <section className="pt-24 pb-12 px-4">
-        <div className="container mx-auto">
-          <BlogPreview />
-        </div>
-      </section>
-
       {/* Hero Section with Radio Player */}
       <section className="py-12 px-4 bg-gradient-to-br from-pana-red to-pana-purple">
         <div className="container mx-auto">
@@ -30,6 +24,22 @@ const Index = () => {
             </p>
           </div>
           <RadioPlayer />
+        </div>
+      </section>
+
+      {/* Articles Section with Sidebar */}
+      <section className="py-12 px-4">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Main Content Area */}
+            <div className="lg:col-span-3">
+              <BlogPreview />
+            </div>
+            {/* Sidebar Area */}
+            <div className="lg:col-span-1">
+              <Sidebar />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -51,7 +61,7 @@ const Index = () => {
       </section>
 
       {/* Contact Section */}
-      <section className="py-12 px-4 bg-gray-100">
+      <section className="py-12 px-4">
         <div className="container mx-auto">
           <Contact />
         </div>
