@@ -6,8 +6,37 @@ import BlogPreview from "@/components/BlogPreview";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
+import { useQuery } from "@tanstack/react-query";
+import { fetchPosts, type WordPressPost } from "@/services/wordpress";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
+  const { toast } = useToast();
+  const { data: posts, isLoading, error } = useQuery({
+    queryKey: ["posts"],
+    queryFn: fetchPosts,
+    meta: {
+      onError: () => {
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les articles",
+          variant: "destructive",
+        });
+      },
+    },
+  });
+
+  const getImageUrl = (post: WordPressPost) => {
+    return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
+      "https://source.unsplash.com/random/800x600/?african-music";
+  };
+
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -41,30 +70,33 @@ const Index = () => {
             {/* Articles Grid */}
             <div className="lg:w-3/4">
               <h2 className="text-2xl font-bold text-pana-purple mb-8">Plus d'articles</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {Array.from({ length: 15 }).map((_, index) => (
-                  <a 
-                    href="#" 
-                    key={index} 
-                    className="relative group aspect-[4/3] overflow-hidden rounded-lg"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Add your article link logic here
-                      console.log(`Clicked article ${index + 6}`);
-                    }}
-                  >
-                    <img
-                      src="https://source.unsplash.com/random/800x600/?african-music"
-                      alt="Article thumbnail"
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
-                    <h3 className="absolute bottom-4 left-4 right-4 text-white font-semibold text-lg line-clamp-2 group-hover:underline">
-                      Article {index + 6}
-                    </h3>
-                  </a>
-                ))}
-              </div>
+              {isLoading ? (
+                <div>Chargement des articles...</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {posts?.slice(5, 20).map((post) => (
+                    <a 
+                      href="#" 
+                      key={post.id} 
+                      className="relative group aspect-[4/3] overflow-hidden rounded-lg"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        console.log(`Clicked article ${post.id}`);
+                      }}
+                    >
+                      <img
+                        src={getImageUrl(post)}
+                        alt={stripHtml(post.title.rendered)}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+                      <h3 className="absolute bottom-4 left-4 right-4 text-white font-semibold text-lg line-clamp-2 group-hover:underline">
+                        {stripHtml(post.title.rendered)}
+                      </h3>
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
             
             {/* Sidebar */}
