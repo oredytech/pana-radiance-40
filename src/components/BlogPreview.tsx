@@ -1,5 +1,3 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
@@ -51,62 +49,56 @@ const BlogPreview = () => {
       <h2 className="text-2xl font-bold text-pana-purple">Derniers Articles</h2>
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Featured Post */}
-        <Card className="lg:col-span-3 overflow-hidden hover:shadow-lg transition-shadow duration-200">
+        <a 
+          href="#" 
+          className="lg:col-span-3 relative group aspect-[16/9] overflow-hidden rounded-lg"
+          onClick={(e) => {
+            e.preventDefault();
+            console.log(`Clicked featured article ${featuredPost.id}`);
+          }}
+        >
           <img
             src={getImageUrl(featuredPost)}
             alt={stripHtml(featuredPost.title.rendered)}
-            className="w-full h-[400px] object-cover"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
-          <CardHeader>
-            <CardTitle className="text-2xl">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+          <div className="absolute bottom-6 left-6 right-6 text-white">
+            <h3 className="text-2xl font-bold mb-2 group-hover:underline">
               {stripHtml(featuredPost.title.rendered)}
-            </CardTitle>
-            <p className="text-sm text-gray-500">
+            </h3>
+            <p className="text-sm text-white/90">
               {new Date(featuredPost.date).toLocaleDateString("fr-FR", {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
               })}
             </p>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-600 mb-4">
-              {stripHtml(featuredPost.excerpt.rendered)}
-            </p>
-            <Button
-              variant="outline"
-              className="w-full hover:bg-pana-red hover:text-white transition-colors"
-            >
-              Lire la suite
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </a>
 
         {/* Other Posts Grid */}
         <div className="lg:col-span-2 grid grid-cols-2 gap-6">
           {otherPosts.map((post) => (
-            <Card
+            <a
               key={post.id}
-              className="overflow-hidden hover:shadow-lg transition-shadow duration-200"
+              href="#"
+              className="relative group aspect-[4/3] overflow-hidden rounded-lg"
+              onClick={(e) => {
+                e.preventDefault();
+                console.log(`Clicked article ${post.id}`);
+              }}
             >
               <img
                 src={getImageUrl(post)}
                 alt={stripHtml(post.title.rendered)}
-                className="w-full h-32 object-cover"
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
-              <CardHeader className="p-4">
-                <CardTitle className="text-sm">
-                  {stripHtml(post.title.rendered)}
-                </CardTitle>
-                <p className="text-xs text-gray-500">
-                  {new Date(post.date).toLocaleDateString("fr-FR", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-              </CardHeader>
-            </Card>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+              <h3 className="absolute bottom-4 left-4 right-4 text-white font-semibold text-sm line-clamp-2 group-hover:underline">
+                {stripHtml(post.title.rendered)}
+              </h3>
+            </a>
           ))}
         </div>
       </div>
