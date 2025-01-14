@@ -9,6 +9,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel";
 import { useEffect } from "react";
+import Autoplay from "embla-carousel-autoplay";
 
 const BlogPreview = () => {
   const { toast } = useToast();
@@ -91,10 +92,12 @@ const BlogPreview = () => {
             opts={{
               align: "start",
               loop: true,
-              dragFree: true,
-              containScroll: false,
-              autoplay: true,
             }}
+            plugins={[
+              Autoplay({
+                delay: 3000,
+              }),
+            ]}
             className="h-full"
           >
             <CarouselContent>
