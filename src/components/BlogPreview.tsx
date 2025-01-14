@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Headphones } from "lucide-react";
 
 const BlogPreview = () => {
   const { toast } = useToast();
@@ -99,6 +101,25 @@ const BlogPreview = () => {
               </h3>
             </a>
           ))}
+        </div>
+      </div>
+
+      {/* Podcast Banner */}
+      <div className="mt-8 rounded-lg bg-gradient-to-r from-pana-purple to-pana-red p-6 text-white">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Headphones className="w-12 h-12" />
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Découvrez nos podcasts</h3>
+              <p className="text-white/90">Restez à l'écoute de l'actualité africaine en podcast</p>
+            </div>
+          </div>
+          <Button 
+            onClick={() => console.log("Clicked podcast CTA")}
+            className="bg-white text-pana-purple hover:bg-white/90 transition-colors"
+          >
+            Écouter maintenant
+          </Button>
         </div>
       </div>
     </div>
