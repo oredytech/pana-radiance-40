@@ -31,7 +31,7 @@ const BlogPreview = () => {
   }
 
   const featuredPost = posts[0];
-  const otherPosts = posts.slice(1, 5);
+  const otherPosts = posts.slice(1, 7); // Changed from slice(1, 5) to slice(1, 7) to get 6 posts
 
   const getImageUrl = (post: WordPressPost) => {
     return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
