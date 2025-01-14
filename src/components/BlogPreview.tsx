@@ -33,7 +33,7 @@ const BlogPreview = () => {
   }
 
   const featuredPost = posts[0];
-  const otherPosts = posts.slice(1, 7); // Changed from slice(1, 5) to slice(1, 7) to get 6 posts
+  const otherPosts = posts.slice(1, 7);
 
   const getImageUrl = (post: WordPressPost) => {
     return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
@@ -101,6 +101,26 @@ const BlogPreview = () => {
               </h3>
             </a>
           ))}
+        </div>
+      </div>
+
+      {/* Advertisement Banner */}
+      <div className="w-full bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Publicité
+            </h3>
+            <p className="text-gray-600">
+              Espace réservé pour votre publicité
+            </p>
+          </div>
+          <Button 
+            onClick={() => console.log("Clicked advertisement CTA")}
+            className="bg-pana-purple hover:bg-pana-purple/90 text-white"
+          >
+            En savoir plus
+          </Button>
         </div>
       </div>
 
