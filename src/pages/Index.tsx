@@ -9,6 +9,8 @@ import Sidebar from "@/components/Sidebar";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 const Index = () => {
   const { toast } = useToast();
@@ -35,6 +37,14 @@ const Index = () => {
     const tmp = document.createElement("DIV");
     tmp.innerHTML = html;
     return tmp.textContent || tmp.innerText || "";
+  };
+
+  const truncateText = (text: string, wordLimit: number) => {
+    const words = text.split(' ');
+    if (words.length > wordLimit) {
+      return words.slice(0, wordLimit).join(' ') + '...';
+    }
+    return text;
   };
 
   return (
@@ -69,31 +79,39 @@ const Index = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Articles Grid */}
             <div className="lg:w-3/4">
-              <h2 className="text-2xl font-bold text-pana-purple mb-8">Plus d'articles</h2>
               {isLoading ? (
                 <div>Chargement des articles...</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {posts?.slice(5, 20).map((post) => (
-                    <a 
-                      href="#" 
-                      key={post.id} 
-                      className="relative group aspect-[4/3] overflow-hidden rounded-lg"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        console.log(`Clicked article ${post.id}`);
-                      }}
-                    >
-                      <img
-                        src={getImageUrl(post)}
-                        alt={stripHtml(post.title.rendered)}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
-                      <h3 className="absolute bottom-4 left-4 right-4 text-white font-semibold text-lg line-clamp-2 group-hover:underline">
-                        {stripHtml(post.title.rendered)}
-                      </h3>
-                    </a>
+                    <Card key={post.id} className="overflow-hidden">
+                      <div className="aspect-[4/3] overflow-hidden">
+                        <img
+                          src={getImageUrl(post)}
+                          alt={stripHtml(post.title.rendered)}
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                        />
+                      </div>
+                      <CardHeader>
+                        <h3 className="font-semibold text-lg line-clamp-2 hover:text-pana-purple transition-colors">
+                          {truncateText(stripHtml(post.title.rendered), 20)}
+                        </h3>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-600 text-sm line-clamp-4">
+                          {truncateText(stripHtml(post.excerpt.rendered), 100)}
+                        </p>
+                      </CardContent>
+                      <CardFooter>
+                        <Button 
+                          variant="outline" 
+                          className="w-full hover:bg-pana-purple hover:text-white transition-colors"
+                          onClick={() => console.log(`Reading more about article ${post.id}`)}
+                        >
+                          Lire plus
+                        </Button>
+                      </CardFooter>
+                    </Card>
                   ))}
                 </div>
               )}
