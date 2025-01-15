@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import PersistentRadioPlayer from "./components/PersistentRadioPlayer";
 import Index from "./pages/Index";
+import Article from "./pages/Article";
 
 const queryClient = new QueryClient();
 
@@ -16,6 +17,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/article/:id" element={<Article />} />
         </Routes>
         <PersistentRadioPlayer />
       </BrowserRouter>

@@ -1,27 +1,19 @@
-const WP_API_URL = "https://totalementactus.net/wp-json/wp/v2";
-
-export interface WordPressPost {
-  id: number;
-  title: {
-    rendered: string;
-  };
-  excerpt: {
-    rendered: string;
-  };
-  date: string;
-  _embedded?: {
-    "wp:featuredmedia"?: Array<{
-      source_url: string;
-    }>;
-  };
-}
+import type { WordPressPost } from "@/types/wordpress";
 
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
+  const response = await fetch("https://panaradio.org/wp-json/wp/v2/posts?_embed");
+  if (!response.ok) {
+    throw new Error("Failed to fetch posts");
+  }
+  return response.json();
+};
+
+export const fetchPost = async (id: string): Promise<WordPressPost> => {
   const response = await fetch(
-    `${WP_API_URL}/posts?_embed=wp:featuredmedia&per_page=20`
+    `https://panaradio.org/wp-json/wp/v2/posts/${id}?_embed`
   );
   if (!response.ok) {
-    throw new Error("Erreur lors de la récupération des articles");
+    throw new Error("Failed to fetch post");
   }
   return response.json();
 };

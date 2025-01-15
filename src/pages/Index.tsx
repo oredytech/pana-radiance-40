@@ -85,32 +85,33 @@ const Index = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {posts?.slice(5, 20).map((post) => (
                     <Card key={post.id} className="overflow-hidden">
-                      <div className="aspect-[4/3] overflow-hidden">
-                        <img
-                          src={getImageUrl(post)}
-                          alt={stripHtml(post.title.rendered)}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                        />
-                      </div>
-                      <CardHeader>
-                        <h3 className="font-semibold text-lg line-clamp-2 hover:text-pana-purple transition-colors">
-                          {truncateText(stripHtml(post.title.rendered), 20)}
-                        </h3>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 text-sm line-clamp-4">
-                          {truncateText(stripHtml(post.excerpt.rendered), 100)}
-                        </p>
-                      </CardContent>
-                      <CardFooter>
-                        <Button 
-                          variant="outline" 
-                          className="w-full hover:bg-pana-purple hover:text-white transition-colors"
-                          onClick={() => console.log(`Reading more about article ${post.id}`)}
-                        >
-                          Lire plus
-                        </Button>
-                      </CardFooter>
+                      <a href={`/article/${post.id}`}>
+                        <div className="aspect-[4/3] overflow-hidden">
+                          <img
+                            src={getImageUrl(post)}
+                            alt={stripHtml(post.title.rendered)}
+                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                          />
+                        </div>
+                        <CardHeader>
+                          <h3 className="font-semibold text-lg line-clamp-2 hover:text-pana-purple transition-colors">
+                            {truncateText(stripHtml(post.title.rendered), 20)}
+                          </h3>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-gray-600 text-sm line-clamp-4">
+                            {truncateText(stripHtml(post.excerpt.rendered), 100)}
+                          </p>
+                        </CardContent>
+                        <CardFooter>
+                          <Button 
+                            variant="outline" 
+                            className="w-full hover:bg-pana-purple hover:text-white transition-colors"
+                          >
+                            Lire plus
+                          </Button>
+                        </CardFooter>
+                      </a>
                     </Card>
                   ))}
                 </div>
@@ -149,7 +150,9 @@ const Index = () => {
         </div>
       </section>
 
-      <Footer />
+      <div className="pb-[70px]">
+        <Footer />
+      </div>
     </div>
   );
 };

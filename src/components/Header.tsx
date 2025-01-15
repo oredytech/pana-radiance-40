@@ -1,11 +1,24 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  const togglePlay = () => {
+    const audio = document.querySelector('audio');
+    if (audio) {
+      if (isPlaying) {
+        audio.pause();
+      } else {
+        audio.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
@@ -19,20 +32,35 @@ const Header = () => {
             />
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {["Direct", "Programmes", "Podcasts", "Blog", "Contact"].map(
-              (item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="text-gray-700 hover:text-pana-red transition-colors duration-200"
-                >
-                  {item}
-                </a>
-              )
-            )}
-          </nav>
+          <div className="flex items-center space-x-4">
+            {/* EN DIRECT Button */}
+            <Button
+              onClick={togglePlay}
+              className="bg-pana-red hover:bg-pana-purple transition-colors hidden md:flex"
+            >
+              {isPlaying ? (
+                <Pause className="h-4 w-4 mr-2" />
+              ) : (
+                <Play className="h-4 w-4 mr-2" />
+              )}
+              EN DIRECT
+            </Button>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-8">
+              {["Direct", "Programmes", "Podcasts", "Blog", "Contact"].map(
+                (item) => (
+                  <a
+                    key={item}
+                    href={`#${item.toLowerCase()}`}
+                    className="text-gray-700 hover:text-pana-red transition-colors duration-200"
+                  >
+                    {item}
+                  </a>
+                )
+              )}
+            </nav>
+          </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden">
@@ -50,6 +78,17 @@ const Header = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden py-4 animate-fade-in">
+            <Button
+              onClick={togglePlay}
+              className="bg-pana-red hover:bg-pana-purple transition-colors w-full mb-4"
+            >
+              {isPlaying ? (
+                <Pause className="h-4 w-4 mr-2" />
+              ) : (
+                <Play className="h-4 w-4 mr-2" />
+              )}
+              EN DIRECT
+            </Button>
             {["Direct", "Programmes", "Podcasts", "Blog", "Contact"].map(
               (item) => (
                 <a
