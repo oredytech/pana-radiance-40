@@ -1,7 +1,5 @@
 import type { WordPressPost } from "@/types/wordpress";
 
-export type { WordPressPost };
-
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   const response = await fetch("https://panaradio.org/wp-json/wp/v2/posts?_embed");
   if (!response.ok) {
