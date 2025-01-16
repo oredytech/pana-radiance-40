@@ -36,14 +36,35 @@ const Article = () => {
       .replace(/(^-|-$)/g, '');
   };
 
-  const post = posts?.find(p => getSlug(p.title.rendered) === slug);
-
   if (isLoadingPosts) {
-    return <div>Chargement...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            Chargement...
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
+  const post = posts?.find(p => getSlug(p.title.rendered) === slug);
+
   if (!post) {
-    return <div>Article non trouvé</div>;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Article non trouvé</h1>
+            <p className="text-gray-600">Désolé, l'article que vous recherchez n'existe pas ou a été déplacé.</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   const getImageUrl = (post: WordPressPost) => {

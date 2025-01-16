@@ -39,6 +39,13 @@ const Index = () => {
     return tmp.textContent || tmp.innerText || "";
   };
 
+  const getSlug = (title: string) => {
+    return stripHtml(title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
   const truncateText = (text: string, wordLimit: number) => {
     const words = text.split(' ');
     if (words.length > wordLimit) {
@@ -68,9 +75,9 @@ const Index = () => {
                 <div>Chargement des articles...</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {posts?.slice(5, 20).map((post) => (
+                  {posts?.slice(7, 20).map((post) => (
                     <Card key={post.id} className="overflow-hidden">
-                      <a href={`/article/${post.id}`}>
+                      <a href={`/article/${getSlug(post.title.rendered)}`}>
                         <div className="aspect-[4/3] overflow-hidden">
                           <img
                             src={getImageUrl(post)}
