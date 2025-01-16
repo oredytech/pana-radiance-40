@@ -2,7 +2,57 @@ import type { WordPressPost } from '@/types/wordpress';
 
 export type { WordPressPost };
 
-// Temporary mock data while waiting for the real API endpoint
+export const fetchPosts = async (): Promise<WordPressPost[]> => {
+  try {
+    const response = await fetch("https://totalementactus.net/wp-json/wp/v2/posts?_embed", {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors'
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts");
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    // Return mock data as fallback in case of error
+    return mockPosts;
+  }
+};
+
+export const fetchPost = async (id: string): Promise<WordPressPost> => {
+  try {
+    const response = await fetch(
+      `https://totalementactus.net/wp-json/wp/v2/posts/${id}?_embed`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch post");
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching post:", error);
+    const mockPost = mockPosts.find(p => p.id === parseInt(id));
+    if (!mockPost) {
+      throw new Error("Post not found");
+    }
+    return mockPost;
+  }
+};
+
+// Keep mock data as fallback
 const mockPosts: WordPressPost[] = [
   {
     id: 1,
@@ -132,16 +182,3 @@ const mockPosts: WordPressPost[] = [
     }
   }
 ];
-
-export const fetchPosts = async (): Promise<WordPressPost[]> => {
-  // Return mock data
-  return Promise.resolve(mockPosts);
-};
-
-export const fetchPost = async (id: string): Promise<WordPressPost> => {
-  const post = mockPosts.find(p => p.id === parseInt(id));
-  if (!post) {
-    throw new Error("Post not found");
-  }
-  return Promise.resolve(post);
-};
