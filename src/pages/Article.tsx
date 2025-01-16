@@ -6,7 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const Article = () => {
-  const { slug } = useParams();
+  const { id } = useParams();
   const { toast } = useToast();
   
   const { data: posts, isLoading: isLoadingPosts } = useQuery({
@@ -42,7 +42,12 @@ const Article = () => {
         <Header />
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
-            Chargement...
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            </div>
           </div>
         </main>
         <Footer />
@@ -50,7 +55,8 @@ const Article = () => {
     );
   }
 
-  const post = posts?.find(p => getSlug(p.title.rendered) === slug);
+  // Find the post by comparing slugified titles
+  const post = posts?.find(p => getSlug(p.title.rendered) === id);
 
   if (!post) {
     return (
@@ -83,10 +89,12 @@ const Article = () => {
             className="w-full h-[400px] object-cover"
           />
           <div className="p-8">
-            <h1 className="text-3xl font-bold mb-4" 
+            <h1 
+              className="text-3xl font-bold mb-4" 
               dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
             />
-            <div className="prose max-w-none"
+            <div 
+              className="prose max-w-none"
               dangerouslySetInnerHTML={{ __html: post.content.rendered }}
             />
           </div>
