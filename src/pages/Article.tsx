@@ -1,17 +1,17 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPost, type WordPressPost } from "@/services/wordpress";
+import { fetchPosts, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const Article = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const { toast } = useToast();
   
-  const { data: post, isLoading } = useQuery({
-    queryKey: ["post", id],
-    queryFn: () => fetchPost(id as string),
+  const { data: posts, isLoading: isLoadingPosts } = useQuery({
+    queryKey: ["posts"],
+    queryFn: fetchPosts,
     meta: {
       onError: () => {
         toast({
@@ -23,7 +23,22 @@ const Article = () => {
     },
   });
 
-  if (isLoading) {
+  const stripHtml = (html: string) => {
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  };
+
+  const getSlug = (title: string) => {
+    return stripHtml(title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
+  const post = posts?.find(p => getSlug(p.title.rendered) === slug);
+
+  if (isLoadingPosts) {
     return <div>Chargement...</div>;
   }
 
@@ -43,7 +58,7 @@ const Article = () => {
         <article className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
           <img
             src={getImageUrl(post)}
-            alt={post.title.rendered}
+            alt={stripHtml(post.title.rendered)}
             className="w-full h-[400px] object-cover"
           />
           <div className="p-8">

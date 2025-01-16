@@ -3,6 +3,7 @@ import { fetchPosts, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Headphones } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const BlogPreview = () => {
   const { toast } = useToast();
@@ -33,7 +34,7 @@ const BlogPreview = () => {
   }
 
   const featuredPost = posts[0];
-  const otherPosts = posts.slice(1, 7); // Changed from slice(1, 5) to slice(1, 7) to get 6 posts
+  const otherPosts = posts.slice(1, 7);
 
   const getImageUrl = (post: WordPressPost) => {
     return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
@@ -46,17 +47,20 @@ const BlogPreview = () => {
     return tmp.textContent || tmp.innerText || "";
   };
 
+  const getSlug = (title: string) => {
+    return stripHtml(title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  };
+
   return (
     <div className="space-y-2.5">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-2.5">
         {/* Featured Post */}
-        <a 
-          href="#" 
+        <Link 
+          to={`/article/${getSlug(featuredPost.title.rendered)}`}
           className="lg:col-span-3 relative group aspect-[16/9] overflow-hidden rounded-lg"
-          onClick={(e) => {
-            e.preventDefault();
-            console.log(`Clicked featured article ${featuredPost.id}`);
-          }}
         >
           <img
             src={getImageUrl(featuredPost)}
@@ -76,19 +80,15 @@ const BlogPreview = () => {
               })}
             </p>
           </div>
-        </a>
+        </Link>
 
         {/* Other Posts Grid */}
         <div className="lg:col-span-2 grid grid-cols-2 gap-2.5">
           {otherPosts.map((post) => (
-            <a
+            <Link
               key={post.id}
-              href="#"
+              to={`/article/${getSlug(post.title.rendered)}`}
               className="relative group aspect-[4/3] overflow-hidden rounded-lg"
-              onClick={(e) => {
-                e.preventDefault();
-                console.log(`Clicked article ${post.id}`);
-              }}
             >
               <img
                 src={getImageUrl(post)}
@@ -99,7 +99,7 @@ const BlogPreview = () => {
               <h3 className="absolute bottom-4 left-4 right-4 text-white font-semibold text-sm line-clamp-2 group-hover:underline">
                 {stripHtml(post.title.rendered)}
               </h3>
-            </a>
+            </Link>
           ))}
         </div>
       </div>
