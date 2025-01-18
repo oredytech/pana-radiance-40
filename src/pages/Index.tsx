@@ -1,7 +1,5 @@
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
-import FeaturedContent from "@/components/FeaturedContent";
-import ProgramSchedule from "@/components/ProgramSchedule";
 import BlogPreview from "@/components/BlogPreview";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
@@ -60,23 +58,6 @@ const Index = () => {
               <Sidebar />
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Featured Content Section */}
-      <section className="py-12 px-4">
-        <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            Nos Programmes
-          </h2>
-          <FeaturedContent />
-        </div>
-      </section>
-
-      {/* Program Schedule Section */}
-      <section className="py-12 px-4 bg-gray-100">
-        <div className="container mx-auto">
-          <ProgramSchedule />
         </div>
       </section>
 
