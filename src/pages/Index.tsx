@@ -40,6 +40,9 @@ const Index = () => {
       {/* More Articles Section */}
       <section className="py-12 px-4 bg-gray-100">
         <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-gray-800 mb-8">
+            Plus d'articles <span className="text-pana-purple">(18 articles)</span>
+          </h2>
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Articles Grid */}
             <div className="lg:w-3/4">
