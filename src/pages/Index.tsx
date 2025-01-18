@@ -6,11 +6,11 @@ import BlogPreview from "@/components/BlogPreview";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import Sidebar from "@/components/Sidebar";
+import ArticlesGrid from "@/components/ArticlesGrid";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPosts, type WordPressPost } from "@/services/wordpress";
+import { fetchPosts } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 
 const Index = () => {
   const { toast } = useToast();
@@ -27,32 +27,6 @@ const Index = () => {
       },
     },
   });
-
-  const getImageUrl = (post: WordPressPost) => {
-    return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
-      "https://source.unsplash.com/random/800x600/?african-music";
-  };
-
-  const stripHtml = (html: string) => {
-    const tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || "";
-  };
-
-  const getSlug = (title: string) => {
-    return stripHtml(title)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  };
-
-  const truncateText = (text: string, wordLimit: number) => {
-    const words = text.split(' ');
-    if (words.length > wordLimit) {
-      return words.slice(0, wordLimit).join(' ') + '...';
-    }
-    return text;
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -71,43 +45,14 @@ const Index = () => {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Articles Grid */}
             <div className="lg:w-3/4">
-              {isLoading ? (
-                <div>Chargement des articles...</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {posts?.slice(7, 25).map((post) => (
-                    <Card key={post.id} className="overflow-hidden">
-                      <a href={`/article/${getSlug(post.title.rendered)}`}>
-                        <div className="aspect-[4/3] overflow-hidden">
-                          <img
-                            src={getImageUrl(post)}
-                            alt={stripHtml(post.title.rendered)}
-                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                          />
-                        </div>
-                        <CardHeader>
-                          <h3 className="font-semibold text-lg line-clamp-2 hover:text-pana-purple transition-colors">
-                            {truncateText(stripHtml(post.title.rendered), 20)}
-                          </h3>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-gray-600 text-sm line-clamp-4">
-                            {truncateText(stripHtml(post.excerpt.rendered), 100)}
-                          </p>
-                        </CardContent>
-                        <CardFooter>
-                          <Button 
-                            variant="outline" 
-                            className="w-full hover:bg-pana-purple hover:text-white transition-colors"
-                          >
-                            Lire plus
-                          </Button>
-                        </CardFooter>
-                      </a>
-                    </Card>
-                  ))}
-                </div>
-              )}
+              <ArticlesGrid
+                posts={posts || []}
+                isLoading={isLoading}
+                getImageUrl={getImageUrl}
+                stripHtml={stripHtml}
+                getSlug={getSlug}
+                truncateText={truncateText}
+              />
             </div>
             
             {/* Sidebar */}
