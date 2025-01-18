@@ -75,7 +75,7 @@ const Index = () => {
                 <div>Chargement des articles...</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {posts?.slice(7, 19).map((post) => (
+                  {posts?.slice(7, 25).map((post) => (
                     <Card key={post.id} className="overflow-hidden">
                       <a href={`/article/${getSlug(post.title.rendered)}`}>
                         <div className="aspect-[4/3] overflow-hidden">
