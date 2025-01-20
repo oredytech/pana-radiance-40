@@ -26,33 +26,42 @@ const programs = [
     host: "John Okafor",
     description: "L'économie et les affaires en Afrique",
   },
+  {
+    time: "16:00 - 18:00",
+    title: "Sport Africa",
+    host: "Samuel Eto'o",
+    description: "Toute l'actualité du sport africain",
+  },
+  {
+    time: "18:00 - 20:00",
+    title: "Musique du Soir",
+    host: "Youssou N'Dour",
+    description: "Les meilleurs sons d'Afrique",
+  },
 ];
 
 const ProgramSchedule = () => {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Calendar className="h-6 w-6 text-pana-purple" />
-        <h2 className="text-2xl font-bold text-pana-purple">Programme du Jour</h2>
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {programs.map((program) => (
-          <Card key={program.time} className="hover:shadow-lg transition-shadow duration-200">
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                <span className="text-pana-red">{program.time}</span>
-                <span className="text-lg font-medium">{program.title}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm font-medium text-gray-600 mb-2">
-                Animé par {program.host}
-              </p>
-              <p className="text-gray-600">{program.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div className="space-y-4">
+      {programs.map((program) => (
+        <Card 
+          key={program.time} 
+          className="hover:shadow-md transition-shadow duration-200 border-l-4 border-l-pana-purple"
+        >
+          <CardHeader className="py-4">
+            <CardTitle className="flex justify-between items-center text-base">
+              <span className="text-pana-red font-medium">{program.time}</span>
+              <span className="text-lg font-semibold">{program.title}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-2">
+            <p className="text-sm font-medium text-gray-600 mb-2">
+              Animé par {program.host}
+            </p>
+            <p className="text-gray-600 text-sm">{program.description}</p>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 };
