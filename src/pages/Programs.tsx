@@ -1,6 +1,7 @@
 import { Calendar, Clock, Radio } from "lucide-react";
 import ProgramSchedule from "@/components/ProgramSchedule";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Header from "@/components/Header";
 
 const Programs = () => {
   const days = [
@@ -15,6 +16,7 @@ const Programs = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Header />
       <div className="container mx-auto px-4 py-8 mt-20">
         <div className="flex items-center gap-3 mb-8">
           <Radio className="h-8 w-8 text-pana-purple" />
