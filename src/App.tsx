@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import Article from "./pages/Article";
 import Programs from "./pages/Programs";
+import Podcasts from "./pages/Podcasts";
 import PersistentRadioPlayer from "./components/PersistentRadioPlayer";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<Index />} />
             <Route path="/article/:slug" element={<Article />} />
             <Route path="/programs" element={<Programs />} />
+            <Route path="/podcasts" element={<Podcasts />} />
           </Routes>
           <PersistentRadioPlayer />
         </Router>

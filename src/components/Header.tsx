@@ -65,7 +65,7 @@ const Header = () => {
             {[
               { label: "Direct", path: "/" },
               { label: "Programmes", path: "/programs" },
-              { label: "Podcasts", path: "/" },
+              { label: "Podcasts", path: "/podcasts" },
               { label: "Blog", path: "/" },
               { label: "Contact", path: "/" }
             ].map((item) => (
@@ -86,7 +86,7 @@ const Header = () => {
             {[
               { label: "Direct", path: "/" },
               { label: "Programmes", path: "/programs" },
-              { label: "Podcasts", path: "/" },
+              { label: "Podcasts", path: "/podcasts" },
               { label: "Blog", path: "/" },
               { label: "Contact", path: "/" }
             ].map((item) => (
