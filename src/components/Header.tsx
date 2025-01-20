@@ -62,35 +62,43 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8 mx-8">
-            {["Direct", "Programmes", "Podcasts", "Blog", "Contact"].map(
-              (item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="text-gray-700 hover:text-pana-red transition-colors duration-200"
-                >
-                  {item}
-                </a>
-              )
-            )}
+            {[
+              { label: "Direct", path: "/" },
+              { label: "Programmes", path: "/programs" },
+              { label: "Podcasts", path: "/" },
+              { label: "Blog", path: "/" },
+              { label: "Contact", path: "/" }
+            ].map((item) => (
+              <a
+                key={item.label}
+                href={item.path}
+                className="text-gray-700 hover:text-pana-red transition-colors duration-200"
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
         </div>
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden py-4 animate-fade-in">
-            {["Direct", "Programmes", "Podcasts", "Blog", "Contact"].map(
-              (item) => (
-                <a
-                  key={item}
-                  href={`#${item.toLowerCase()}`}
-                  className="block py-2 text-gray-700 hover:text-pana-red transition-colors duration-200"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item}
-                </a>
-              )
-            )}
+            {[
+              { label: "Direct", path: "/" },
+              { label: "Programmes", path: "/programs" },
+              { label: "Podcasts", path: "/" },
+              { label: "Blog", path: "/" },
+              { label: "Contact", path: "/" }
+            ].map((item) => (
+              <a
+                key={item.label}
+                href={item.path}
+                className="block py-2 text-gray-700 hover:text-pana-red transition-colors duration-200"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
         )}
       </div>
