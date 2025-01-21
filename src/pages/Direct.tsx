@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Pause, Volume2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 const Direct = () => {
   const { toast } = useToast();
@@ -23,24 +24,45 @@ const Direct = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#1A1F2C] text-white">
       <Header />
       <div className="container mx-auto px-4 py-8 mt-20">
         <div className="max-w-4xl mx-auto">
-          <Card className="mb-8">
+          <Card className="mb-8 bg-[#1A1F2C] border-none">
             <CardContent className="p-6">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="w-24 h-24 bg-pana-red rounded-lg flex items-center justify-center">
-                  <Volume2 className="h-12 w-12 text-white" />
+              <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div className="w-full md:w-1/3 aspect-square bg-pana-red rounded-lg relative overflow-hidden">
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Volume2 className="h-24 w-24 text-white" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-4">
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="w-full bg-white hover:bg-gray-200 text-black flex items-center justify-center gap-2"
+                    >
+                      <Play className="h-6 w-6" />
+                      Écouter le direct
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex-1">
-                  <h1 className="text-2xl font-bold text-gray-900">PANA RADIO EN DIRECT</h1>
-                  <p className="text-gray-600">Votre radio panafricaine</p>
+                  <div className="inline-flex items-center px-3 py-1 bg-pana-red text-white text-sm font-medium rounded mb-4">
+                    EN DIRECT
+                  </div>
+                  <h1 className="text-3xl font-bold mb-4">PANA RADIO en direct</h1>
+                  <p className="text-gray-300 mb-4">
+                    Suivez toute l'information avec PANA RADIO en direct. Retrouvez notre grille des programmes et écoutez nos derniers journaux chaque demi-heure.
+                  </p>
+                  <div className="flex gap-4">
+                    <Button 
+                      variant="outline" 
+                      className="bg-pana-red hover:bg-pana-red/90 text-white border-none"
+                    >
+                      Découvrez nos podcasts
+                    </Button>
+                  </div>
                 </div>
-              </div>
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h2 className="font-semibold text-gray-900 mb-2">En ce moment sur PANA RADIO</h2>
-                <p className="text-gray-600">Musique et Culture Africaine</p>
               </div>
             </CardContent>
           </Card>
