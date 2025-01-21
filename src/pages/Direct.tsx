@@ -24,27 +24,19 @@ const Direct = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#1A1F2C] text-white">
+    <div className="min-h-screen bg-[#85066c] text-white">
       <Header />
       <div className="container mx-auto px-4 py-8 mt-20">
         <div className="max-w-4xl mx-auto">
-          <Card className="mb-8 bg-[#1A1F2C] border-none">
+          <Card className="mb-8 bg-[#85066c] border-none">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="w-full md:w-1/3 aspect-square bg-pana-red rounded-lg relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Volume2 className="h-24 w-24 text-white" />
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 p-4">
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
-                      className="w-full bg-white hover:bg-gray-200 text-black flex items-center justify-center gap-2"
-                    >
-                      <Play className="h-6 w-6" />
-                      Écouter le direct
-                    </Button>
-                  </div>
+                  <img 
+                    src="/lovable-uploads/cb273fa4-08f7-4b02-aa9c-1d04fafad2e7.png" 
+                    alt="PANA Radio Logo" 
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
                 </div>
                 <div className="flex-1">
                   <div className="inline-flex items-center px-3 py-1 bg-pana-red text-white text-sm font-medium rounded mb-4">
@@ -54,7 +46,15 @@ const Direct = () => {
                   <p className="text-gray-300 mb-4">
                     Suivez toute l'information avec PANA RADIO en direct. Retrouvez notre grille des programmes et écoutez nos derniers journaux chaque demi-heure.
                   </p>
-                  <div className="flex gap-4">
+                  <div className="flex flex-wrap gap-4">
+                    <Button 
+                      variant="outline" 
+                      size="lg" 
+                      className="bg-white hover:bg-gray-200 text-black flex items-center justify-center gap-2"
+                    >
+                      <Play className="h-6 w-6" />
+                      Écouter le direct
+                    </Button>
                     <Button 
                       variant="outline" 
                       className="bg-pana-red hover:bg-pana-red/90 text-white border-none"
