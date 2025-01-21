@@ -1,23 +1,17 @@
 import { useState } from "react";
 import { Menu, X, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const navigate = useNavigate();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const togglePlay = () => {
-    const audio = document.querySelector('audio');
-    if (audio) {
-      if (isPlaying) {
-        audio.pause();
-      } else {
-        audio.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
+  const handleDirectClick = () => {
+    navigate('/direct');
   };
 
   return (
@@ -48,14 +42,10 @@ const Header = () => {
           {/* EN DIRECT Button (right on mobile, after nav on desktop) */}
           <div className="flex items-center md:order-last">
             <Button
-              onClick={togglePlay}
+              onClick={handleDirectClick}
               className="bg-pana-red hover:bg-pana-purple transition-colors"
             >
-              {isPlaying ? (
-                <Pause className="h-4 w-4 mr-2" />
-              ) : (
-                <Play className="h-4 w-4 mr-2" />
-              )}
+              <Play className="h-4 w-4 mr-2" />
               EN DIRECT
             </Button>
           </div>
