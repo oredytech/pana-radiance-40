@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Pause, Volume2 } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -39,20 +39,24 @@ const Direct = () => {
   useEffect(() => {
     const audio = document.querySelector('audio');
     if (audio) {
+      const updatePlayingState = () => setIsPlaying(!audio.paused);
+      
+      audio.addEventListener('play', updatePlayingState);
+      audio.addEventListener('pause', updatePlayingState);
       audio.addEventListener('waiting', () => setIsLoading(true));
       audio.addEventListener('playing', () => setIsLoading(false));
       audio.addEventListener('pause', () => setIsLoading(false));
       audio.addEventListener('error', () => setIsLoading(false));
-    }
 
-    return () => {
-      if (audio) {
+      return () => {
+        audio.removeEventListener('play', updatePlayingState);
+        audio.removeEventListener('pause', updatePlayingState);
         audio.removeEventListener('waiting', () => setIsLoading(true));
         audio.removeEventListener('playing', () => setIsLoading(false));
         audio.removeEventListener('pause', () => setIsLoading(false));
         audio.removeEventListener('error', () => setIsLoading(false));
-      }
-    };
+      };
+    }
   }, []);
 
   return (

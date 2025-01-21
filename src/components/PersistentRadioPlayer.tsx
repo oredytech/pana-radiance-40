@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -30,6 +30,22 @@ const PersistentRadioPlayer = () => {
       setIsPlaying(!isPlaying);
     }
   };
+
+  useEffect(() => {
+    if (audioRef.current) {
+      const audio = audioRef.current;
+      
+      const updatePlayingState = () => setIsPlaying(!audio.paused);
+      
+      audio.addEventListener('play', updatePlayingState);
+      audio.addEventListener('pause', updatePlayingState);
+
+      return () => {
+        audio.removeEventListener('play', updatePlayingState);
+        audio.removeEventListener('pause', updatePlayingState);
+      };
+    }
+  }, []);
 
   const toggleMute = () => {
     if (audioRef.current) {
@@ -65,7 +81,7 @@ const PersistentRadioPlayer = () => {
             </Button>
             <div className="text-sm font-medium">
               <div className="text-gray-900">PANA RADIO</div>
-              <div className="text-gray-500 text-xs">En direct</div>
+              <div className="text-gray-500 text-xs">En direct {isPlaying && "• EN COURS"}</div>
             </div>
           </div>
           
