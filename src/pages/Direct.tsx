@@ -1,34 +1,66 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Pause, Volume2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 const Direct = () => {
   const { toast } = useToast();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    // Lancer automatiquement la radio quand la page est chargée
+  const handlePlayPause = () => {
+    setIsLoading(true);
     const audio = document.querySelector('audio');
     if (audio) {
-      audio.play().catch((error) => {
-        toast({
-          title: "Erreur de lecture",
-          description: "Impossible de lancer la radio. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        console.error("Playback error:", error);
-      });
+      if (isPlaying) {
+        audio.pause();
+        setIsPlaying(false);
+      } else {
+        audio.play()
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((error) => {
+            toast({
+              title: "Erreur de lecture",
+              description: "Impossible de lancer la radio. Veuillez réessayer.",
+              variant: "destructive",
+            });
+            console.error("Playback error:", error);
+          });
+      }
     }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    const audio = document.querySelector('audio');
+    if (audio) {
+      audio.addEventListener('waiting', () => setIsLoading(true));
+      audio.addEventListener('playing', () => setIsLoading(false));
+      audio.addEventListener('pause', () => setIsLoading(false));
+      audio.addEventListener('error', () => setIsLoading(false));
+    }
+
+    return () => {
+      if (audio) {
+        audio.removeEventListener('waiting', () => setIsLoading(true));
+        audio.removeEventListener('playing', () => setIsLoading(false));
+        audio.removeEventListener('pause', () => setIsLoading(false));
+        audio.removeEventListener('error', () => setIsLoading(false));
+      }
+    };
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#85066c] text-white">
+    <div className="min-h-screen bg-white text-gray-900">
       <Header />
       <div className="container mx-auto px-4 py-8 mt-20">
         <div className="max-w-4xl mx-auto">
-          <Card className="mb-8 bg-[#85066c] border-none">
+          <Card className="mb-8 bg-white border shadow-lg">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 <div className="w-full md:w-1/3 aspect-square bg-pana-red rounded-lg relative overflow-hidden">
@@ -37,23 +69,33 @@ const Direct = () => {
                     alt="PANA Radio Logo" 
                     className="absolute inset-0 w-full h-full object-cover"
                   />
+                  {isLoading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <Progress value={30} className="w-1/2" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <div className="inline-flex items-center px-3 py-1 bg-pana-red text-white text-sm font-medium rounded mb-4">
-                    EN DIRECT
+                    EN DIRECT {isPlaying && "• EN COURS"}
                   </div>
                   <h1 className="text-3xl font-bold mb-4">PANA RADIO en direct</h1>
-                  <p className="text-gray-300 mb-4">
+                  <p className="text-gray-600 mb-4">
                     Suivez toute l'information avec PANA RADIO en direct. Retrouvez notre grille des programmes et écoutez nos derniers journaux chaque demi-heure.
                   </p>
                   <div className="flex flex-wrap gap-4">
                     <Button 
                       variant="outline" 
                       size="lg" 
-                      className="bg-white hover:bg-gray-200 text-black flex items-center justify-center gap-2"
+                      onClick={handlePlayPause}
+                      className="bg-white hover:bg-gray-200 text-black flex items-center justify-center gap-2 border-2 border-pana-red"
                     >
-                      <Play className="h-6 w-6" />
-                      Écouter le direct
+                      {isPlaying ? (
+                        <Pause className="h-6 w-6" />
+                      ) : (
+                        <Play className="h-6 w-6" />
+                      )}
+                      {isPlaying ? "Pause" : "Écouter le direct"}
                     </Button>
                     <Button 
                       variant="outline" 

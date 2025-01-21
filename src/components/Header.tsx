@@ -5,14 +5,14 @@ import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const navigate = useNavigate();
-
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const handleDirectClick = () => {
     navigate('/direct');
   };
+
+  // Check if audio is playing
+  const isPlaying = document.querySelector('audio')?.played.length > 0;
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
@@ -23,7 +23,7 @@ const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleMenu}
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -45,8 +45,8 @@ const Header = () => {
               onClick={handleDirectClick}
               className="bg-pana-red hover:bg-pana-purple transition-colors"
             >
-              <Play className="h-4 w-4 mr-2" />
-              EN DIRECT
+              {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+              EN DIRECT {isPlaying && "• EN COURS"}
             </Button>
           </div>
 
