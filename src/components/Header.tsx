@@ -64,7 +64,7 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8 mx-8">
             {[
-              { label: "Direct", path: "/" },
+              { label: "Accueil", path: "/" },
               { label: "Programmes", path: "/programs" },
               { label: "Podcasts", path: "/podcasts" },
               { label: "Blog", path: "/" },
@@ -85,7 +85,7 @@ const Header = () => {
         {isMenuOpen && (
           <nav className="md:hidden py-4 animate-fade-in">
             {[
-              { label: "Direct", path: "/" },
+              { label: "Accueil", path: "/" },
               { label: "Programmes", path: "/programs" },
               { label: "Podcasts", path: "/podcasts" },
               { label: "Blog", path: "/" },
