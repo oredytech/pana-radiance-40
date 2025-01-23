@@ -31,7 +31,7 @@ const Index = () => {
       <Header />
 
       {/* Latest Articles Section */}
-      <section className="py-12 px-4">
+      <section className="pt-16 pb-12 px-4">
         <div className="container mx-auto">
           <BlogPreview />
         </div>
