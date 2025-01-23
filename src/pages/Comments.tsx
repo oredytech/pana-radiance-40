@@ -13,7 +13,6 @@ const Comments = () => {
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["comments", page],
     queryFn: () => fetchAllComments(page),
-    keepPreviousData: true,
     meta: {
       onError: () => {
         toast({

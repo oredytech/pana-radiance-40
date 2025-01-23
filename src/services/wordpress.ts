@@ -2,6 +2,35 @@ import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
 export type { WordPressPost, WordPressComment };
 
+const mockPosts: WordPressPost[] = [
+  {
+    id: 1,
+    date: "2024-02-15T10:00:00",
+    title: {
+      rendered: "Premier article"
+    },
+    content: {
+      rendered: "Contenu du premier article"
+    },
+    excerpt: {
+      rendered: "Extrait du premier article"
+    }
+  },
+  {
+    id: 2,
+    date: "2024-02-14T09:00:00",
+    title: {
+      rendered: "Deuxième article"
+    },
+    content: {
+      rendered: "Contenu du deuxième article"
+    },
+    excerpt: {
+      rendered: "Extrait du deuxième article"
+    }
+  }
+];
+
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   try {
     const response = await fetch("https://totalementactus.net/wp-json/wp/v2/posts?_embed", {
@@ -19,7 +48,6 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
     return response.json();
   } catch (error) {
     console.error("Error fetching posts:", error);
-    // Return mock data as fallback in case of error
     return mockPosts;
   }
 };
