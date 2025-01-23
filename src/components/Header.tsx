@@ -8,6 +8,17 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleDirectClick = () => {
+    const audio = document.querySelector('audio');
+    if (audio) {
+      if (audio.paused) {
+        audio.play()
+          .catch((error) => {
+            console.error("Playback error:", error);
+          });
+      } else {
+        audio.pause();
+      }
+    }
     navigate('/direct');
   };
 
