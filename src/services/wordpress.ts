@@ -1,6 +1,6 @@
-import type { WordPressPost } from '@/types/wordpress';
+import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
-export type { WordPressPost };
+export type { WordPressPost, WordPressComment };
 
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   try {
@@ -52,133 +52,92 @@ export const fetchPost = async (id: string): Promise<WordPressPost> => {
   }
 };
 
-// Keep mock data as fallback
-const mockPosts: WordPressPost[] = [
+export const fetchLatestComments = async (limit: number = 10): Promise<WordPressComment[]> => {
+  try {
+    const response = await fetch(
+      `https://totalementactus.net/wp-json/wp/v2/comments?per_page=${limit}&orderby=date&order=desc`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch comments");
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    return mockComments.slice(0, limit);
+  }
+};
+
+export const fetchAllComments = async (page: number = 1, perPage: number = 20): Promise<{
+  comments: WordPressComment[];
+  totalPages: number;
+}> => {
+  try {
+    const response = await fetch(
+      `https://totalementactus.net/wp-json/wp/v2/comments?page=${page}&per_page=${perPage}&orderby=date&order=desc`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch comments");
+    }
+    
+    const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1');
+    const comments = await response.json();
+    
+    return {
+      comments,
+      totalPages
+    };
+  } catch (error) {
+    console.error("Error fetching comments:", error);
+    return {
+      comments: mockComments.slice((page - 1) * perPage, page * perPage),
+      totalPages: Math.ceil(mockComments.length / perPage)
+    };
+  }
+};
+
+const mockComments = [
   {
     id: 1,
-    date: "2024-01-16T10:00:00",
-    title: {
-      rendered: "L'actualité africaine en direct"
-    },
+    date: "2024-02-15T10:00:00",
     content: {
-      rendered: "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+      rendered: "J'adore votre émission matinale ! Continuez comme ça !"
     },
-    excerpt: {
-      rendered: "Lorem ipsum dolor sit amet..."
-    },
-    _embedded: {
-      'wp:featuredmedia': [{
-        source_url: "https://source.unsplash.com/random/800x600/?african-news"
-      }]
-    }
+    author_name: "Marie K.",
+    post: 1
   },
   {
     id: 2,
-    date: "2024-01-16T09:00:00",
-    title: {
-      rendered: "Culture et traditions"
-    },
+    date: "2024-02-14T09:00:00",
     content: {
-      rendered: "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+      rendered: "La playlist d'hier était incroyable. Merci pour ces découvertes !"
     },
-    excerpt: {
-      rendered: "Sed do eiusmod tempor..."
-    },
-    _embedded: {
-      'wp:featuredmedia': [{
-        source_url: "https://source.unsplash.com/random/800x600/?african-culture"
-      }]
-    }
+    author_name: "Jean P.",
+    post: 2
   },
-  // Add more mock posts to fill the grid
   {
     id: 3,
-    date: "2024-01-16T08:00:00",
-    title: {
-      rendered: "Économie africaine"
-    },
+    date: "2024-02-13T08:00:00",
     content: {
-      rendered: "Ut enim ad minim veniam, quis nostrud exercitation ullamco."
+      rendered: "Le débat sur la culture africaine était très enrichissant."
     },
-    excerpt: {
-      rendered: "Ut enim ad minim..."
-    },
-    _embedded: {
-      'wp:featuredmedia': [{
-        source_url: "https://source.unsplash.com/random/800x600/?african-business"
-      }]
-    }
-  },
-  {
-    id: 4,
-    date: "2024-01-16T07:00:00",
-    title: {
-      rendered: "Sport et jeunesse"
-    },
-    content: {
-      rendered: "Duis aute irure dolor in reprehenderit in voluptate velit."
-    },
-    excerpt: {
-      rendered: "Duis aute irure..."
-    },
-    _embedded: {
-      'wp:featuredmedia': [{
-        source_url: "https://source.unsplash.com/random/800x600/?african-sports"
-      }]
-    }
-  },
-  {
-    id: 5,
-    date: "2024-01-16T06:00:00",
-    title: {
-      rendered: "Innovation technologique"
-    },
-    content: {
-      rendered: "Excepteur sint occaecat cupidatat non proident."
-    },
-    excerpt: {
-      rendered: "Excepteur sint occaecat..."
-    },
-    _embedded: {
-      'wp:featuredmedia': [{
-        source_url: "https://source.unsplash.com/random/800x600/?african-tech"
-      }]
-    }
-  },
-  {
-    id: 6,
-    date: "2024-01-16T05:00:00",
-    title: {
-      rendered: "Musique et arts"
-    },
-    content: {
-      rendered: "Sunt in culpa qui officia deserunt mollit anim id est laborum."
-    },
-    excerpt: {
-      rendered: "Sunt in culpa qui..."
-    },
-    _embedded: {
-      'wp:featuredmedia': [{
-        source_url: "https://source.unsplash.com/random/800x600/?african-music"
-      }]
-    }
-  },
-  {
-    id: 7,
-    date: "2024-01-16T04:00:00",
-    title: {
-      rendered: "Environnement"
-    },
-    content: {
-      rendered: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem."
-    },
-    excerpt: {
-      rendered: "Sed ut perspiciatis..."
-    },
-    _embedded: {
-      'wp:featuredmedia': [{
-        source_url: "https://source.unsplash.com/random/800x600/?african-nature"
-      }]
-    }
+    author_name: "Sophie M.",
+    post: 3
   }
 ];

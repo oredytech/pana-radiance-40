@@ -1,51 +1,62 @@
+import { useQuery } from "@tanstack/react-query";
+import { fetchLatestComments } from "@/services/wordpress";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const recentComments = [
-  {
-    author: "Marie K.",
-    content: "J'adore votre émission matinale ! Continuez comme ça !",
-    date: "2024-02-15",
-  },
-  {
-    author: "Jean P.",
-    content: "La playlist d'hier était incroyable. Merci pour ces découvertes !",
-    date: "2024-02-14",
-  },
-  {
-    author: "Sophie M.",
-    content: "Le débat sur la culture africaine était très enrichissant.",
-    date: "2024-02-13",
-  },
-];
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Sidebar = () => {
+  const { toast } = useToast();
+  const { data: comments = [], isLoading } = useQuery({
+    queryKey: ["latestComments"],
+    queryFn: () => fetchLatestComments(10),
+    meta: {
+      onError: () => {
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les commentaires",
+          variant: "destructive",
+        });
+      },
+    },
+  });
+
   return (
     <div className="space-y-8">
       {/* Recent Comments Section */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-xl text-pana-purple">
             Derniers Commentaires
           </CardTitle>
+          <Link to="/comments">
+            <Button variant="ghost" size="sm" className="text-pana-purple">
+              Voir tout
+            </Button>
+          </Link>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentComments.map((comment, index) => (
-              <div key={index} className="border-b last:border-0 pb-4 last:pb-0">
-                <p className="text-sm text-gray-600">{comment.content}</p>
-                <div className="mt-2 flex justify-between items-center">
-                  <span className="text-xs font-medium text-pana-purple">
-                    {comment.author}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(comment.date).toLocaleDateString("fr-FR", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </span>
+            {isLoading ? (
+              <p className="text-sm text-gray-500">Chargement des commentaires...</p>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.id} className="border-b last:border-0 pb-4 last:pb-0">
+                  <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{ __html: comment.content.rendered }} />
+                  <div className="mt-2 flex justify-between items-center">
+                    <span className="text-xs font-medium text-pana-purple">
+                      {comment.author_name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(comment.date).toLocaleDateString("fr-FR", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

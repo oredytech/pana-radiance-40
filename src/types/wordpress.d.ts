@@ -16,3 +16,14 @@ export interface WordPressPost {
     }>;
   };
 }
+
+export interface WordPressComment {
+  id: number;
+  date: string;
+  content: {
+    rendered: string;
+  };
+  author_name: string;
+  post: number;
+  post_title?: string;
+}
