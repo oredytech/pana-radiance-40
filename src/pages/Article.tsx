@@ -1,12 +1,14 @@
+
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getImageUrl, stripHtml, getSlug } from "@/utils/textUtils";
 
 const Article = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const { toast } = useToast();
   
   const { data: posts, isLoading: isLoadingPosts } = useQuery({
@@ -22,19 +24,6 @@ const Article = () => {
       },
     },
   });
-
-  const stripHtml = (html: string) => {
-    const tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || "";
-  };
-
-  const getSlug = (title: string) => {
-    return stripHtml(title)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  };
 
   if (isLoadingPosts) {
     return (
@@ -56,9 +45,16 @@ const Article = () => {
   }
 
   // Find the post by comparing slugified titles
-  const post = posts?.find(p => getSlug(p.title.rendered) === id);
+  const post = posts?.find(p => {
+    const postSlug = getSlug(p.title.rendered);
+    console.log(`Comparing: "${postSlug}" with "${slug}"`);
+    return postSlug === slug;
+  });
 
   if (!post) {
+    console.log("Article non trouvé:", slug);
+    console.log("Articles disponibles:", posts?.map(p => getSlug(p.title.rendered)));
+    
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -72,11 +68,6 @@ const Article = () => {
       </div>
     );
   }
-
-  const getImageUrl = (post: WordPressPost) => {
-    return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
-      "https://source.unsplash.com/random/800x600/?african-music";
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">

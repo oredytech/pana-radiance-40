@@ -1,6 +1,8 @@
+
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { type WordPressPost } from "@/services/wordpress";
+import { Link } from "react-router-dom";
 
 interface ArticlesGridProps {
   posts: WordPressPost[];
@@ -27,7 +29,7 @@ const ArticlesGrid = ({
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       {posts?.slice(0, 20).map((post) => (
         <Card key={post.id} className="overflow-hidden">
-          <a href={`/article/${getSlug(post.title.rendered)}`}>
+          <Link to={`/article/${getSlug(post.title.rendered)}`} className="block">
             <div className="aspect-[4/3] overflow-hidden">
               <img
                 src={getImageUrl(post)}
@@ -53,7 +55,7 @@ const ArticlesGrid = ({
                 Lire plus
               </Button>
             </CardFooter>
-          </a>
+          </Link>
         </Card>
       ))}
     </div>
