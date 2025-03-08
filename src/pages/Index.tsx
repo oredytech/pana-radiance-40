@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchPosts } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
+import AdvertisementSection from "@/components/AdvertisementSection";
 
 const Index = () => {
   const { toast } = useToast();
@@ -52,6 +53,13 @@ const Index = () => {
               displayCount={12}
             />
           </div>
+        </div>
+      </section>
+
+      {/* Advertisement Section */}
+      <section className="py-12 px-4 bg-white">
+        <div className="container mx-auto">
+          <AdvertisementSection />
         </div>
       </section>
 
