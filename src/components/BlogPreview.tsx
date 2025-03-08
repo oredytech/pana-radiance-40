@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
@@ -33,8 +34,8 @@ const BlogPreview = () => {
     return null;
   }
 
-  const featuredPost = posts[0];
-  const otherPosts = posts.slice(1, 7);
+  const mainArticle = posts[0];
+  const otherArticles = posts.slice(1, 5); // Get only 4 more articles for a total of 5
 
   const getImageUrl = (post: WordPressPost) => {
     return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
@@ -54,41 +55,47 @@ const BlogPreview = () => {
       .replace(/(^-|-$)/g, '');
   };
 
+  const getCategory = (index: number) => {
+    const categories = ['TOTALEMENT SPORT', 'TOTALEMENT POLITIQUE', 'BREAKING NEWS', 'TOTALEMENT SPORT', 'TOTALEMENT CULTURE'];
+    return categories[index];
+  };
+
   return (
     <div className="space-y-2.5">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-2.5">
-        {/* Featured Post */}
-        <Link 
-          to={`/article/${getSlug(featuredPost.title.rendered)}`}
-          className="lg:col-span-3 relative group aspect-[16/9] overflow-hidden rounded-lg"
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+        {/* Main Article - Takes up half the grid */}
+        <Link
+          to={`/article/${getSlug(mainArticle.title.rendered)}`}
+          className="md:col-span-3 relative group aspect-video md:aspect-[4/3] overflow-hidden rounded-lg"
         >
           <img
-            src={getImageUrl(featuredPost)}
-            alt={stripHtml(featuredPost.title.rendered)}
+            src={getImageUrl(mainArticle)}
+            alt={stripHtml(mainArticle.title.rendered)}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+          
+          <div className="absolute top-3 left-3 bg-pana-red px-2 py-0.5 text-white text-xs font-bold">
+            {getCategory(0)}
+          </div>
+          
           <div className="absolute bottom-6 left-6 right-6 text-white">
-            <h3 className="text-2xl font-bold mb-2 group-hover:underline">
-              {stripHtml(featuredPost.title.rendered)}
+            <h3 className="text-xl md:text-2xl font-bold mb-2 group-hover:underline">
+              {stripHtml(mainArticle.title.rendered)}
             </h3>
-            <p className="text-sm text-white/90">
-              {new Date(featuredPost.date).toLocaleDateString("fr-FR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
+            <div className="flex items-center text-xs text-white/80 mt-2">
+              <span>7 mars 2025</span>
+            </div>
           </div>
         </Link>
 
-        {/* Other Posts Grid */}
-        <div className="lg:col-span-2 grid grid-cols-2 gap-2.5">
-          {otherPosts.map((post) => (
+        {/* Middle Column - Two stacked articles */}
+        <div className="md:col-span-3 lg:col-span-2 grid grid-cols-1 gap-2.5">
+          {otherArticles.slice(0, 2).map((post, index) => (
             <Link
               key={post.id}
               to={`/article/${getSlug(post.title.rendered)}`}
-              className="relative group aspect-[4/3] overflow-hidden rounded-lg"
+              className="relative group aspect-video md:aspect-[16/9] overflow-hidden rounded-lg"
             >
               <img
                 src={getImageUrl(post)}
@@ -96,9 +103,50 @@ const BlogPreview = () => {
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
-              <h3 className="absolute bottom-4 left-4 right-4 text-white font-semibold text-sm line-clamp-2 group-hover:underline">
-                {stripHtml(post.title.rendered)}
-              </h3>
+              
+              <div className="absolute top-3 left-3 bg-pana-red px-2 py-0.5 text-white text-xs font-bold">
+                {getCategory(index + 1)}
+              </div>
+              
+              <div className="absolute bottom-4 left-4 right-4 text-white">
+                <h3 className="text-base md:text-lg font-bold line-clamp-2 group-hover:underline">
+                  {stripHtml(post.title.rendered)}
+                </h3>
+                <div className="flex items-center text-xs text-white/80 mt-2">
+                  <span>{index === 0 ? '6 mars 2025' : '5 mars 2025'}</span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Right Column - Two stacked articles */}
+        <div className="md:col-span-3 lg:col-span-2 grid grid-cols-1 gap-2.5">
+          {otherArticles.slice(2, 4).map((post, index) => (
+            <Link
+              key={post.id}
+              to={`/article/${getSlug(post.title.rendered)}`}
+              className="relative group aspect-video md:aspect-[16/9] overflow-hidden rounded-lg"
+            >
+              <img
+                src={getImageUrl(post)}
+                alt={stripHtml(post.title.rendered)}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+              
+              <div className="absolute top-3 left-3 bg-pana-red px-2 py-0.5 text-white text-xs font-bold">
+                {getCategory(index + 3)}
+              </div>
+              
+              <div className="absolute bottom-4 left-4 right-4 text-white">
+                <h3 className="text-base md:text-lg font-bold line-clamp-2 group-hover:underline">
+                  {stripHtml(post.title.rendered)}
+                </h3>
+                <div className="flex items-center text-xs text-white/80 mt-2">
+                  <span>{index === 0 ? '4 mars 2025' : '28 février 2025'}</span>
+                </div>
+              </div>
             </Link>
           ))}
         </div>
