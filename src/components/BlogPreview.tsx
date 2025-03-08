@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Headphones } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getImageUrl, stripHtml, getSlug } from "@/utils/textUtils";
 
 const BlogPreview = () => {
   const { toast } = useToast();
@@ -37,24 +38,6 @@ const BlogPreview = () => {
   const mainArticle = posts[0];
   const otherArticles = posts.slice(1, 5); // Get only 4 more articles for a total of 5
 
-  const getImageUrl = (post: WordPressPost) => {
-    return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
-      "https://source.unsplash.com/random/800x600/?african-music";
-  };
-
-  const stripHtml = (html: string) => {
-    const tmp = document.createElement("DIV");
-    tmp.innerHTML = html;
-    return tmp.textContent || tmp.innerText || "";
-  };
-
-  const getSlug = (title: string) => {
-    return stripHtml(title)
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  };
-
   const getCategory = (index: number) => {
     const categories = ['TOTALEMENT SPORT', 'TOTALEMENT POLITIQUE', 'BREAKING NEWS', 'TOTALEMENT SPORT', 'TOTALEMENT CULTURE'];
     return categories[index];
@@ -62,12 +45,12 @@ const BlogPreview = () => {
 
   return (
     <div className="space-y-2.5">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5">
-        {/* Main Article - Takes the left side on desktop */}
-        <div className="lg:col-span-1 h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5">
+        {/* Main Article - Takes the left side on desktop, full width on mobile */}
+        <div className="lg:col-span-4 h-full flex">
           <Link
             to={`/article/${getSlug(mainArticle.title.rendered)}`}
-            className="relative group aspect-video lg:aspect-[3/4] h-full overflow-hidden rounded-lg block"
+            className="relative group aspect-video lg:aspect-auto lg:h-full w-full overflow-hidden rounded-lg block"
           >
             <img
               src={getImageUrl(mainArticle)}
@@ -92,7 +75,7 @@ const BlogPreview = () => {
         </div>
 
         {/* Right side with 4 articles in a 2x2 grid */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-2.5">
+        <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-2.5">
           {otherArticles.map((post, index) => (
             <Link
               key={post.id}
