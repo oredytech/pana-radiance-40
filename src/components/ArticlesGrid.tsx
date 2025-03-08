@@ -11,6 +11,7 @@ interface ArticlesGridProps {
   stripHtml: (html: string) => string;
   getSlug: (title: string) => string;
   truncateText: (text: string, wordLimit: number) => string;
+  displayCount?: number;
 }
 
 const ArticlesGrid = ({
@@ -20,14 +21,18 @@ const ArticlesGrid = ({
   stripHtml,
   getSlug,
   truncateText,
+  displayCount = 20,
 }: ArticlesGridProps) => {
   if (isLoading) {
     return <div>Chargement des articles...</div>;
   }
 
+  // Make sure we don't try to display more posts than we have
+  const postsToDisplay = posts?.slice(0, displayCount) || [];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {posts?.slice(0, 20).map((post) => (
+      {postsToDisplay.map((post) => (
         <Card key={post.id} className="overflow-hidden">
           <Link to={`/article/${getSlug(post.title.rendered)}`} className="block">
             <div className="aspect-[4/3] overflow-hidden">

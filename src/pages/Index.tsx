@@ -1,9 +1,9 @@
+
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import Sidebar from "@/components/Sidebar";
 import ArticlesGrid from "@/components/ArticlesGrid";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts } from "@/services/wordpress";
@@ -40,26 +40,17 @@ const Index = () => {
       {/* More Articles Section */}
       <section className="py-12 px-4 bg-gray-100">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-gray-800 mb-8">
-            Plus d'articles <span className="text-pana-purple">(18 articles)</span>
-          </h2>
-          <div className="flex flex-col lg:flex-row gap-8">
-            {/* Articles Grid */}
-            <div className="lg:w-3/4">
-              <ArticlesGrid
-                posts={posts || []}
-                isLoading={isLoading}
-                getImageUrl={getImageUrl}
-                stripHtml={stripHtml}
-                getSlug={getSlug}
-                truncateText={truncateText}
-              />
-            </div>
-            
-            {/* Sidebar */}
-            <div className="lg:w-1/4">
-              <Sidebar />
-            </div>
+          {/* Articles Grid - Full width with no title or sidebar */}
+          <div className="w-full">
+            <ArticlesGrid
+              posts={posts || []}
+              isLoading={isLoading}
+              getImageUrl={getImageUrl}
+              stripHtml={stripHtml}
+              getSlug={getSlug}
+              truncateText={truncateText}
+              displayCount={12}
+            />
           </div>
         </div>
       </section>
