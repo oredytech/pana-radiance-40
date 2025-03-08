@@ -62,40 +62,42 @@ const BlogPreview = () => {
 
   return (
     <div className="space-y-2.5">
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
-        {/* Main Article - Takes up half the grid */}
-        <Link
-          to={`/article/${getSlug(mainArticle.title.rendered)}`}
-          className="md:col-span-3 relative group aspect-video md:aspect-[4/3] overflow-hidden rounded-lg"
-        >
-          <img
-            src={getImageUrl(mainArticle)}
-            alt={stripHtml(mainArticle.title.rendered)}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
-          
-          <div className="absolute top-3 left-3 bg-pana-red px-2 py-0.5 text-white text-xs font-bold">
-            {getCategory(0)}
-          </div>
-          
-          <div className="absolute bottom-6 left-6 right-6 text-white">
-            <h3 className="text-xl md:text-2xl font-bold mb-2 group-hover:underline">
-              {stripHtml(mainArticle.title.rendered)}
-            </h3>
-            <div className="flex items-center text-xs text-white/80 mt-2">
-              <span>7 mars 2025</span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2.5">
+        {/* Main Article - Takes the left side on desktop */}
+        <div className="lg:col-span-1 h-full">
+          <Link
+            to={`/article/${getSlug(mainArticle.title.rendered)}`}
+            className="relative group aspect-video lg:aspect-[3/4] h-full overflow-hidden rounded-lg block"
+          >
+            <img
+              src={getImageUrl(mainArticle)}
+              alt={stripHtml(mainArticle.title.rendered)}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+            
+            <div className="absolute top-3 left-3 bg-pana-red px-2 py-0.5 text-white text-xs font-bold">
+              {getCategory(0)}
             </div>
-          </div>
-        </Link>
+            
+            <div className="absolute bottom-6 left-6 right-6 text-white">
+              <h3 className="text-xl md:text-2xl font-bold mb-2 group-hover:underline">
+                {stripHtml(mainArticle.title.rendered)}
+              </h3>
+              <div className="flex items-center text-xs text-white/80 mt-2">
+                <span>7 mars 2025</span>
+              </div>
+            </div>
+          </Link>
+        </div>
 
-        {/* Middle Column - Two stacked articles */}
-        <div className="md:col-span-3 lg:col-span-2 grid grid-cols-1 gap-2.5">
-          {otherArticles.slice(0, 2).map((post, index) => (
+        {/* Right side with 4 articles in a 2x2 grid */}
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {otherArticles.map((post, index) => (
             <Link
               key={post.id}
               to={`/article/${getSlug(post.title.rendered)}`}
-              className="relative group aspect-video md:aspect-[16/9] overflow-hidden rounded-lg"
+              className="relative group aspect-video md:aspect-[4/3] overflow-hidden rounded-lg"
             >
               <img
                 src={getImageUrl(post)}
@@ -113,38 +115,7 @@ const BlogPreview = () => {
                   {stripHtml(post.title.rendered)}
                 </h3>
                 <div className="flex items-center text-xs text-white/80 mt-2">
-                  <span>{index === 0 ? '6 mars 2025' : '5 mars 2025'}</span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {/* Right Column - Two stacked articles */}
-        <div className="md:col-span-3 lg:col-span-2 grid grid-cols-1 gap-2.5">
-          {otherArticles.slice(2, 4).map((post, index) => (
-            <Link
-              key={post.id}
-              to={`/article/${getSlug(post.title.rendered)}`}
-              className="relative group aspect-video md:aspect-[16/9] overflow-hidden rounded-lg"
-            >
-              <img
-                src={getImageUrl(post)}
-                alt={stripHtml(post.title.rendered)}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
-              
-              <div className="absolute top-3 left-3 bg-pana-red px-2 py-0.5 text-white text-xs font-bold">
-                {getCategory(index + 3)}
-              </div>
-              
-              <div className="absolute bottom-4 left-4 right-4 text-white">
-                <h3 className="text-base md:text-lg font-bold line-clamp-2 group-hover:underline">
-                  {stripHtml(post.title.rendered)}
-                </h3>
-                <div className="flex items-center text-xs text-white/80 mt-2">
-                  <span>{index === 0 ? '4 mars 2025' : '28 février 2025'}</span>
+                  <span>{index === 0 ? '6 mars 2025' : index === 1 ? '5 mars 2025' : index === 2 ? '4 mars 2025' : '28 février 2025'}</span>
                 </div>
               </div>
             </Link>
