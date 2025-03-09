@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
@@ -10,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { Facebook, Instagram, Linkedin, WhatsApp, Share } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Share, MessageCircle } from "lucide-react";
 
 const Article = () => {
   const { slug } = useParams();
@@ -57,7 +56,6 @@ const Article = () => {
     );
   }
 
-  // Find the post by comparing slugified titles
   const post = posts?.find(p => {
     const postSlug = getSlug(p.title.rendered);
     console.log(`Comparing: "${postSlug}" with "${slug}"`);
@@ -82,7 +80,6 @@ const Article = () => {
     );
   }
 
-  // Articles récents pour la barre latérale
   const recentPosts = posts?.filter(p => p.id !== post.id).slice(0, 5) || [];
 
   return (
@@ -90,7 +87,6 @@ const Article = () => {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto">
-          {/* Contenu principal */}
           <div className="w-full lg:w-2/3">
             <article className="bg-white rounded-lg shadow-lg overflow-hidden">
               <img
@@ -110,7 +106,6 @@ const Article = () => {
               </div>
             </article>
 
-            {/* Boutons de partage */}
             <div className="my-6">
               <h3 className="text-lg font-semibold mb-3">Partager cet article</h3>
               <div className="flex gap-2">
@@ -120,7 +115,7 @@ const Article = () => {
                   className="rounded-full bg-[#25D366] hover:bg-[#25D366]/80 text-white border-none"
                   onClick={() => window.open(`https://wa.me/?text=${window.location.href}`, '_blank')}
                 >
-                  <WhatsApp />
+                  <MessageCircle />
                 </Button>
                 <Button 
                   variant="outline"
@@ -164,7 +159,6 @@ const Article = () => {
               </div>
             </div>
 
-            {/* Formulaire de commentaires */}
             <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
               <h2 className="text-xl font-bold mb-4">Laisser un commentaire</h2>
               <form onSubmit={handleCommentSubmit} className="space-y-4">
@@ -187,7 +181,6 @@ const Article = () => {
             </div>
           </div>
 
-          {/* Barre latérale */}
           <div className="w-full lg:w-1/3">
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
               <h2 className="text-xl font-bold mb-4">Articles récents</h2>
