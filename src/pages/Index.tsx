@@ -51,7 +51,7 @@ const Index = () => {
               stripHtml={stripHtml}
               getSlug={getSlug}
               truncateText={truncateText}
-              displayCount={12}
+              displayCount={9}
             />
           </div>
         </div>
