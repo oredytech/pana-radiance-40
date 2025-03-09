@@ -46,14 +46,14 @@ const PodcastSection = () => {
           </h2>
           <p className="text-gray-600 mt-2">Écoutez nos émissions où que vous soyez</p>
         </div>
-        <Button 
-          variant="outline" 
-          className="border-pana-red text-pana-red hover:bg-pana-red hover:text-white"
-          as={Link}
-          to="/podcasts"
-        >
-          Tous les podcasts
-        </Button>
+        <Link to="/podcasts">
+          <Button 
+            variant="outline" 
+            className="border-pana-red text-pana-red hover:bg-pana-red hover:text-white"
+          >
+            Tous les podcasts
+          </Button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
