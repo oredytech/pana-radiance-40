@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Video, PlayCircle } from "lucide-react";
+import { PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const VIDEOS = [
@@ -43,8 +43,7 @@ const YouTubeVideoSection = () => {
     <div className="py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Video className="text-pana-red" />
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
             Nos dernières vidéos
           </h2>
           <p className="text-gray-600 mt-2">Retrouvez toutes nos analyses et interviews en vidéo</p>
