@@ -10,6 +10,7 @@ import { fetchPosts } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import AdvertisementSection from "@/components/AdvertisementSection";
+import YouTubeVideoSection from "@/components/YouTubeVideoSection";
 
 const Index = () => {
   const { toast } = useToast();
@@ -60,6 +61,13 @@ const Index = () => {
       <section className="py-12 px-4 bg-white">
         <div className="container mx-auto">
           <AdvertisementSection />
+        </div>
+      </section>
+
+      {/* YouTube Videos Section */}
+      <section className="py-12 px-4 bg-gray-50">
+        <div className="container mx-auto">
+          <YouTubeVideoSection />
         </div>
       </section>
 
