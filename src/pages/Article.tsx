@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
@@ -82,6 +83,9 @@ const Article = () => {
   }
 
   const recentPosts = posts?.filter(p => p.id !== post.id).slice(0, 5) || [];
+  
+  // Get similar posts (filtering out the current post)
+  const similarPosts = posts?.filter(p => p.id !== post.id).slice(0, 4) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -185,6 +189,32 @@ const Article = () => {
                     Envoyer le commentaire
                   </Button>
                 </form>
+              </div>
+
+              {/* New "Lire aussi" section */}
+              <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
+                <h2 className="text-xl font-bold mb-6">Lire aussi</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {similarPosts.map(similarPost => (
+                    <Card key={similarPost.id} className="overflow-hidden">
+                      <a href={`/article/${getSlug(similarPost.title.rendered)}`} className="block">
+                        <div className="h-40 overflow-hidden">
+                          <img 
+                            src={getImageUrl(similarPost)} 
+                            alt={stripHtml(similarPost.title.rendered)} 
+                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                        </div>
+                        <CardContent className="p-4">
+                          <h3 
+                            className="font-semibold text-sm line-clamp-2 hover:text-pana-red transition-colors"
+                            dangerouslySetInnerHTML={{ __html: similarPost.title.rendered }}
+                          />
+                        </CardContent>
+                      </a>
+                    </Card>
+                  ))}
+                </div>
               </div>
             </div>
 
