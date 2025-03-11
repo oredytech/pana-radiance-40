@@ -1,15 +1,47 @@
-import { useState, useRef } from "react";
+
+import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
 
+// On utilise les variables globales
+const globalAudio = window.globalAudio;
+
 const RadioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState([50]);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(globalAudio || null);
   const { toast } = useToast();
+  
+  // Synchronisation avec l'audio global
+  useEffect(() => {
+    if (globalAudio) {
+      audioRef.current = globalAudio;
+      setIsPlaying(!globalAudio.paused);
+      setIsMuted(globalAudio.muted);
+      setVolume([globalAudio.volume * 100]);
+      
+      const updatePlayingState = () => {
+        setIsPlaying(!globalAudio.paused);
+      };
+      
+      globalAudio.addEventListener('play', updatePlayingState);
+      globalAudio.addEventListener('pause', updatePlayingState);
+      
+      return () => {
+        globalAudio.removeEventListener('play', updatePlayingState);
+        globalAudio.removeEventListener('pause', updatePlayingState);
+      };
+    } else if (!audioRef.current) {
+      // Crée une instance locale uniquement si globalAudio n'existe pas encore
+      audioRef.current = new Audio("https://stream.zeno.fm/dnw3x5tqpc9uv");
+      audioRef.current.preload = "none";
+      audioRef.current.volume = volume[0] / 100;
+      window.globalAudio = audioRef.current;
+    }
+  }, []);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -27,7 +59,6 @@ const RadioPlayer = () => {
             console.error("Playback error:", error);
           });
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -48,11 +79,6 @@ const RadioPlayer = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
-      <audio
-        ref={audioRef}
-        src="https://stream.zeno.fm/dnw3x5tqpc9uv"
-        preload="none"
-      />
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-800">En Direct</h2>
         <div className="flex items-center space-x-4">

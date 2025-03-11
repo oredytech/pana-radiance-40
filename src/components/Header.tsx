@@ -8,7 +8,7 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleDirectClick = () => {
-    const audio = document.querySelector('audio');
+    const audio = window.document.querySelector('audio') || globalAudio;
     if (audio) {
       if (audio.paused) {
         audio.play()
@@ -22,14 +22,13 @@ const Header = () => {
     navigate('/direct');
   };
 
-  // Check if audio is playing
-  const isPlaying = document.querySelector('audio')?.played.length > 0;
+  const globalAudio = window.globalAudio as HTMLAudioElement | undefined;
+  const isPlaying = globalAudio ? !globalAudio.paused : false;
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Mobile Menu Button (left) */}
           <div className="md:hidden">
             <Button
               variant="ghost"
@@ -41,7 +40,6 @@ const Header = () => {
             </Button>
           </div>
 
-          {/* Logo (center on mobile, left on desktop) */}
           <div className="flex items-center md:order-first">
             <img
               src="/lovable-uploads/cb273fa4-08f7-4b02-aa9c-1d04fafad2e7.png"
@@ -50,7 +48,6 @@ const Header = () => {
             />
           </div>
 
-          {/* EN DIRECT Button (right on mobile, after nav on desktop) */}
           <div className="flex items-center md:order-last">
             <Button
               onClick={handleDirectClick}
@@ -61,7 +58,6 @@ const Header = () => {
             </Button>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8 mx-8">
             {[
               { label: "Accueil", path: "/" },
@@ -81,7 +77,6 @@ const Header = () => {
           </nav>
         </div>
 
-        {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden py-4 animate-fade-in">
             {[

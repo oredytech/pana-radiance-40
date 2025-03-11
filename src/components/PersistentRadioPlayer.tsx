@@ -1,15 +1,55 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
 
+// Créer un état global pour le lecteur
+let globalAudio: HTMLAudioElement | null = null;
+let isGlobalPlaying = false;
+
 const PersistentRadioPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(isGlobalPlaying);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState([50]);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
+
+  // Initialiser le lecteur audio global s'il n'existe pas encore
+  useEffect(() => {
+    if (!globalAudio) {
+      globalAudio = new Audio("https://stream.zeno.fm/dnw3x5tqpc9uv");
+      globalAudio.preload = "none";
+      globalAudio.volume = volume[0] / 100;
+    }
+    
+    audioRef.current = globalAudio;
+    
+    const updatePlayingState = () => {
+      setIsPlaying(!globalAudio?.paused);
+      isGlobalPlaying = !globalAudio?.paused;
+    };
+    
+    globalAudio.addEventListener('play', updatePlayingState);
+    globalAudio.addEventListener('pause', updatePlayingState);
+    
+    return () => {
+      if (globalAudio) {
+        globalAudio.removeEventListener('play', updatePlayingState);
+        globalAudio.removeEventListener('pause', updatePlayingState);
+      }
+    };
+  }, []);
+
+  // Synchroniser l'état local avec l'état global au montage du composant
+  useEffect(() => {
+    if (audioRef.current) {
+      setIsPlaying(!audioRef.current.paused);
+      setIsMuted(audioRef.current.muted);
+      setVolume([audioRef.current.volume * 100]);
+    }
+  }, []);
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -27,25 +67,8 @@ const PersistentRadioPlayer = () => {
             console.error("Playback error:", error);
           });
       }
-      setIsPlaying(!isPlaying);
     }
   };
-
-  useEffect(() => {
-    if (audioRef.current) {
-      const audio = audioRef.current;
-      
-      const updatePlayingState = () => setIsPlaying(!audio.paused);
-      
-      audio.addEventListener('play', updatePlayingState);
-      audio.addEventListener('pause', updatePlayingState);
-
-      return () => {
-        audio.removeEventListener('play', updatePlayingState);
-        audio.removeEventListener('pause', updatePlayingState);
-      };
-    }
-  }, []);
 
   const toggleMute = () => {
     if (audioRef.current) {
@@ -109,11 +132,6 @@ const PersistentRadioPlayer = () => {
           </div>
         </div>
       </div>
-      <audio
-        ref={audioRef}
-        src="https://stream.zeno.fm/dnw3x5tqpc9uv"
-        preload="none"
-      />
     </div>
   );
 };
