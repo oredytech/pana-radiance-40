@@ -1,4 +1,3 @@
-
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Facebook, Instagram, Linkedin, Share, MessageCircle } from "lucide-react";
+import AdvertisementSection from "@/components/AdvertisementSection";
 
 const Article = () => {
   const { slug } = useParams();
@@ -190,6 +190,10 @@ const Article = () => {
 
             {/* Sidebar */}
             <div className="w-full lg:w-1/3">
+              <div className="mb-6">
+                <AdvertisementSection />
+              </div>
+              
               <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
                 <h2 className="text-xl font-bold mb-4">Articles récents</h2>
                 <div className="space-y-4">
