@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -98,4 +99,22 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Animation pour les lignes audio */
+@keyframes audio-wave {
+  0% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0.3);
+  }
+}
+
+.audio-line {
+  animation: audio-wave 0.5s ease-in-out infinite;
+  transform-origin: bottom;
 }
