@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -29,8 +28,8 @@ const Index = () => {
     },
   });
 
-  // Get articles from index 5 to 14 (9 articles after the first 5)
-  const articlesForGrid = posts ? posts.slice(5, 14) : [];
+  // Get articles from index 5 to 17 (12 articles after the first 5)
+  const articlesForGrid = posts ? posts.slice(5, 17) : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -55,7 +54,7 @@ const Index = () => {
               stripHtml={stripHtml}
               getSlug={getSlug}
               truncateText={truncateText}
-              displayCount={9}
+              displayCount={12}
             />
           </div>
         </div>
