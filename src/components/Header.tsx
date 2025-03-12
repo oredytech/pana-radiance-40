@@ -1,7 +1,8 @@
+
 import { useState } from "react";
 import { Menu, X, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -64,13 +65,13 @@ const Header = () => {
               { label: "Blog", path: "/" },
               { label: "Contact", path: "/" }
             ].map((item) => (
-              <a
+              <Link
                 key={item.label}
-                href={item.path}
+                to={item.path}
                 className="text-gray-700 hover:text-pana-red transition-colors duration-200"
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
         </div>
@@ -84,14 +85,14 @@ const Header = () => {
               { label: "Blog", path: "/" },
               { label: "Contact", path: "/" }
             ].map((item) => (
-              <a
+              <Link
                 key={item.label}
-                href={item.path}
+                to={item.path}
                 className="block py-2 text-gray-700 hover:text-pana-red transition-colors duration-200"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
         )}
