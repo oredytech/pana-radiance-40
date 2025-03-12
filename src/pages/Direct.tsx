@@ -8,55 +8,50 @@ import { Progress } from "@/components/ui/progress";
 
 const Direct = () => {
   const { toast } = useToast();
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(window.isGlobalPlaying || false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePlayPause = () => {
     setIsLoading(true);
-    const audio = document.querySelector('audio');
-    if (audio) {
-      if (isPlaying) {
-        audio.pause();
-        setIsPlaying(false);
-      } else {
-        audio.play()
-          .then(() => {
-            setIsPlaying(true);
-          })
-          .catch((error) => {
-            toast({
-              title: "Erreur de lecture",
-              description: "Impossible de lancer la radio. Veuillez réessayer.",
-              variant: "destructive",
-            });
-            console.error("Playback error:", error);
+    if (isPlaying) {
+      window.globalAudio.pause();
+    } else {
+      window.globalAudio.play()
+        .then(() => {
+          window.isGlobalPlaying = true;
+        })
+        .catch((error) => {
+          toast({
+            title: "Erreur de lecture",
+            description: "Impossible de lancer la radio. Veuillez réessayer.",
+            variant: "destructive",
           });
-      }
+          console.error("Playback error:", error);
+        });
     }
     setIsLoading(false);
   };
 
   useEffect(() => {
-    const audio = document.querySelector('audio');
-    if (audio) {
-      const updatePlayingState = () => setIsPlaying(!audio.paused);
-      
-      audio.addEventListener('play', updatePlayingState);
-      audio.addEventListener('pause', updatePlayingState);
-      audio.addEventListener('waiting', () => setIsLoading(true));
-      audio.addEventListener('playing', () => setIsLoading(false));
-      audio.addEventListener('pause', () => setIsLoading(false));
-      audio.addEventListener('error', () => setIsLoading(false));
+    setIsPlaying(!window.globalAudio.paused);
+    
+    const updatePlayingState = () => setIsPlaying(!window.globalAudio.paused);
+    
+    window.globalAudio.addEventListener('play', updatePlayingState);
+    window.globalAudio.addEventListener('pause', updatePlayingState);
+    window.globalAudio.addEventListener('waiting', () => setIsLoading(true));
+    window.globalAudio.addEventListener('playing', () => setIsLoading(false));
+    window.globalAudio.addEventListener('pause', () => setIsLoading(false));
+    window.globalAudio.addEventListener('error', () => setIsLoading(false));
 
-      return () => {
-        audio.removeEventListener('play', updatePlayingState);
-        audio.removeEventListener('pause', updatePlayingState);
-        audio.removeEventListener('waiting', () => setIsLoading(true));
-        audio.removeEventListener('playing', () => setIsLoading(false));
-        audio.removeEventListener('pause', () => setIsLoading(false));
-        audio.removeEventListener('error', () => setIsLoading(false));
-      };
-    }
+    return () => {
+      window.globalAudio.removeEventListener('play', updatePlayingState);
+      window.globalAudio.removeEventListener('pause', updatePlayingState);
+      window.globalAudio.removeEventListener('waiting', () => setIsLoading(true));
+      window.globalAudio.removeEventListener('playing', () => setIsLoading(false));
+      window.globalAudio.removeEventListener('pause', () => setIsLoading(false));
+      window.globalAudio.removeEventListener('error', () => setIsLoading(false));
+    };
   }, []);
 
   return (

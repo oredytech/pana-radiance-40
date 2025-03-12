@@ -1,80 +1,68 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
 
-// On utilise les variables globales
-const globalAudio = window.globalAudio;
-
 const RadioPlayer = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(window.isGlobalPlaying || false);
   const [isMuted, setIsMuted] = useState(false);
-  const [volume, setVolume] = useState([50]);
-  const audioRef = useRef<HTMLAudioElement | null>(globalAudio || null);
+  const [volume, setVolume] = useState([window.globalAudio?.volume * 100 || 50]);
   const { toast } = useToast();
   
   // Synchronisation avec l'audio global
   useEffect(() => {
-    if (globalAudio) {
-      audioRef.current = globalAudio;
-      setIsPlaying(!globalAudio.paused);
-      setIsMuted(globalAudio.muted);
-      setVolume([globalAudio.volume * 100]);
-      
-      const updatePlayingState = () => {
-        setIsPlaying(!globalAudio.paused);
-      };
-      
-      globalAudio.addEventListener('play', updatePlayingState);
-      globalAudio.addEventListener('pause', updatePlayingState);
-      
-      return () => {
-        globalAudio.removeEventListener('play', updatePlayingState);
-        globalAudio.removeEventListener('pause', updatePlayingState);
-      };
-    } else if (!audioRef.current) {
-      // Crée une instance locale uniquement si globalAudio n'existe pas encore
-      audioRef.current = new Audio("https://stream.zeno.fm/dnw3x5tqpc9uv");
-      audioRef.current.preload = "none";
-      audioRef.current.volume = volume[0] / 100;
-      window.globalAudio = audioRef.current;
-    }
+    // Mettre à jour l'état local depuis l'état global
+    setIsPlaying(!window.globalAudio.paused);
+    setIsMuted(window.globalAudio.muted);
+    setVolume([window.globalAudio.volume * 100]);
+    
+    const updatePlayingState = () => {
+      setIsPlaying(!window.globalAudio.paused);
+    };
+    
+    const updateVolume = () => {
+      setVolume([window.globalAudio.volume * 100]);
+    };
+    
+    window.globalAudio.addEventListener('play', updatePlayingState);
+    window.globalAudio.addEventListener('pause', updatePlayingState);
+    window.globalAudio.addEventListener('volumechange', updateVolume);
+    
+    return () => {
+      window.globalAudio.removeEventListener('play', updatePlayingState);
+      window.globalAudio.removeEventListener('pause', updatePlayingState);
+      window.globalAudio.removeEventListener('volumechange', updateVolume);
+    };
   }, []);
 
   const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current
-          .play()
-          .catch((error) => {
-            toast({
-              title: "Erreur de lecture",
-              description: "Impossible de lancer la radio. Veuillez réessayer.",
-              variant: "destructive",
-            });
-            console.error("Playback error:", error);
+    if (isPlaying) {
+      window.globalAudio.pause();
+    } else {
+      window.globalAudio
+        .play()
+        .catch((error) => {
+          toast({
+            title: "Erreur de lecture",
+            description: "Impossible de lancer la radio. Veuillez réessayer.",
+            variant: "destructive",
           });
-      }
+          console.error("Playback error:", error);
+        });
     }
   };
 
   const toggleMute = () => {
-    if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
+    window.globalAudio.muted = !isMuted;
+    setIsMuted(!isMuted);
   };
 
   const handleVolumeChange = (value: number[]) => {
     const newVolume = value[0];
     setVolume([newVolume]);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume / 100;
-    }
+    window.globalAudio.volume = newVolume / 100;
   };
 
   return (

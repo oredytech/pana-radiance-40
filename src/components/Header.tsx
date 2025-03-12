@@ -8,22 +8,20 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleDirectClick = () => {
-    const audio = window.document.querySelector('audio') || globalAudio;
-    if (audio) {
-      if (audio.paused) {
-        audio.play()
+    if (window.globalAudio) {
+      if (window.globalAudio.paused) {
+        window.globalAudio.play()
           .catch((error) => {
             console.error("Playback error:", error);
           });
       } else {
-        audio.pause();
+        window.globalAudio.pause();
       }
     }
     navigate('/direct');
   };
 
-  const globalAudio = window.globalAudio as HTMLAudioElement | undefined;
-  const isPlaying = globalAudio ? !globalAudio.paused : false;
+  const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
