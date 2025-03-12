@@ -29,6 +29,9 @@ const Index = () => {
     },
   });
 
+  // Get articles from index 5 to 14 (9 articles after the first 5)
+  const articlesForGrid = posts ? posts.slice(5, 14) : [];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -43,10 +46,10 @@ const Index = () => {
       {/* More Articles Section */}
       <section className="py-12 px-4 bg-gray-100">
         <div className="container mx-auto">
-          {/* Articles Grid - Full width with no title or sidebar */}
+          <h2 className="text-2xl font-bold mb-8">Plus d'actualités</h2>
           <div className="w-full">
             <ArticlesGrid
-              posts={posts || []}
+              posts={articlesForGrid}
               isLoading={isLoading}
               getImageUrl={getImageUrl}
               stripHtml={stripHtml}
