@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export interface Category {
   id: string;
@@ -21,25 +22,27 @@ const CategoryTabs = ({
   children,
 }: CategoryTabsProps) => {
   return (
-    <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
-      <TabsList className="w-full flex overflow-x-auto pb-2 mb-6 justify-start md:justify-center">
+    <div>
+      <div className="flex flex-wrap gap-2 mb-6 justify-start md:justify-center">
         {categories.map((category) => (
-          <TabsTrigger 
-            key={category.id} 
-            value={category.id}
-            className="min-w-fit px-4 py-2 data-[state=active]:bg-pana-red data-[state=active]:text-white"
+          <Button 
+            key={category.id}
+            onClick={() => setActiveCategory(category.id)}
+            variant={activeCategory === category.id ? "default" : "outline"}
+            className={cn(
+              "min-w-fit",
+              activeCategory === category.id && "bg-pana-red hover:bg-pana-red/90"
+            )}
           >
             {category.name}
-          </TabsTrigger>
+          </Button>
         ))}
-      </TabsList>
+      </div>
       
-      {categories.map((category) => (
-        <TabsContent key={category.id} value={category.id} className="mt-4">
-          {children}
-        </TabsContent>
-      ))}
-    </Tabs>
+      <div className="mt-4">
+        {children}
+      </div>
+    </div>
   );
 };
 
