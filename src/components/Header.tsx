@@ -62,7 +62,7 @@ const Header = () => {
               { label: "Accueil", path: "/" },
               { label: "Programmes", path: "/programs" },
               { label: "Podcasts", path: "/podcasts" },
-              { label: "Actualités", path: "/" },
+              { label: "Actualités", path: "/articles" },
               { label: "Contact", path: "/" }
             ].map((item) => (
               <Link
@@ -82,7 +82,7 @@ const Header = () => {
               { label: "Accueil", path: "/" },
               { label: "Programmes", path: "/programs" },
               { label: "Podcasts", path: "/podcasts" },
-              { label: "Actualités", path: "/" },
+              { label: "Actualités", path: "/articles" },
               { label: "Contact", path: "/" }
             ].map((item) => (
               <Link
