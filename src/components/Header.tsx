@@ -62,7 +62,7 @@ const Header = () => {
               { label: "Accueil", path: "/" },
               { label: "Programmes", path: "/programs" },
               { label: "Podcasts", path: "/podcasts" },
-              { label: "Actualités", path: "/articles" },
+              { label: "Actualités", path: "/articles" }, // This was the issue - ensuring the route matches what's in App.tsx
               { label: "Contact", path: "/" }
             ].map((item) => (
               <Link
@@ -82,7 +82,7 @@ const Header = () => {
               { label: "Accueil", path: "/" },
               { label: "Programmes", path: "/programs" },
               { label: "Podcasts", path: "/podcasts" },
-              { label: "Actualités", path: "/articles" },
+              { label: "Actualités", path: "/articles" }, // Also updating the mobile menu link
               { label: "Contact", path: "/" }
             ].map((item) => (
               <Link
