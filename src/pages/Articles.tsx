@@ -6,17 +6,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import ArticlesGrid from "@/components/ArticlesGrid";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import ArticlesHeader from "@/components/articles/ArticlesHeader";
+import CategoryTabs from "@/components/articles/CategoryTabs";
+import ArticlesContent from "@/components/articles/ArticlesContent";
 
 // Mock categories for now - in a real app, these would come from WordPress
 const categories = [
@@ -68,7 +60,6 @@ const Articles = () => {
     if (activeCategory === "all") return posts;
     
     // Mock category filtering (in a real app, posts would have category data)
-    const postsLength = posts.length;
     switch (activeCategory) {
       case "actualites":
         return posts.filter((_, index) => index % 5 === 0);
@@ -98,141 +89,33 @@ const Articles = () => {
     }
   };
 
-  const getPageNumbers = () => {
-    const pageNumbers = [];
-    const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i);
-      }
-    } else {
-      // Always show first page
-      pageNumbers.push(1);
-      
-      // Calculate start and end of middle pages
-      let startPage = Math.max(2, currentPage - 1);
-      let endPage = Math.min(totalPages - 1, currentPage + 1);
-      
-      // Adjust if at the edges
-      if (currentPage <= 2) {
-        endPage = Math.min(totalPages - 1, 4);
-      } else if (currentPage >= totalPages - 1) {
-        startPage = Math.max(2, totalPages - 3);
-      }
-      
-      // Add ellipsis after page 1 if needed
-      if (startPage > 2) {
-        pageNumbers.push('ellipsis-start');
-      }
-      
-      // Add middle pages
-      for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
-      }
-      
-      // Add ellipsis before last page if needed
-      if (endPage < totalPages - 1) {
-        pageNumbers.push('ellipsis-end');
-      }
-      
-      // Always show last page
-      pageNumbers.push(totalPages);
-    }
-    
-    return pageNumbers;
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <section className="pt-[104px] pb-12 px-4">
+        <ArticlesHeader />
+        
         <div className="container mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center">Tous nos articles</h1>
-          
           <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
-            <Tabs defaultValue="all" value={activeCategory} onValueChange={setActiveCategory}>
-              <TabsList className="w-full flex overflow-x-auto pb-2 mb-6 justify-start md:justify-center">
-                {categories.map((category) => (
-                  <TabsTrigger 
-                    key={category.id} 
-                    value={category.id}
-                    className="min-w-fit px-4 py-2 data-[state=active]:bg-pana-red data-[state=active]:text-white"
-                  >
-                    {category.name}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              
-              {categories.map((category) => (
-                <TabsContent key={category.id} value={category.id} className="mt-4">
-                  {isLoading ? (
-                    <div className="h-96 flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pana-red mx-auto mb-4"></div>
-                        <p>Chargement des articles...</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <>
-                      <ArticlesGrid 
-                        posts={currentPosts}
-                        isLoading={isLoading}
-                        getImageUrl={getImageUrl}
-                        stripHtml={stripHtml}
-                        getSlug={getSlug}
-                        truncateText={truncateText}
-                        displayCount={12}
-                      />
-                      
-                      {filteredPosts.length > 0 ? (
-                        <Pagination className="mt-8">
-                          <PaginationContent>
-                            <PaginationItem>
-                              <PaginationPrevious 
-                                onClick={() => paginate(currentPage - 1)} 
-                                className={currentPage === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-                                aria-disabled={currentPage === 1}
-                              />
-                            </PaginationItem>
-                            
-                            {getPageNumbers().map((pageNumber, index) => (
-                              pageNumber === 'ellipsis-start' || pageNumber === 'ellipsis-end' ? (
-                                <PaginationItem key={`ellipsis-${index}`}>
-                                  <span className="flex h-9 w-9 items-center justify-center">...</span>
-                                </PaginationItem>
-                              ) : (
-                                <PaginationItem key={`page-${pageNumber}`}>
-                                  <PaginationLink 
-                                    isActive={currentPage === pageNumber} 
-                                    onClick={() => paginate(Number(pageNumber))}
-                                  >
-                                    {pageNumber}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              )
-                            ))}
-                            
-                            <PaginationItem>
-                              <PaginationNext 
-                                onClick={() => paginate(currentPage + 1)} 
-                                className={currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
-                                aria-disabled={currentPage === totalPages}
-                              />
-                            </PaginationItem>
-                          </PaginationContent>
-                        </Pagination>
-                      ) : (
-                        <div className="text-center py-12">
-                          <p>Aucun article trouvé dans cette catégorie.</p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </TabsContent>
-              ))}
-            </Tabs>
+            <CategoryTabs
+              categories={categories}
+              activeCategory={activeCategory}
+              setActiveCategory={setActiveCategory}
+            >
+              <ArticlesContent
+                filteredPosts={filteredPosts}
+                currentPosts={currentPosts}
+                isLoading={isLoading}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                paginate={paginate}
+                getImageUrl={getImageUrl}
+                stripHtml={stripHtml}
+                getSlug={getSlug}
+                truncateText={truncateText}
+              />
+            </CategoryTabs>
           </div>
         </div>
       </section>
