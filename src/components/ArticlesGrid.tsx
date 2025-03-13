@@ -45,6 +45,22 @@ const ArticlesGrid = ({
     );
   }
 
+  const getCategoryName = (post: WordPressPost): string => {
+    if (post._embedded && post._embedded['wp:term']) {
+      const categories = post._embedded['wp:term'].find(
+        terms => terms.length > 0 && terms[0].taxonomy === 'category'
+      );
+      if (categories && categories.length > 0) {
+        return categories[0].name;
+      }
+    }
+    
+    // Fallback to mock categories if real ones aren't available
+    return post.id % 5 === 0 ? "Actualités" : 
+           post.id % 5 === 1 ? "Musique" : 
+           post.id % 5 === 2 ? "Culture" : "Société";
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
       {postsToDisplay.map((post) => (
@@ -58,12 +74,9 @@ const ArticlesGrid = ({
               />
             </div>
             <CardHeader className="pb-2">
-              {/* Simulated category - would come from WordPress in real implementation */}
               <div className="mb-2">
                 <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                  {post.id % 5 === 0 ? "Actualités" : 
-                   post.id % 5 === 1 ? "Musique" : 
-                   post.id % 5 === 2 ? "Culture" : "Société"}
+                  {getCategoryName(post)}
                 </span>
                 <span className="text-xs text-gray-500 ml-2">
                   {new Date(post.date).toLocaleDateString('fr-FR', {

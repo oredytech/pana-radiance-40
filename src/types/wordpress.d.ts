@@ -1,3 +1,4 @@
+
 export interface WordPressPost {
   id: number;
   date: string;
@@ -14,7 +15,14 @@ export interface WordPressPost {
     'wp:featuredmedia'?: Array<{
       source_url: string;
     }>;
+    'wp:term'?: Array<Array<{
+      id: number;
+      name: string;
+      slug: string;
+      taxonomy: string;
+    }>>;
   };
+  categories?: number[];
 }
 
 export interface WordPressComment {
@@ -26,4 +34,11 @@ export interface WordPressComment {
   author_name: string;
   post: number;
   post_title?: string;
+}
+
+export interface WordPressCategory {
+  id: number;
+  name: string;
+  slug: string;
+  count: number;
 }

@@ -2,6 +2,13 @@ import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
 export type { WordPressPost, WordPressComment };
 
+export interface WordPressCategory {
+  id: number;
+  name: string;
+  slug: string;
+  count: number;
+}
+
 const mockPosts: WordPressPost[] = [
   {
     id: 1,
@@ -31,9 +38,37 @@ const mockPosts: WordPressPost[] = [
   }
 ];
 
+const mockCategories: WordPressCategory[] = [
+  { id: 1, name: "Actualités", slug: "actualites", count: 10 },
+  { id: 2, name: "Musique", slug: "musique", count: 8 },
+  { id: 3, name: "Culture", slug: "culture", count: 5 },
+  { id: 4, name: "Société", slug: "societe", count: 7 }
+];
+
+export const fetchCategories = async (): Promise<WordPressCategory[]> => {
+  try {
+    const response = await fetch("https://totalementactus.net/wp-json/wp/v2/categories?per_page=100", {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors'
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch categories");
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return mockCategories;
+  }
+};
+
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   try {
-    const response = await fetch("https://totalementactus.net/wp-json/wp/v2/posts?_embed", {
+    const response = await fetch("https://totalementactus.net/wp-json/wp/v2/posts?_embed&per_page=100", {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -49,6 +84,30 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
   } catch (error) {
     console.error("Error fetching posts:", error);
     return mockPosts;
+  }
+};
+
+export const fetchPostsByCategory = async (categoryId: number): Promise<WordPressPost[]> => {
+  try {
+    const response = await fetch(
+      `https://totalementactus.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=100`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch posts by category");
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching posts by category:", error);
+    return mockPosts.filter((_, index) => index % 5 === categoryId % 5);
   }
 };
 

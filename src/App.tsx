@@ -11,6 +11,7 @@ import Programs from "./pages/Programs";
 import Podcasts from "./pages/Podcasts";
 import Direct from "./pages/Direct";
 import Comments from "./pages/Comments";
+import Articles from "./pages/Articles"; // Add this import
 import PersistentRadioPlayer from "./components/PersistentRadioPlayer";
 import LoadingOverlay from "./components/LoadingOverlay";
 
@@ -34,6 +35,7 @@ function App() {
               <Route path="/podcasts" element={<Podcasts />} />
               <Route path="/direct" element={<Direct />} />
               <Route path="/comments" element={<Comments />} />
+              <Route path="/articles" element={<Articles />} /> {/* Add this route */}
             </Routes>
             <PersistentRadioPlayer />
           </Router>
