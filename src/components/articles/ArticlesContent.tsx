@@ -40,7 +40,7 @@ const ArticlesContent = ({
         </div>
       ) : (
         <>
-          <div className="w-full px-0">
+          <div className="w-full px-4">
             <ArticlesGrid 
               posts={currentPosts}
               isLoading={isLoading}

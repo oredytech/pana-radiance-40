@@ -99,6 +99,18 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Global content padding */
+  .container {
+    @apply px-4;
+  }
+}
+
+/* Create a content container utility class */
+@layer components {
+  .content-container {
+    @apply px-4;
+  }
 }
 
 /* Animation pour les lignes audio */
