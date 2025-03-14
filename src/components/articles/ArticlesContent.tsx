@@ -40,15 +40,17 @@ const ArticlesContent = ({
         </div>
       ) : (
         <>
-          <ArticlesGrid 
-            posts={currentPosts}
-            isLoading={isLoading}
-            getImageUrl={getImageUrl}
-            stripHtml={stripHtml}
-            getSlug={getSlug}
-            truncateText={truncateText}
-            displayCount={12}
-          />
+          <div className="w-full px-0">
+            <ArticlesGrid 
+              posts={currentPosts}
+              isLoading={isLoading}
+              getImageUrl={getImageUrl}
+              stripHtml={stripHtml}
+              getSlug={getSlug}
+              truncateText={truncateText}
+              displayCount={12}
+            />
+          </div>
           
           {filteredPosts.length > 0 ? (
             <ArticlesPagination 

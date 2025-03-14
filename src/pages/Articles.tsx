@@ -109,11 +109,11 @@ const Articles = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <section className="pt-[104px] pb-12 px-4">
+      <section className="pt-[104px] pb-12">
         <ArticlesHeader />
         
-        <div className="container mx-auto">
-          <div className="bg-white p-6 rounded-lg shadow-sm mb-8">
+        <div className="container mx-auto px-0 sm:px-4">
+          <div className="bg-white p-2 sm:p-6 rounded-lg shadow-sm mb-8">
             <CategoryTabs
               categories={categories}
               activeCategory={activeCategory}
