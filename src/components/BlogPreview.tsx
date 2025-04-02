@@ -116,12 +116,13 @@ const BlogPreview = () => {
               <p className="text-white/90">Restez à l'écoute de l'actualité africaine en podcast</p>
             </div>
           </div>
-          <Button 
-            onClick={() => console.log("Clicked podcast CTA")}
-            className="bg-white text-pana-purple hover:bg-white/90 transition-colors"
-          >
-            Écouter maintenant
-          </Button>
+          <Link to="/podcasts">
+            <Button 
+              className="bg-white text-pana-purple hover:bg-white/90 transition-colors"
+            >
+              Écouter maintenant
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
