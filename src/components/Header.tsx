@@ -2,10 +2,19 @@ import { useState } from "react";
 import { Menu, X, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
+import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const { currentPodcast, stopPodcast } = usePodcastPlayer();
+  
   const handleDirectClick = () => {
+    // If a podcast is currently playing, stop it first
+    if (currentPodcast) {
+      stopPodcast();
+    }
+    
     if (window.globalAudio) {
       if (window.globalAudio.paused) {
         window.globalAudio.play().catch(error => {
@@ -17,7 +26,9 @@ const Header = () => {
     }
     navigate('/direct');
   };
+
   const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
+
   return <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
       <div className="container mx-auto px-0">
         <div className="flex items-center justify-between h-16">
@@ -52,7 +63,6 @@ const Header = () => {
             label: "Actualités",
             path: "/articles"
           },
-          // This was the issue - ensuring the route matches what's in App.tsx
           {
             label: "Contact",
             path: "/"
@@ -76,7 +86,6 @@ const Header = () => {
           label: "Actualités",
           path: "/articles"
         },
-        // Also updating the mobile menu link
         {
           label: "Contact",
           path: "/"
@@ -87,4 +96,5 @@ const Header = () => {
       </div>
     </header>;
 };
+
 export default Header;
