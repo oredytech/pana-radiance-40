@@ -3,18 +3,18 @@ import { Menu, X, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
-
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { currentPodcast, stopPodcast } = usePodcastPlayer();
-  
+  const {
+    currentPodcast,
+    stopPodcast
+  } = usePodcastPlayer();
   const handleDirectClick = () => {
     // If a podcast is currently playing, stop it first
     if (currentPodcast) {
       stopPodcast();
     }
-    
     if (window.globalAudio) {
       if (window.globalAudio.paused) {
         window.globalAudio.play().catch(error => {
@@ -26,10 +26,8 @@ const Header = () => {
     }
     navigate('/direct');
   };
-
   const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
-
-  return <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+  return <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 px-[9px]">
       <div className="container mx-auto px-0">
         <div className="flex items-center justify-between h-16">
           <div className="md:hidden">
@@ -62,8 +60,7 @@ const Header = () => {
           }, {
             label: "Actualités",
             path: "/articles"
-          },
-          {
+          }, {
             label: "Contact",
             path: "/"
           }].map(item => <Link key={item.label} to={item.path} className="text-gray-700 hover:text-pana-red transition-colors duration-200">
@@ -85,8 +82,7 @@ const Header = () => {
         }, {
           label: "Actualités",
           path: "/articles"
-        },
-        {
+        }, {
           label: "Contact",
           path: "/"
         }].map(item => <Link key={item.label} to={item.path} className="block py-2 text-gray-700 hover:text-pana-red transition-colors duration-200" onClick={() => setIsMenuOpen(false)}>
@@ -96,5 +92,4 @@ const Header = () => {
       </div>
     </header>;
 };
-
 export default Header;
