@@ -11,6 +11,18 @@ export interface PodcastEpisode {
   imageUrl?: string;
 }
 
+// Fonction pour nettoyer les balises HTML dans les descriptions
+const cleanHtmlTags = (html: string): string => {
+  if (!html) return '';
+  
+  // Crée un élément DOM temporaire
+  const tempElement = document.createElement('div');
+  tempElement.innerHTML = html;
+  
+  // Récupère uniquement le texte
+  return tempElement.textContent || tempElement.innerText || '';
+};
+
 export async function fetchRssFeed(feedUrl: string): Promise<PodcastEpisode[]> {
   try {
     const response = await fetch(
@@ -38,7 +50,7 @@ export async function fetchRssFeed(feedUrl: string): Promise<PodcastEpisode[]> {
       return {
         id: item.guid['#text'] || item.guid,
         title: item.title,
-        description: item.description || item['itunes:summary'] || '',
+        description: cleanHtmlTags(item.description || item['itunes:summary'] || ''),
         duration: typeof duration === 'string' ? duration : '00:00',
         date: new Date(item.pubDate).toLocaleDateString('fr-FR', {
           day: 'numeric',

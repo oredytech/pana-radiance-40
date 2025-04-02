@@ -4,12 +4,14 @@ import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
+import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 
 const PersistentRadioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(window.isGlobalPlaying || false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState([window.globalAudio?.volume * 100 || 50]);
   const { toast } = useToast();
+  const { currentPodcast, stopPodcast } = usePodcastPlayer();
 
   // Synchronisation avec l'audio global
   useEffect(() => {
@@ -39,9 +41,31 @@ const PersistentRadioPlayer = () => {
   }, []);
 
   const togglePlay = () => {
+    // Si un podcast est en cours de lecture, arrêtez-le
+    if (currentPodcast) {
+      stopPodcast();
+      // Après avoir arrêté le podcast, assurez-vous que la radio est correctement configurée
+      window.globalAudio.src = "https://stream.zeno.fm/dnw3x5tqpc9uv";
+      window.globalAudio.play()
+        .catch((error) => {
+          toast({
+            title: "Erreur de lecture",
+            description: "Impossible de lancer la radio. Veuillez réessayer.",
+            variant: "destructive",
+          });
+          console.error("Playback error:", error);
+        });
+      return;
+    }
+
     if (isPlaying) {
       window.globalAudio.pause();
     } else {
+      // Assurez-vous que la source est la radio
+      if (window.globalAudio.src !== "https://stream.zeno.fm/dnw3x5tqpc9uv") {
+        window.globalAudio.src = "https://stream.zeno.fm/dnw3x5tqpc9uv";
+      }
+      
       window.globalAudio
         .play()
         .catch((error) => {
@@ -85,7 +109,9 @@ const PersistentRadioPlayer = () => {
             </Button>
             <div className="text-sm font-medium">
               <div className="text-gray-900">PANA RADIO</div>
-              <div className="text-gray-500 text-xs">En direct {isPlaying && "• EN COURS"}</div>
+              <div className="text-gray-500 text-xs">
+                {currentPodcast ? "Podcast en cours" : `En direct ${isPlaying && "• EN COURS"}`}
+              </div>
             </div>
           </div>
           

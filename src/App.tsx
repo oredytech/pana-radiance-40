@@ -11,9 +11,11 @@ import Programs from "./pages/Programs";
 import Podcasts from "./pages/Podcasts";
 import Direct from "./pages/Direct";
 import Comments from "./pages/Comments";
-import Articles from "./pages/Articles"; // Add this import
+import Articles from "./pages/Articles";
 import PersistentRadioPlayer from "./components/PersistentRadioPlayer";
+import PodcastPlayer from "./components/PodcastPlayer";
 import LoadingOverlay from "./components/LoadingOverlay";
+import { PodcastPlayerProvider } from "./context/PodcastPlayerContext";
 
 const queryClient = new QueryClient();
 
@@ -23,23 +25,26 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        {isLoading && <LoadingOverlay onLoadComplete={() => setIsLoading(false)} />}
-        <div className={isLoading ? "opacity-0" : "opacity-100 transition-opacity duration-500"}>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/article/:slug" element={<Article />} />
-              <Route path="/programs" element={<Programs />} />
-              <Route path="/podcasts" element={<Podcasts />} />
-              <Route path="/direct" element={<Direct />} />
-              <Route path="/comments" element={<Comments />} />
-              <Route path="/articles" element={<Articles />} /> {/* Add this route */}
-            </Routes>
-            <PersistentRadioPlayer />
-          </Router>
-        </div>
+        <PodcastPlayerProvider>
+          <Toaster />
+          <Sonner />
+          {isLoading && <LoadingOverlay onLoadComplete={() => setIsLoading(false)} />}
+          <div className={isLoading ? "opacity-0" : "opacity-100 transition-opacity duration-500"}>
+            <Router>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/article/:slug" element={<Article />} />
+                <Route path="/programs" element={<Programs />} />
+                <Route path="/podcasts" element={<Podcasts />} />
+                <Route path="/direct" element={<Direct />} />
+                <Route path="/comments" element={<Comments />} />
+                <Route path="/articles" element={<Articles />} />
+              </Routes>
+              <PodcastPlayer />
+              <PersistentRadioPlayer />
+            </Router>
+          </div>
+        </PodcastPlayerProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

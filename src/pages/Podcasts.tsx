@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Play, Loader2 } from "lucide-react";
+import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { fetchRssFeed, type PodcastEpisode } from "@/utils/rssFetcher";
 import { useToast } from "@/components/ui/use-toast";
+import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 
 const PODCAST_RSS_URL = "https://podcast.zenomedia.com/api/public/podcasts/dccffad2-6a72-41f0-b115-499b7a4bf255/rss";
 
@@ -13,6 +14,7 @@ const Podcasts = () => {
   const [podcasts, setPodcasts] = useState<PodcastEpisode[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { playPodcast } = usePodcastPlayer();
 
   useEffect(() => {
     const loadPodcasts = async () => {
@@ -40,7 +42,7 @@ const Podcasts = () => {
 
   const handlePlayPodcast = (podcast: PodcastEpisode) => {
     if (podcast.audioUrl) {
-      window.open(podcast.audioUrl, "_blank");
+      playPodcast(podcast);
     }
   };
 
