@@ -41,7 +41,7 @@ const Header = () => {
           </div>
 
           <div className="flex items-center md:order-last">
-            <Button onClick={handleDirectClick} className="bg-pana-red hover:bg-pana-purple transition-colors">
+            <Button onClick={handleDirectClick} className="bg-pana-red hover:bg-pana-purple transition-colors mx-[10px]">
               {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
               EN DIRECT {isPlaying && "• EN COURS"}
             </Button>
