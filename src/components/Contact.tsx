@@ -1,13 +1,13 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-
 const Contact = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -15,27 +15,28 @@ const Contact = () => {
     subject: "",
     message: ""
   });
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value
+    } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
         title: "Message envoyé",
-        description: "Nous vous répondrons dans les plus brefs délais.",
+        description: "Nous vous répondrons dans les plus brefs délais."
       });
-      
+
       // Reset form
       setFormData({
         name: "",
@@ -45,9 +46,7 @@ const Contact = () => {
       });
     }, 1000);
   };
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+  return <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="space-y-6">
         <h2 className="text-3xl font-bold text-pana-purple">Contactez-nous</h2>
         <p className="text-gray-600">
@@ -103,75 +102,36 @@ const Contact = () => {
         </div>
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+      <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100 px-0">
         <h3 className="text-xl font-semibold mb-4">Envoyez-nous un message</h3>
         
         <div className="space-y-4">
           <div>
-            <Input 
-              name="name"
-              placeholder="Votre nom" 
-              value={formData.name}
-              onChange={handleChange}
-              required 
-              className="border-gray-300 focus:border-pana-purple" 
-            />
+            <Input name="name" placeholder="Votre nom" value={formData.name} onChange={handleChange} required className="border-gray-300 focus:border-pana-purple" />
           </div>
           
           <div>
-            <Input 
-              name="email"
-              type="email" 
-              placeholder="Votre email" 
-              value={formData.email}
-              onChange={handleChange}
-              required 
-              className="border-gray-300 focus:border-pana-purple" 
-            />
+            <Input name="email" type="email" placeholder="Votre email" value={formData.email} onChange={handleChange} required className="border-gray-300 focus:border-pana-purple" />
           </div>
           
           <div>
-            <Input 
-              name="subject"
-              placeholder="Sujet" 
-              value={formData.subject}
-              onChange={handleChange}
-              required 
-              className="border-gray-300 focus:border-pana-purple" 
-            />
+            <Input name="subject" placeholder="Sujet" value={formData.subject} onChange={handleChange} required className="border-gray-300 focus:border-pana-purple" />
           </div>
           
           <div>
-            <Textarea 
-              name="message"
-              placeholder="Votre message" 
-              value={formData.message}
-              onChange={handleChange}
-              className="h-32 border-gray-300 focus:border-pana-purple" 
-              required 
-            />
+            <Textarea name="message" placeholder="Votre message" value={formData.message} onChange={handleChange} className="h-32 border-gray-300 focus:border-pana-purple" required />
           </div>
         </div>
         
-        <Button 
-          type="submit" 
-          className="w-full bg-pana-red hover:bg-pana-purple transition-colors"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
+        <Button type="submit" className="w-full bg-pana-red hover:bg-pana-purple transition-colors" disabled={isSubmitting}>
+          {isSubmitting ? <>
               <span className="animate-pulse">Envoi en cours...</span>
-            </>
-          ) : (
-            <>
+            </> : <>
               <Send className="h-4 w-4 mr-2" />
               Envoyer le message
-            </>
-          )}
+            </>}
         </Button>
       </form>
-    </div>
-  );
+    </div>;
 };
-
 export default Contact;
