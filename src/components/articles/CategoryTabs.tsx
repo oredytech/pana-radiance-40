@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -13,33 +13,38 @@ interface CategoryTabsProps {
   categories: Category[];
   activeCategory: string;
   setActiveCategory: (value: string) => void;
+  children?: ReactNode;
 }
 
 const CategoryTabs = ({
   categories,
   activeCategory,
   setActiveCategory,
+  children,
 }: CategoryTabsProps) => {
   return (
-    <div className="flex flex-wrap gap-2 justify-start md:justify-center">
-      {categories.map((category) => (
-        <Button 
-          key={category.id}
-          onClick={() => setActiveCategory(category.id)}
-          variant={activeCategory === category.id ? "default" : "outline"}
-          className={cn(
-            "min-w-fit",
-            activeCategory === category.id && "bg-pana-red hover:bg-pana-red/90"
-          )}
-        >
-          {category.name}
-          {category.count !== undefined && (
-            <span className="ml-2 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs font-medium">
-              {category.count}
-            </span>
-          )}
-        </Button>
-      ))}
+    <div>
+      <div className="flex flex-wrap gap-2 justify-start md:justify-center">
+        {categories.map((category) => (
+          <Button 
+            key={category.id}
+            onClick={() => setActiveCategory(category.id)}
+            variant={activeCategory === category.id ? "default" : "outline"}
+            className={cn(
+              "min-w-fit",
+              activeCategory === category.id && "bg-pana-red hover:bg-pana-red/90"
+            )}
+          >
+            {category.name}
+            {category.count !== undefined && (
+              <span className="ml-2 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                {category.count}
+              </span>
+            )}
+          </Button>
+        ))}
+      </div>
+      {children && <div className="mt-6">{children}</div>}
     </div>
   );
 };

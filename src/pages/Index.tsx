@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -19,7 +18,6 @@ const Index = () => {
   const { toast } = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
   
-  // Fetch categories
   const { data: wpCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
@@ -34,7 +32,6 @@ const Index = () => {
     }
   });
   
-  // Create categories array with "all" category
   const categories = [
     { id: "all", name: "Tous les articles", count: 0 },
     ...(wpCategories?.map(cat => ({ 
@@ -44,7 +41,6 @@ const Index = () => {
     })) || [])
   ];
 
-  // Update the "all" category count
   if (categories.length > 1 && wpCategories) {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
@@ -67,57 +63,58 @@ const Index = () => {
     }
   });
 
-  // Get articles from index 5 to 17 (12 articles after the first 5)
   const articlesForGrid = posts ? posts.slice(5, 17) : [];
   
   return <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* Latest Articles Section */}
       <section className="pt-[104px] pb-12 px-4">
         <div className="container mx-auto px-0">
           <BlogPreview />
         </div>
       </section>
 
-      {/* More Articles Section */}
       <section className="py-12 px-4 bg-gray-100">
         <div className="container mx-auto px-0">
           <h2 className="text-2xl font-bold mb-8">Plus d'actualités</h2>
           <div className="w-full">
             <CategoryTabs
-              categories={categories.slice(0, 5)} // Only show first 5 categories to keep it clean
+              categories={categories.slice(0, 5)}
               activeCategory={activeCategory}
               setActiveCategory={setActiveCategory}
             >
-              <ArticlesGrid posts={articlesForGrid} isLoading={isLoading} getImageUrl={getImageUrl} stripHtml={stripHtml} getSlug={getSlug} truncateText={truncateText} displayCount={12} />
+              <ArticlesGrid 
+                posts={articlesForGrid} 
+                isLoading={isLoading} 
+                getImageUrl={getImageUrl} 
+                stripHtml={stripHtml} 
+                getSlug={getSlug} 
+                truncateText={truncateText} 
+                displayCount={12} 
+              />
             </CategoryTabs>
           </div>
         </div>
       </section>
 
-      {/* Advertisement Section */}
       <section className="py-12 px-4 bg-white">
         <div className="container mx-auto px-0">
           <AdvertisementSection />
         </div>
       </section>
 
-      {/* YouTube Subscription CTA Section */}
       <section className="py-12 px-4 bg-gray-50">
         <div className="container mx-auto px-0">
           <YouTubeSubscriptionCTA />
         </div>
       </section>
 
-      {/* Podcasts Section */}
       <section className="py-12 px-4 bg-white">
         <div className="container mx-auto px-0">
           <PodcastSection />
         </div>
       </section>
 
-      {/* Contact Section */}
       <section className="py-12 px-4">
         <div className="container mx-auto px-0">
           <Contact />
