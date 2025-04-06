@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -9,8 +10,9 @@ import { fetchPosts } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import AdvertisementSection from "@/components/AdvertisementSection";
-import YouTubeVideoSection from "@/components/YouTubeVideoSection";
+import YouTubeSubscriptionCTA from "@/components/YouTubeVideoSection";
 import PodcastSection from "@/components/PodcastSection";
+
 const Index = () => {
   const {
     toast
@@ -35,6 +37,7 @@ const Index = () => {
 
   // Get articles from index 5 to 17 (12 articles after the first 5)
   const articlesForGrid = posts ? posts.slice(5, 17) : [];
+  
   return <div className="min-h-screen bg-gray-50">
       <Header />
 
@@ -62,10 +65,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* YouTube Videos Section */}
+      {/* YouTube Subscription CTA Section */}
       <section className="py-12 px-4 bg-gray-50">
         <div className="container mx-auto px-0">
-          <YouTubeVideoSection />
+          <YouTubeSubscriptionCTA />
         </div>
       </section>
 
@@ -88,4 +91,5 @@ const Index = () => {
       </div>
     </div>;
 };
+
 export default Index;
