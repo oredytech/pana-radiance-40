@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
@@ -16,7 +15,6 @@ const Articles = () => {
   const { toast } = useToast();
   const postsPerPage = 12;
 
-  // Fetch all categories
   const { data: wpCategories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
@@ -31,7 +29,6 @@ const Articles = () => {
     },
   });
 
-  // Create categories array with "all" category
   const categories = [
     { id: "all", name: "Tous les articles", count: 0 },
     ...(wpCategories?.map(cat => ({ 
@@ -41,12 +38,10 @@ const Articles = () => {
     })) || [])
   ];
 
-  // Update the "all" category count
   if (categories.length > 1 && wpCategories) {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
 
-  // Fetch posts based on the active category
   const { data: posts, isLoading, error } = useQuery({
     queryKey: ["posts", activeCategory],
     queryFn: async () => {
@@ -67,7 +62,6 @@ const Articles = () => {
     },
   });
 
-  // Reset pagination when changing category
   useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory]);
@@ -88,7 +82,6 @@ const Articles = () => {
   const filteredPosts = posts || [];
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
   
-  // Get current page posts
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
@@ -100,7 +93,6 @@ const Articles = () => {
     }
   };
 
-  // Show loading state while categories are loading
   if (isCategoriesLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -118,29 +110,33 @@ const Articles = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <section className="pt-[104px] pb-12">
+      <section className="pt-[104px]">
         <ArticlesHeader />
         
-        <div className="container mx-auto px-0 sm:px-4">
-          <div className="bg-white p-2 sm:p-6 rounded-lg shadow-sm mb-8">
+        <div className="bg-white shadow-sm py-4 mb-8 sticky top-16 z-10">
+          <div className="container mx-auto px-4">
             <CategoryTabs
               categories={categories}
               activeCategory={activeCategory}
               setActiveCategory={setActiveCategory}
-            >
-              <ArticlesContent
-                filteredPosts={filteredPosts}
-                currentPosts={currentPosts}
-                isLoading={isLoading}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                paginate={paginate}
-                getImageUrl={getImageUrl}
-                stripHtml={stripHtml}
-                getSlug={getSlug}
-                truncateText={truncateText}
-              />
-            </CategoryTabs>
+            />
+          </div>
+        </div>
+        
+        <div className="container mx-auto px-0 sm:px-4 pb-12">
+          <div className="bg-white p-2 sm:p-6 rounded-lg shadow-sm">
+            <ArticlesContent
+              filteredPosts={filteredPosts}
+              currentPosts={currentPosts}
+              isLoading={isLoading}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              paginate={paginate}
+              getImageUrl={getImageUrl}
+              stripHtml={stripHtml}
+              getSlug={getSlug}
+              truncateText={truncateText}
+            />
           </div>
         </div>
       </section>
