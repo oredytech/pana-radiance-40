@@ -24,15 +24,17 @@ const CategoryTabs = ({
 }: CategoryTabsProps) => {
   return (
     <div>
-      <div className="flex flex-wrap gap-2 justify-start md:justify-center">
+      <div className="flex overflow-x-auto whitespace-nowrap py-2 px-2 border-t border-b border-gray-200 bg-gray-50">
         {categories.map((category) => (
           <Button 
             key={category.id}
             onClick={() => setActiveCategory(category.id)}
-            variant={activeCategory === category.id ? "default" : "outline"}
+            variant="ghost"
             className={cn(
-              "min-w-fit",
-              activeCategory === category.id && "bg-pana-red hover:bg-pana-red/90"
+              "min-w-fit rounded-none border-b-2 mx-1 px-3",
+              activeCategory === category.id 
+                ? "border-pana-red text-pana-red font-medium" 
+                : "border-transparent hover:border-gray-300"
             )}
           >
             {category.name}

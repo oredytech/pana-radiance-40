@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
@@ -113,17 +114,15 @@ const Articles = () => {
       <section className="pt-[104px]">
         <ArticlesHeader />
         
-        <div className="bg-white shadow-sm py-4 mb-8 sticky top-16 z-10">
-          <div className="container mx-auto px-4">
-            <CategoryTabs
-              categories={categories}
-              activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
-            />
-          </div>
+        <div className="sticky top-16 z-10">
+          <CategoryTabs
+            categories={categories}
+            activeCategory={activeCategory}
+            setActiveCategory={setActiveCategory}
+          />
         </div>
         
-        <div className="container mx-auto px-0 sm:px-4 pb-12">
+        <div className="container mx-auto px-0 sm:px-4 py-8">
           <div className="bg-white p-2 sm:p-6 rounded-lg shadow-sm">
             <ArticlesContent
               filteredPosts={filteredPosts}
