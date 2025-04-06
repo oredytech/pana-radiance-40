@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 export interface Category {
   id: string;
   name: string;
+  count?: number;
 }
 
 interface CategoryTabsProps {
@@ -35,6 +36,11 @@ const CategoryTabs = ({
             )}
           >
             {category.name}
+            {category.count !== undefined && (
+              <span className="ml-2 bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-xs font-medium">
+                {category.count}
+              </span>
+            )}
           </Button>
         ))}
       </div>

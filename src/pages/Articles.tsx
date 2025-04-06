@@ -33,9 +33,18 @@ const Articles = () => {
 
   // Create categories array with "all" category
   const categories = [
-    { id: "all", name: "Tous les articles" },
-    ...(wpCategories?.map(cat => ({ id: cat.id.toString(), name: cat.name })) || [])
+    { id: "all", name: "Tous les articles", count: 0 },
+    ...(wpCategories?.map(cat => ({ 
+      id: cat.id.toString(), 
+      name: cat.name,
+      count: cat.count 
+    })) || [])
   ];
+
+  // Update the "all" category count
+  if (categories.length > 1 && wpCategories) {
+    categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
+  }
 
   // Fetch posts based on the active category
   const { data: posts, isLoading, error } = useQuery({
