@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,6 +9,7 @@ const RadioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(window.isGlobalPlaying || false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState([window.globalAudio?.volume * 100 || 50]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
   // Synchronisation avec l'audio global
@@ -29,11 +30,19 @@ const RadioPlayer = () => {
     window.globalAudio.addEventListener('play', updatePlayingState);
     window.globalAudio.addEventListener('pause', updatePlayingState);
     window.globalAudio.addEventListener('volumechange', updateVolume);
+    window.globalAudio.addEventListener('waiting', () => setIsLoading(true));
+    window.globalAudio.addEventListener('playing', () => setIsLoading(false));
+    window.globalAudio.addEventListener('pause', () => setIsLoading(false));
+    window.globalAudio.addEventListener('error', () => setIsLoading(false));
     
     return () => {
       window.globalAudio.removeEventListener('play', updatePlayingState);
       window.globalAudio.removeEventListener('pause', updatePlayingState);
       window.globalAudio.removeEventListener('volumechange', updateVolume);
+      window.globalAudio.removeEventListener('waiting', () => setIsLoading(true));
+      window.globalAudio.removeEventListener('playing', () => setIsLoading(false));
+      window.globalAudio.removeEventListener('pause', () => setIsLoading(false));
+      window.globalAudio.removeEventListener('error', () => setIsLoading(false));
     };
   }, []);
 
@@ -96,7 +105,9 @@ const RadioPlayer = () => {
         onClick={togglePlay}
         className="w-full bg-pana-red hover:bg-pana-purple transition-colors duration-200"
       >
-        {isPlaying ? (
+        {isLoading ? (
+          <Loader2 className="h-6 w-6 mr-2 animate-spin" />
+        ) : isPlaying ? (
           <Pause className="h-6 w-6 mr-2" />
         ) : (
           <Play className="h-6 w-6 mr-2" />

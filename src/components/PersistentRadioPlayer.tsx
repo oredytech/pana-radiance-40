@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
@@ -10,6 +10,7 @@ const PersistentRadioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(window.isGlobalPlaying || false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState([window.globalAudio?.volume * 100 || 50]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { currentPodcast, stopPodcast } = usePodcastPlayer();
 
@@ -29,10 +30,19 @@ const PersistentRadioPlayer = () => {
     window.globalAudio.addEventListener('play', updatePlayingState);
     window.globalAudio.addEventListener('pause', updatePlayingState);
     window.globalAudio.addEventListener('volumechange', updateVolume);
+    window.globalAudio.addEventListener('waiting', () => setIsLoading(true));
+    window.globalAudio.addEventListener('playing', () => setIsLoading(false));
+    window.globalAudio.addEventListener('pause', () => setIsLoading(false));
+    window.globalAudio.addEventListener('error', () => setIsLoading(false));
+    
     return () => {
       window.globalAudio.removeEventListener('play', updatePlayingState);
       window.globalAudio.removeEventListener('pause', updatePlayingState);
       window.globalAudio.removeEventListener('volumechange', updateVolume);
+      window.globalAudio.removeEventListener('waiting', () => setIsLoading(true));
+      window.globalAudio.removeEventListener('playing', () => setIsLoading(false));
+      window.globalAudio.removeEventListener('pause', () => setIsLoading(false));
+      window.globalAudio.removeEventListener('error', () => setIsLoading(false));
     };
   }, []);
 
@@ -91,7 +101,13 @@ const PersistentRadioPlayer = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" onClick={togglePlay} className="hover:text-pana-purple">
-              {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="h-6 w-6" />
+              ) : (
+                <Play className="h-6 w-6" />
+              )}
             </Button>
             <div className="text-sm font-medium">
               <div className="text-gray-900">PANA RADIO</div>

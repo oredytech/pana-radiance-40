@@ -1,10 +1,12 @@
+
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, Pause } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import LoadingCircle from "@/components/LoadingCircle";
+import Footer from "@/components/Footer";
 
 const Direct = () => {
   const { toast } = useToast();
@@ -55,9 +57,9 @@ const Direct = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
       <Header />
-      <div className="container mx-auto px-4 py-8 mt-20">
+      <div className="container mx-auto px-4 py-8 mt-20 flex-grow">
         <div className="max-w-4xl mx-auto">
           <Card className="mb-8 bg-white border shadow-lg">
             <CardContent className="p-6">
@@ -70,7 +72,7 @@ const Direct = () => {
                   />
                   {isLoading && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <Progress value={30} className="w-1/2" />
+                      <LoadingCircle size={48} />
                     </div>
                   )}
                 </div>
@@ -154,6 +156,7 @@ const Direct = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
