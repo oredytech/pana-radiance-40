@@ -1,22 +1,27 @@
+import React, { useState } from "react";
 import { Calendar, Clock, Radio, ChevronDown } from "lucide-react";
 import ProgramSchedule from "@/components/ProgramSchedule";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useState } from "react";
+import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
+
 const Programs = () => {
   const days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
   const isMobile = useIsMobile();
   const [selectedDay, setSelectedDay] = useState("aujourd'hui");
+
   const handleDaySelect = (day: string) => {
     setSelectedDay(day);
   };
-  return <div className="min-h-screen bg-gray-50">
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <div className="container mx-auto px-4 py-8 mt-20">
+      <div className="container mx-auto px-4 py-8 mt-20 flex-grow">
         <div className="flex items-center gap-3 mb-8">
           <Radio className="h-8 w-8 text-pana-purple" />
           <h1 className="text-3xl font-bold text-pana-purple">Grille des Programmes</h1>
@@ -143,6 +148,9 @@ const Programs = () => {
               </TabsContent>)}
           </Tabs>}
       </div>
-    </div>;
+      <Footer />
+    </div>
+  );
 };
+
 export default Programs;

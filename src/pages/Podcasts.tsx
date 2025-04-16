@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ const Podcasts = () => {
       try {
         const episodes = await fetchRssFeed(PODCAST_RSS_URL);
         if (episodes.length > 0) {
-          setPodcasts(episodes); // Show all episodes
+          setPodcasts(episodes);
         } else {
           throw new Error("No podcasts found");
         }
@@ -47,9 +47,9 @@ const Podcasts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
-      <div className="container mx-auto px-4 py-8 mt-20">
+      <div className="container mx-auto px-4 py-8 mt-20 flex-grow">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Nos Podcasts</h1>
         
         {isLoading ? (
@@ -105,6 +105,7 @@ const Podcasts = () => {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 };
