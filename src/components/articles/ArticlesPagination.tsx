@@ -22,44 +22,40 @@ const ArticlesPagination = ({
 }: ArticlesPaginationProps) => {
   const getPageNumbers = () => {
     const pageNumbers = [];
-    const maxVisiblePages = 5;
     
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
+    // Always show first page
+    pageNumbers.push(1);
+    
+    if (totalPages <= 5) {
+      // If 5 or fewer pages, show all page numbers
+      for (let i = 2; i <= totalPages; i++) {
         pageNumbers.push(i);
       }
     } else {
-      // Always show first page
-      pageNumbers.push(1);
-      
-      // Calculate start and end of middle pages
-      let startPage = Math.max(2, currentPage - 1);
-      let endPage = Math.min(totalPages - 1, currentPage + 1);
-      
-      // Adjust if at the edges
-      if (currentPage <= 2) {
-        endPage = Math.min(totalPages - 1, 4);
-      } else if (currentPage >= totalPages - 1) {
-        startPage = Math.max(2, totalPages - 3);
+      // For many pages, use a condensed display with ellipsis
+      if (currentPage > 3) {
+        pageNumbers.push('ellipsis1');
       }
       
-      // Add ellipsis after page 1 if needed
-      if (startPage > 2) {
-        pageNumbers.push('ellipsis-start');
-      }
+      // Show page numbers around current page
+      const startPage = Math.max(2, currentPage - 1);
+      const endPage = Math.min(totalPages - 1, currentPage + 1);
       
-      // Add middle pages
       for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i);
+        if (i !== 1 && i !== totalPages) {
+          pageNumbers.push(i);
+        }
       }
       
-      // Add ellipsis before last page if needed
-      if (endPage < totalPages - 1) {
-        pageNumbers.push('ellipsis-end');
+      // Add ellipsis if there's a gap before the last page
+      if (currentPage < totalPages - 2) {
+        pageNumbers.push('ellipsis2');
       }
       
-      // Always show last page
-      pageNumbers.push(totalPages);
+      // Always show last page if we have more than one page
+      if (totalPages > 1) {
+        pageNumbers.push(totalPages);
+      }
     }
     
     return pageNumbers;
@@ -77,8 +73,8 @@ const ArticlesPagination = ({
         </PaginationItem>
         
         {getPageNumbers().map((pageNumber, index) => (
-          pageNumber === 'ellipsis-start' || pageNumber === 'ellipsis-end' ? (
-            <PaginationItem key={`ellipsis-${index}`}>
+          typeof pageNumber === 'string' ? (
+            <PaginationItem key={pageNumber}>
               <span className="flex h-9 w-9 items-center justify-center">...</span>
             </PaginationItem>
           ) : (
