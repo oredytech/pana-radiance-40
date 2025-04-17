@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ArticlesHeader from "@/components/articles/ArticlesHeader";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticlesContent from "@/components/articles/ArticlesContent";
-
 const Articles = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -104,7 +104,7 @@ const Articles = () => {
       <Header />
       
       <section className="pt-[104px] py-[65px]">
-        {/* Removed ArticlesHeader component */}
+        <ArticlesHeader />
         <CategoryTabs categories={categories} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
         
         <div className="container mx-auto px-0 sm:px-4 py-8">
@@ -117,5 +117,4 @@ const Articles = () => {
       <Footer />
     </div>;
 };
-
 export default Articles;
