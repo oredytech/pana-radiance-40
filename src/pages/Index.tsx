@@ -13,12 +13,14 @@ import YouTubeSubscriptionCTA from "@/components/YouTubeVideoSection";
 import PodcastSection from "@/components/PodcastSection";
 import { useState } from "react";
 import CategoryTabs from "@/components/articles/CategoryTabs";
-
 const Index = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
-  
-  const { data: wpCategories } = useQuery({
+  const {
+    data: wpCategories
+  } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
     meta: {
@@ -31,20 +33,18 @@ const Index = () => {
       }
     }
   });
-  
-  const categories = [
-    { id: "all", name: "Tous les articles", count: 0 },
-    ...(wpCategories?.map(cat => ({ 
-      id: cat.id.toString(), 
-      name: cat.name,
-      count: cat.count 
-    })) || [])
-  ];
-
+  const categories = [{
+    id: "all",
+    name: "Tous les articles",
+    count: 0
+  }, ...(wpCategories?.map(cat => ({
+    id: cat.id.toString(),
+    name: cat.name,
+    count: cat.count
+  })) || [])];
   if (categories.length > 1 && wpCategories) {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
-  
   const {
     data: posts,
     isLoading,
@@ -62,9 +62,7 @@ const Index = () => {
       }
     }
   });
-
   const articlesForGrid = posts ? posts.slice(5, 17) : [];
-  
   return <div className="min-h-screen bg-gray-50">
       <Header />
 
@@ -74,24 +72,12 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="py-12 px-4 bg-gray-100">
+      <section className="px-4 bg-gray-100 py-0">
         <div className="container mx-auto px-0">
-          <h2 className="text-2xl font-bold mb-8">Plus d'actualités</h2>
+          
           <div className="w-full">
-            <CategoryTabs
-              categories={categories.slice(0, 5)}
-              activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
-            >
-              <ArticlesGrid 
-                posts={articlesForGrid} 
-                isLoading={isLoading} 
-                getImageUrl={getImageUrl} 
-                stripHtml={stripHtml} 
-                getSlug={getSlug} 
-                truncateText={truncateText} 
-                displayCount={12} 
-              />
+            <CategoryTabs categories={categories.slice(0, 5)} activeCategory={activeCategory} setActiveCategory={setActiveCategory}>
+              <ArticlesGrid posts={articlesForGrid} isLoading={isLoading} getImageUrl={getImageUrl} stripHtml={stripHtml} getSlug={getSlug} truncateText={truncateText} displayCount={12} />
             </CategoryTabs>
           </div>
         </div>
@@ -126,5 +112,4 @@ const Index = () => {
       </div>
     </div>;
 };
-
 export default Index;
