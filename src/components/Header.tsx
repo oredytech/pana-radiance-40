@@ -3,6 +3,7 @@ import { Menu, X, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -10,8 +11,8 @@ const Header = () => {
     currentPodcast,
     stopPodcast
   } = usePodcastPlayer();
+
   const handleDirectClick = () => {
-    // If a podcast is currently playing, stop it first
     if (currentPodcast) {
       stopPodcast();
     }
@@ -26,7 +27,9 @@ const Header = () => {
     }
     navigate('/direct');
   };
+
   const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
+
   return <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 px-[9px]">
       <div className="container mx-auto px-0">
         <div className="flex items-center justify-between h-16">
@@ -37,7 +40,11 @@ const Header = () => {
           </div>
 
           <div className="flex items-center md:order-first">
-            <img src="/lovable-uploads/cb273fa4-08f7-4b02-aa9c-1d04fafad2e7.png" alt="PANA RADIO" className="h-12 w-auto" />
+            <img 
+              src="/lovable-uploads/cb273fa4-08f7-4b02-aa9c-1d04fafad2e7.png" 
+              alt="PANA RADIO" 
+              className="h-12 w-auto rounded-[7px]"
+            />
           </div>
 
           <div className="flex items-center md:order-last">
@@ -92,4 +99,5 @@ const Header = () => {
       </div>
     </header>;
 };
+
 export default Header;
