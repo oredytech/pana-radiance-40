@@ -1,4 +1,4 @@
-
+import React from 'react';
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, type WordPressPost } from "@/services/wordpress";
@@ -43,7 +43,7 @@ const Article = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <main className="container mx-auto px-4 py-8 mt-16"> {/* Added mt-16 for header height */}
+        <main className="container mx-auto px-4 py-8 mt-16">
           <div className="max-w-6xl mx-auto">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
@@ -71,7 +71,7 @@ const Article = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <main className="container mx-auto px-4 py-8 mt-16"> {/* Added mt-16 for header height */}
+        <main className="container mx-auto px-4 py-8 mt-16">
           <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Article non trouvé</h1>
             <p className="text-gray-600">Désolé, l'article que vous recherchez n'existe pas ou a été déplacé.</p>
@@ -84,15 +84,13 @@ const Article = () => {
 
   const recentPosts = posts?.filter(p => p.id !== post.id).slice(0, 5) || [];
   
-  // Get similar posts (filtering out the current post)
   const similarPosts = posts?.filter(p => p.id !== post.id).slice(0, 4) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <main className="container mx-auto px-4 py-8 mt-16"> {/* Added mt-16 for header height */}
+      <main className="container mx-auto px-4 py-8 mt-16">
         <div className="max-w-6xl mx-auto">
-          {/* Featured image taking full width */}
           <div className="w-full bg-white rounded-lg shadow-lg overflow-hidden mb-8">
             <img
               src={getImageUrl(post)}
@@ -102,16 +100,15 @@ const Article = () => {
           </div>
           
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Main content */}
             <div className="w-full lg:w-2/3">
               <article className="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div className="p-8">
                   <h1 
-                    className="text-3xl font-bold mb-4" 
+                    className="text-3xl font-bold mb-6"
                     dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
                   />
                   <div 
-                    className="prose max-w-none"
+                    className="prose max-w-none space-y-6"
                     dangerouslySetInnerHTML={{ __html: post.content.rendered }}
                   />
                 </div>
@@ -191,7 +188,6 @@ const Article = () => {
                 </form>
               </div>
 
-              {/* New "Lire aussi" section */}
               <div className="bg-white rounded-lg shadow-lg p-6 mt-8">
                 <h2 className="text-xl font-bold mb-6">Lire aussi</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -218,7 +214,6 @@ const Article = () => {
               </div>
             </div>
 
-            {/* Sidebar */}
             <div className="w-full lg:w-1/3">
               <div className="mb-6">
                 <AdvertisementSection />
