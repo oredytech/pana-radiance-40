@@ -103,7 +103,7 @@ const Articles = () => {
   return <div className="min-h-screen bg-gray-50">
       <Header />
       
-      <section className="pt-[104px] py-[64px]">
+      <section className="pt-[104px] py-[65px]">
         <ArticlesHeader />
         <CategoryTabs categories={categories} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
         
