@@ -1,34 +1,53 @@
+
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-const Contact = () => {
-  const {
-    toast
-  } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: ""
-  });
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const {
-      name,
-      value
-    } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Le nom doit contenir au moins 2 caractères.",
+  }),
+  email: z.string().email({
+    message: "Veuillez entrer une adresse email valide.",
+  }),
+  subject: z.string().min(5, {
+    message: "Le sujet doit contenir au moins 5 caractères.",
+  }),
+  message: z.string().min(10, {
+    message: "Le message doit contenir au moins 10 caractères.",
+  }),
+});
+
+const Contact = () => {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      subject: "",
+      message: "",
+    },
+  });
+
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
     // Simulate API call
     setTimeout(() => {
       setIsSubmitting(false);
@@ -36,17 +55,12 @@ const Contact = () => {
         title: "Message envoyé",
         description: "Nous vous répondrons dans les plus brefs délais."
       });
-
-      // Reset form
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: ""
-      });
+      form.reset();
     }, 1000);
   };
-  return <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <div className="space-y-6">
         <h2 className="text-3xl font-bold text-pana-purple">Contactez-nous</h2>
         <p className="text-gray-600">
@@ -102,36 +116,88 @@ const Contact = () => {
         </div>
       </div>
       
-      <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100 px-0">
-        <h3 className="text-xl font-semibold mb-4">Envoyez-nous un message</h3>
-        
-        <div className="space-y-4">
-          <div>
-            <Input name="name" placeholder="Votre nom" value={formData.name} onChange={handleChange} required className="border-gray-300 focus:border-pana-purple" />
-          </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h3 className="text-xl font-semibold mb-4">Envoyez-nous un message</h3>
           
-          <div>
-            <Input name="email" type="email" placeholder="Votre email" value={formData.email} onChange={handleChange} required className="border-gray-300 focus:border-pana-purple" />
-          </div>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nom</FormLabel>
+                <FormControl>
+                  <Input placeholder="Votre nom" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           
-          <div>
-            <Input name="subject" placeholder="Sujet" value={formData.subject} onChange={handleChange} required className="border-gray-300 focus:border-pana-purple" />
-          </div>
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Votre email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           
-          <div>
-            <Textarea name="message" placeholder="Votre message" value={formData.message} onChange={handleChange} className="h-32 border-gray-300 focus:border-pana-purple" required />
-          </div>
-        </div>
-        
-        <Button type="submit" className="w-full bg-pana-red hover:bg-pana-purple transition-colors" disabled={isSubmitting}>
-          {isSubmitting ? <>
+          <FormField
+            control={form.control}
+            name="subject"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sujet</FormLabel>
+                <FormControl>
+                  <Input placeholder="Sujet de votre message" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="message"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Message</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Votre message" 
+                    className="h-32"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-pana-red hover:bg-pana-purple transition-colors"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
               <span className="animate-pulse">Envoi en cours...</span>
-            </> : <>
-              <Send className="h-4 w-4 mr-2" />
-              Envoyer le message
-            </>}
-        </Button>
-      </form>
-    </div>;
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                Envoyer le message
+              </>
+            )}
+          </Button>
+        </form>
+      </Form>
+    </div>
+  );
 };
+
 export default Contact;
