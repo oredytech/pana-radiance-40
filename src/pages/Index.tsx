@@ -13,11 +13,13 @@ import YouTubeSubscriptionCTA from "@/components/YouTubeVideoSection";
 import PodcastSection from "@/components/PodcastSection";
 import { useState } from "react";
 import CategoryTabs from "@/components/articles/CategoryTabs";
+
 const Index = () => {
   const {
     toast
   } = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
+
   const {
     data: wpCategories
   } = useQuery({
@@ -33,6 +35,7 @@ const Index = () => {
       }
     }
   });
+
   const categories = [{
     id: "all",
     name: "Tous les articles",
@@ -42,9 +45,11 @@ const Index = () => {
     name: cat.name,
     count: cat.count
   })) || [])];
+
   if (categories.length > 1 && wpCategories) {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
+
   const {
     data: posts,
     isLoading,
@@ -62,7 +67,9 @@ const Index = () => {
       }
     }
   });
+
   const articlesForGrid = posts ? posts.slice(5, 17) : [];
+
   return <div className="min-h-screen bg-gray-50">
       <Header />
 
@@ -101,7 +108,7 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="py-12 px-4">
+      <section id="contact" className="py-12 px-4">
         <div className="container mx-auto px-0">
           <Contact />
         </div>
@@ -112,4 +119,5 @@ const Index = () => {
       </div>
     </div>;
 };
+
 export default Index;

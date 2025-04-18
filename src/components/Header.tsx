@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Menu, X, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
   const {
     currentPodcast,
@@ -26,6 +27,15 @@ const Header = () => {
       }
     }
     navigate('/direct');
+  };
+
+  const handleContactClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (location.pathname !== '/') {
+      navigate('/#contact');
+    } else {
+      document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
@@ -56,45 +66,64 @@ const Header = () => {
 
           <nav className="hidden md:flex space-x-8 mx-8">
             {[{
-            label: "Accueil",
-            path: "/"
-          }, {
-            label: "Programmes",
-            path: "/programs"
-          }, {
-            label: "Podcasts",
-            path: "/podcasts"
-          }, {
-            label: "Actualités",
-            path: "/articles"
-          }, {
-            label: "Contact",
-            path: "/"
-          }].map(item => <Link key={item.label} to={item.path} className="text-gray-700 hover:text-pana-red transition-colors duration-200">
+              label: "Accueil",
+              path: "/"
+            }, {
+              label: "Programmes",
+              path: "/programs"
+            }, {
+              label: "Podcasts",
+              path: "/podcasts"
+            }, {
+              label: "Actualités",
+              path: "/articles"
+            }, {
+              label: "Contact",
+              path: "/#contact",
+              onClick: handleContactClick
+            }].map(item => (
+              <Link 
+                key={item.label} 
+                to={item.path} 
+                onClick={item.onClick}
+                className="text-gray-700 hover:text-pana-red transition-colors duration-200"
+              >
                 {item.label}
-              </Link>)}
+              </Link>
+            ))}
           </nav>
         </div>
 
         {isMenuOpen && <nav className="md:hidden py-4 animate-fade-in">
             {[{
-          label: "Accueil",
-          path: "/"
-        }, {
-          label: "Programmes",
-          path: "/programs"
-        }, {
-          label: "Podcasts",
-          path: "/podcasts"
-        }, {
-          label: "Actualités",
-          path: "/articles"
-        }, {
-          label: "Contact",
-          path: "/"
-        }].map(item => <Link key={item.label} to={item.path} className="block py-2 text-gray-700 hover:text-pana-red transition-colors duration-200" onClick={() => setIsMenuOpen(false)}>
+              label: "Accueil",
+              path: "/"
+            }, {
+              label: "Programmes",
+              path: "/programs"
+            }, {
+              label: "Podcasts",
+              path: "/podcasts"
+            }, {
+              label: "Actualités",
+              path: "/articles"
+            }, {
+              label: "Contact",
+              path: "/#contact",
+              onClick: handleContactClick
+            }].map(item => (
+              <Link 
+                key={item.label} 
+                to={item.path} 
+                onClick={(e) => {
+                  setIsMenuOpen(false);
+                  item.onClick?.(e);
+                }}
+                className="block py-2 text-gray-700 hover:text-pana-red transition-colors duration-200"
+              >
                 {item.label}
-              </Link>)}
+              </Link>
+            ))}
           </nav>}
       </div>
     </header>;
