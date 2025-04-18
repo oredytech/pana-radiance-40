@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -76,30 +78,35 @@ const Podcasts = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {podcasts.map((podcast) => (
               <Card key={podcast.id} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div 
-                    className="aspect-video bg-gray-200 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden"
-                    style={podcast.imageUrl ? { backgroundImage: `url(${podcast.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
-                  >
-                    <div className="absolute inset-0 bg-black bg-opacity-30"></div>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-12 w-12 relative z-10 bg-white bg-opacity-70 hover:bg-white hover:bg-opacity-90"
-                      onClick={() => handlePlayPodcast(podcast)}
+                <Link to={`/podcast/${podcast.id}`}>
+                  <CardContent className="p-4">
+                    <div 
+                      className="aspect-video bg-gray-200 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden"
+                      style={podcast.imageUrl ? { backgroundImage: `url(${podcast.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
                     >
-                      <Play className="h-8 w-8 text-pana-red" />
-                    </Button>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {podcast.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{podcast.description}</p>
-                  <div className="flex justify-between text-sm text-gray-500">
-                    <span>{podcast.duration}</span>
-                    <span>{podcast.date}</span>
-                  </div>
-                </CardContent>
+                      <div className="absolute inset-0 bg-black bg-opacity-30"></div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-12 w-12 relative z-10 bg-white bg-opacity-70 hover:bg-white hover:bg-opacity-90"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePlayPodcast(podcast);
+                        }}
+                      >
+                        <Play className="h-8 w-8 text-pana-red" />
+                      </Button>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                      {podcast.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 text-sm line-clamp-2">{podcast.description}</p>
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>{podcast.duration}</span>
+                      <span>{podcast.date}</span>
+                    </div>
+                  </CardContent>
+                </Link>
               </Card>
             ))}
           </div>

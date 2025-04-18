@@ -36,6 +36,7 @@ function App() {
                 <Route path="/article/:slug" element={<Article />} />
                 <Route path="/programs" element={<Programs />} />
                 <Route path="/podcasts" element={<Podcasts />} />
+                <Route path="/podcast/:id" element={<PodcastEpisodePage />} />
                 <Route path="/direct" element={<Direct />} />
                 <Route path="/comments" element={<Comments />} />
                 <Route path="/articles" element={<Articles />} />
