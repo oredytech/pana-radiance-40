@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Article from "./pages/Article";
 import Programs from "./pages/Programs";
 import Podcasts from "./pages/Podcasts";
+import PodcastEpisodePage from "./pages/PodcastEpisode";
 import Direct from "./pages/Direct";
 import Comments from "./pages/Comments";
 import Articles from "./pages/Articles";
