@@ -63,49 +63,54 @@ const ArticlesGrid = ({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      {postsToDisplay.map((post) => (
-        <Card key={post.id} className="overflow-hidden hover:shadow-md transition-shadow duration-300">
-          <Link to={`/article/${getSlug(post.title.rendered)}`} className="block">
-            <div className="aspect-[4/3] overflow-hidden">
-              <img
-                src={getImageUrl(post)}
-                alt={stripHtml(post.title.rendered)}
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-              />
-            </div>
-            <CardHeader className="pb-2">
-              <div className="mb-2">
-                <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
-                  {getCategoryName(post)}
-                </span>
-                <span className="text-xs text-gray-500 ml-2">
-                  {new Date(post.date).toLocaleDateString('fr-FR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </span>
+      {postsToDisplay.map((post) => {
+        const articleSlug = getSlug(post.title.rendered);
+        const articleLink = `/article/${articleSlug}`;
+        
+        return (
+          <Card key={post.id} className="overflow-hidden hover:shadow-md transition-shadow duration-300">
+            <Link to={articleLink} className="block">
+              <div className="aspect-[4/3] overflow-hidden">
+                <img
+                  src={getImageUrl(post)}
+                  alt={stripHtml(post.title.rendered)}
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                />
               </div>
-              <h3 className="font-semibold text-lg line-clamp-2 hover:text-pana-purple transition-colors">
-                {truncateText(stripHtml(post.title.rendered), 20)}
-              </h3>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 text-sm line-clamp-4">
-                {truncateText(stripHtml(post.excerpt.rendered), 100)}
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                variant="outline" 
-                className="w-full hover:bg-pana-purple hover:text-white transition-colors"
-              >
-                Lire plus
-              </Button>
-            </CardFooter>
-          </Link>
-        </Card>
-      ))}
+              <CardHeader className="pb-2">
+                <div className="mb-2">
+                  <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+                    {getCategoryName(post)}
+                  </span>
+                  <span className="text-xs text-gray-500 ml-2">
+                    {new Date(post.date).toLocaleDateString('fr-FR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-lg line-clamp-2 hover:text-pana-purple transition-colors">
+                  {truncateText(stripHtml(post.title.rendered), 20)}
+                </h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 text-sm line-clamp-4">
+                  {truncateText(stripHtml(post.excerpt.rendered), 100)}
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  className="w-full hover:bg-pana-purple hover:text-white transition-colors"
+                >
+                  Lire plus
+                </Button>
+              </CardFooter>
+            </Link>
+          </Card>
+        );
+      })}
     </div>
   );
 };

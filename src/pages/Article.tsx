@@ -1,10 +1,10 @@
 
-import React from 'react';
-import { useParams } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts } from "@/services/wordpress";
 import { useToast } from "@/hooks/use-toast";
-import { getSlug, stripHtml } from "@/utils/textUtils";
+import { getSlug, stripHtml, normalizeSlug } from "@/utils/textUtils";
 import ArticleLayout from "@/components/articles/ArticleLayout";
 import ArticleHeader from "@/components/articles/ArticleHeader";
 import ArticleMain from "@/components/articles/ArticleMain";
@@ -15,6 +15,7 @@ import ArticleNotFound from "@/components/articles/ArticleNotFound";
 const Article = () => {
   const { slug } = useParams();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const { data: posts, isLoading: isLoadingPosts } = useQuery({
     queryKey: ["posts"],
@@ -30,14 +31,23 @@ const Article = () => {
     },
   });
 
+  // Normalise le slug courant
+  const normalizedCurrentSlug = normalizeSlug(slug);
+  
+  useEffect(() => {
+    // Si le slug n'est pas normalisé, rediriger vers la version normalisée
+    if (slug && normalizedCurrentSlug !== slug) {
+      navigate(`/article/${normalizedCurrentSlug}`, { replace: true });
+    }
+  }, [slug, normalizedCurrentSlug, navigate]);
+
   if (isLoadingPosts) {
     return <ArticleLoading />;
   }
 
   const post = posts?.find(p => {
     const postSlug = getSlug(p.title.rendered);
-    console.log(`Comparing: "${postSlug}" with "${slug}"`);
-    return postSlug === slug;
+    return postSlug === normalizedCurrentSlug;
   });
 
   if (!post) {

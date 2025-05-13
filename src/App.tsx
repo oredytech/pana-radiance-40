@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,6 +13,7 @@ import PodcastEpisodePage from "./pages/PodcastEpisode";
 import Direct from "./pages/Direct";
 import Comments from "./pages/Comments";
 import Articles from "./pages/Articles";
+import NotFound from "./pages/NotFound";
 import PersistentRadioPlayer from "./components/PersistentRadioPlayer";
 import PodcastPlayer from "./components/PodcastPlayer";
 import LoadingOverlay from "./components/LoadingOverlay";
@@ -41,6 +42,15 @@ function App() {
                 <Route path="/direct" element={<Direct />} />
                 <Route path="/comments" element={<Comments />} />
                 <Route path="/articles" element={<Articles />} />
+                
+                {/* Redirections pour les liens partagés */}
+                <Route path="/actualites" element={<Navigate to="/articles" replace />} />
+                <Route path="/musique" element={<Navigate to="/podcasts" replace />} />
+                <Route path="/emission" element={<Navigate to="/programs" replace />} />
+                <Route path="/direct-radio" element={<Navigate to="/direct" replace />} />
+                
+                {/* Wildcard route pour capturer toutes les autres URL */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
               <PodcastPlayer />
               <PersistentRadioPlayer />
