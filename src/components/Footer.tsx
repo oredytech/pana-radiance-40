@@ -6,7 +6,7 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">PANA RADIO</h3>
             <p className="text-gray-400">
-              La voix de l'Afrique, en direct et en podcast
+              La Radio Panafricaine, en direct et en podcast
             </p>
           </div>
           <div>
