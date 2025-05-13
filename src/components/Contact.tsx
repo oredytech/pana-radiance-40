@@ -75,7 +75,7 @@ const Contact = () => {
             <div>
               <p className="font-medium">Email</p>
               <a href="mailto:contact@panaradio.com" className="text-gray-600 hover:text-pana-red transition-colors">
-                contact@panaradio.com
+                contact@panaradio.net
               </a>
             </div>
           </div>
@@ -86,8 +86,8 @@ const Contact = () => {
             </div>
             <div>
               <p className="font-medium">Téléphone</p>
-              <a href="tel:+221000000000" className="text-gray-600 hover:text-pana-red transition-colors">
-                +221 00 000 00 00
+              <a href="tel:+243996886079" className="text-gray-600 hover:text-pana-red transition-colors">
+                +243996886079
               </a>
             </div>
           </div>
@@ -99,8 +99,8 @@ const Contact = () => {
             <div>
               <p className="font-medium">Adresse</p>
               <address className="text-gray-600 not-italic">
-                PANA Radio<br />
-                Dakar, Sénégal
+                PANA RADIO<br />
+                Goma, RD.Congo
               </address>
             </div>
           </div>
@@ -109,9 +109,7 @@ const Contact = () => {
         <div className="mt-8">
           <h3 className="font-semibold text-xl mb-3">Nos horaires</h3>
           <p className="text-gray-600">
-            Lundi - Vendredi: 8h00 - 18h00<br />
-            Samedi: 9h00 - 16h00<br />
-            Dimanche: Fermé
+            Lundi - Lundi: 24/24h<br />
           </p>
         </div>
       </div>
