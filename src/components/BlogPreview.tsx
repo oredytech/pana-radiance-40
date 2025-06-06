@@ -1,6 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchPosts, type WordPressPost } from "@/services/wordpress";
+import { fetchPosts, fetchCategories, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Headphones } from "lucide-react";
@@ -9,6 +9,12 @@ import { getImageUrl, stripHtml, getSlug } from "@/utils/textUtils";
 
 const BlogPreview = () => {
   const { toast } = useToast();
+  
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
+
   const { data: posts, isLoading, error } = useQuery({
     queryKey: ["posts"],
     queryFn: fetchPosts,
@@ -38,9 +44,28 @@ const BlogPreview = () => {
   const mainArticle = posts[0];
   const otherArticles = posts.slice(1, 5); // Get only 4 more articles for a total of 5
 
-  const getCategory = (index: number) => {
-    const categories = ['TOTALEMENT SPORT', 'TOTALEMENT POLITIQUE', 'BREAKING NEWS', 'TOTALEMENT SPORT', 'TOTALEMENT CULTURE'];
-    return categories[index];
+  const getArticleCategory = (post: WordPressPost) => {
+    if (!post._embedded?.["wp:term"]?.[0] || !categories) {
+      return "ACTUALITÉS";
+    }
+    
+    const postCategories = post._embedded["wp:term"][0];
+    if (postCategories.length > 0) {
+      const categoryName = postCategories[0].name.toUpperCase();
+      return categoryName;
+    }
+    
+    return "ACTUALITÉS";
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    };
+    return date.toLocaleDateString('fr-FR', options);
   };
 
   return (
@@ -49,7 +74,7 @@ const BlogPreview = () => {
         {/* Main Article - Takes the left side on desktop, full width on mobile */}
         <div className="lg:col-span-4 h-full flex">
           <Link
-            to={`/article/${getSlug(mainArticle.title.rendered)}`}
+            to={`/${getSlug(mainArticle.title.rendered)}`}
             className="relative group aspect-video lg:aspect-auto lg:h-full w-full overflow-hidden rounded-lg block"
           >
             <img
@@ -60,7 +85,7 @@ const BlogPreview = () => {
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
             
             <div className="absolute top-3 left-3 bg-pana-red px-2 py-0.5 text-white text-xs font-bold">
-              {getCategory(0)}
+              {getArticleCategory(mainArticle)}
             </div>
             
             <div className="absolute bottom-6 left-6 right-6 text-white">
@@ -68,7 +93,7 @@ const BlogPreview = () => {
                 {stripHtml(mainArticle.title.rendered)}
               </h3>
               <div className="flex items-center text-xs text-white/80 mt-2">
-                <span>7 mars 2025</span>
+                <span>{formatDate(mainArticle.date)}</span>
               </div>
             </div>
           </Link>
@@ -76,10 +101,10 @@ const BlogPreview = () => {
 
         {/* Right side with 4 articles in a 2x2 grid */}
         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-2.5">
-          {otherArticles.map((post, index) => (
+          {otherArticles.map((post) => (
             <Link
               key={post.id}
-              to={`/article/${getSlug(post.title.rendered)}`}
+              to={`/${getSlug(post.title.rendered)}`}
               className="relative group aspect-video md:aspect-[4/3] overflow-hidden rounded-lg"
             >
               <img
@@ -90,7 +115,7 @@ const BlogPreview = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
               
               <div className="absolute top-3 left-3 bg-pana-red px-2 py-0.5 text-white text-xs font-bold">
-                {getCategory(index + 1)}
+                {getArticleCategory(post)}
               </div>
               
               <div className="absolute bottom-4 left-4 right-4 text-white">
@@ -98,7 +123,7 @@ const BlogPreview = () => {
                   {stripHtml(post.title.rendered)}
                 </h3>
                 <div className="flex items-center text-xs text-white/80 mt-2">
-                  <span>{index === 0 ? '6 mars 2025' : index === 1 ? '5 mars 2025' : index === 2 ? '4 mars 2025' : '28 février 2025'}</span>
+                  <span>{formatDate(post.date)}</span>
                 </div>
               </div>
             </Link>
