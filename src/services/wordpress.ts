@@ -1,3 +1,4 @@
+
 import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
 export type { WordPressPost, WordPressComment };
@@ -47,7 +48,7 @@ const mockCategories: WordPressCategory[] = [
 
 export const fetchCategories = async (): Promise<WordPressCategory[]> => {
   try {
-    const response = await fetch("https://totalementactus.net/wp-json/wp/v2/categories?per_page=100", {
+    const response = await fetch("https://panaradio.net/wp-json/wp/v2/categories?per_page=100", {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -68,7 +69,7 @@ export const fetchCategories = async (): Promise<WordPressCategory[]> => {
 
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   try {
-    const response = await fetch("https://totalementactus.net/wp-json/wp/v2/posts?_embed&per_page=100", {
+    const response = await fetch("https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=100", {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -90,7 +91,7 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
 export const fetchPostsByCategory = async (categoryId: number): Promise<WordPressPost[]> => {
   try {
     const response = await fetch(
-      `https://totalementactus.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=100`,
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=100`,
       {
         headers: {
           'Accept': 'application/json',
@@ -114,7 +115,7 @@ export const fetchPostsByCategory = async (categoryId: number): Promise<WordPres
 export const fetchPost = async (id: string): Promise<WordPressPost> => {
   try {
     const response = await fetch(
-      `https://totalementactus.net/wp-json/wp/v2/posts/${id}?_embed`,
+      `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed`,
       {
         headers: {
           'Accept': 'application/json',
@@ -142,7 +143,7 @@ export const fetchPost = async (id: string): Promise<WordPressPost> => {
 export const fetchLatestComments = async (limit: number = 10): Promise<WordPressComment[]> => {
   try {
     const response = await fetch(
-      `https://totalementactus.net/wp-json/wp/v2/comments?per_page=${limit}&orderby=date&order=desc`,
+      `https://panaradio.net/wp-json/wp/v2/comments?per_page=${limit}&orderby=date&order=desc`,
       {
         headers: {
           'Accept': 'application/json',
@@ -169,7 +170,7 @@ export const fetchAllComments = async (page: number = 1, perPage: number = 20): 
 }> => {
   try {
     const response = await fetch(
-      `https://totalementactus.net/wp-json/wp/v2/comments?page=${page}&per_page=${perPage}&orderby=date&order=desc`,
+      `https://panaradio.net/wp-json/wp/v2/comments?page=${page}&per_page=${perPage}&orderby=date&order=desc`,
       {
         headers: {
           'Accept': 'application/json',
