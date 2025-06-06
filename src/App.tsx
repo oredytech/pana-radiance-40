@@ -35,6 +35,9 @@ function App() {
             <Router>
               <Routes>
                 <Route path="/" element={<Index />} />
+                {/* Nouvelle route pour les articles sans préfixe /article */}
+                <Route path="/:slug" element={<Article />} />
+                {/* Ancienne route avec préfixe /article pour la rétrocompatibilité */}
                 <Route path="/article/:slug" element={<Article />} />
                 <Route path="/programs" element={<Programs />} />
                 <Route path="/podcasts" element={<Podcasts />} />

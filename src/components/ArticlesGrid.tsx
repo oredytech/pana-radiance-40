@@ -65,7 +65,8 @@ const ArticlesGrid = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
       {postsToDisplay.map((post) => {
         const articleSlug = getSlug(post.title.rendered);
-        const articleLink = `/article/${articleSlug}`;
+        // Nouveau format de lien sans le préfixe /article
+        const articleLink = `/${articleSlug}`;
         
         return (
           <Card key={post.id} className="overflow-hidden hover:shadow-md transition-shadow duration-300">
