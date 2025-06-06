@@ -16,5 +16,29 @@
     <script type="module" src="/src/main.tsx"></script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9651519664878161"
      crossorigin="anonymous"></script>
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const notifyParentOfPath = () => {
+          window.parent.postMessage(
+            {
+              type: 'spa-path-update',
+              slug: window.location.pathname
+            },
+            '*'
+          );
+        };
+      
+        notifyParentOfPath(); // envoyer au premier chargement
+      
+        // Envoyer le nouveau slug à chaque navigation (si tu utilises un routeur comme VueRouter ou ReactRouter)
+        window.addEventListener('popstate', notifyParentOfPath);
+        window.history.pushState = new Proxy(window.history.pushState, {
+          apply: function (target, thisArg, argumentsList) {
+            target.apply(thisArg, argumentsList);
+            notifyParentOfPath();
+          }
+        });
+      });
+    </script>
   </body>
 </html>
