@@ -1,5 +1,7 @@
 
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
+import { Link } from "react-router-dom";
+
 const Footer = () => {
   return <footer className="bg-gray-900 text-white py-[58px]">
       <div className="container mx-auto px-4 py-0">
@@ -13,11 +15,26 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Navigation</h3>
             <ul className="space-y-2">
-              {["Direct", "Programmes", "Podcasts", "Blog"].map(item => <li key={item}>
-                  <a href={`#${item.toLowerCase()}`} className="text-gray-400 hover:text-white transition-colors">
-                    {item}
-                  </a>
-                </li>)}
+              <li>
+                <Link to="/direct" className="text-gray-400 hover:text-white transition-colors">
+                  Direct
+                </Link>
+              </li>
+              <li>
+                <Link to="/programs" className="text-gray-400 hover:text-white transition-colors">
+                  Programmes
+                </Link>
+              </li>
+              <li>
+                <Link to="/podcasts" className="text-gray-400 hover:text-white transition-colors">
+                  Podcasts
+                </Link>
+              </li>
+              <li>
+                <Link to="/articles" className="text-gray-400 hover:text-white transition-colors">
+                  Actualités
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
@@ -71,4 +88,5 @@ const Footer = () => {
       </div>
     </footer>;
 };
+
 export default Footer;

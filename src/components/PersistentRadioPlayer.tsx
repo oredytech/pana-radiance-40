@@ -96,7 +96,7 @@ const PersistentRadioPlayer = () => {
     return null;
   }
 
-  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 mb-4">
+  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
       <div className="container mx-auto py-3 px-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
