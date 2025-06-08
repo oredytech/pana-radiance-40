@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -97,7 +96,7 @@ const PersistentRadioPlayer = () => {
   }
 
   return <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-      <div className="container mx-auto py-3 px-0">
+      <div className="container mx-auto py-3 px-10 md:px-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" onClick={togglePlay} className="hover:text-pana-purple">
