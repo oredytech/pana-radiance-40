@@ -94,7 +94,7 @@ const PersistentRadioPlayer = () => {
   if (currentPodcast) {
     return null;
   }
-  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 py-[12px] my-[6px]">
       <div className="container mx-auto px-0 py-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
