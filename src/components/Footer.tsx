@@ -1,3 +1,4 @@
+
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 const Footer = () => {
   return <footer className="bg-gray-900 text-white py-[58px]">
@@ -55,6 +56,17 @@ const Footer = () => {
         </div>
         <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 py-[17px]">
           <p>&copy; {new Date().getFullYear()} PANA RADIO. Tous droits réservés.</p>
+          <p className="mt-2 text-sm">
+            Fièrement conçu par{" "}
+            <a 
+              href="https://oredytech.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-pana-purple hover:text-white transition-colors"
+            >
+              Oredy TECHNOLOGIES
+            </a>
+          </p>
         </div>
       </div>
     </footer>;
