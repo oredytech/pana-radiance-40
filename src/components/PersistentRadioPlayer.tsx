@@ -1,18 +1,21 @@
-
 import { useState, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
-
 const PersistentRadioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(window.isGlobalPlaying || false);
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState([window.globalAudio?.volume * 100 || 50]);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const { currentPodcast, stopPodcast } = usePodcastPlayer();
+  const {
+    toast
+  } = useToast();
+  const {
+    currentPodcast,
+    stopPodcast
+  } = usePodcastPlayer();
 
   // Synchronisation avec l'audio global
   useEffect(() => {
@@ -34,7 +37,6 @@ const PersistentRadioPlayer = () => {
     window.globalAudio.addEventListener('playing', () => setIsLoading(false));
     window.globalAudio.addEventListener('pause', () => setIsLoading(false));
     window.globalAudio.addEventListener('error', () => setIsLoading(false));
-    
     return () => {
       window.globalAudio.removeEventListener('play', updatePlayingState);
       window.globalAudio.removeEventListener('pause', updatePlayingState);
@@ -45,7 +47,6 @@ const PersistentRadioPlayer = () => {
       window.globalAudio.removeEventListener('error', () => setIsLoading(false));
     };
   }, []);
-
   const togglePlay = () => {
     // Si un podcast est en cours de lecture, arrêtez-le
     if (currentPodcast) {
@@ -79,12 +80,10 @@ const PersistentRadioPlayer = () => {
       });
     }
   };
-
   const toggleMute = () => {
     window.globalAudio.muted = !isMuted;
     setIsMuted(!isMuted);
   };
-
   const handleVolumeChange = (value: number[]) => {
     const newVolume = value[0];
     setVolume([newVolume]);
@@ -95,19 +94,12 @@ const PersistentRadioPlayer = () => {
   if (currentPodcast) {
     return null;
   }
-
-  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 mb-10 md:mb-0">
-      <div className="container mx-auto py-3 px-10 md:px-0">
+  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+      <div className="container mx-auto px-0 py-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" onClick={togglePlay} className="hover:text-pana-purple">
-              {isLoading ? (
-                <Loader2 className="h-6 w-6 animate-spin" />
-              ) : isPlaying ? (
-                <Pause className="h-6 w-6" />
-              ) : (
-                <Play className="h-6 w-6" />
-              )}
+              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
             </Button>
             <div className="text-sm font-medium">
               <div className="text-gray-900">PANA RADIO</div>
@@ -129,5 +121,4 @@ const PersistentRadioPlayer = () => {
       </div>
     </div>;
 };
-
 export default PersistentRadioPlayer;
