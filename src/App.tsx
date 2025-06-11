@@ -13,13 +13,24 @@ import PodcastEpisodePage from "./pages/PodcastEpisode";
 import Direct from "./pages/Direct";
 import Comments from "./pages/Comments";
 import Articles from "./pages/Articles";
+import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
 import PersistentRadioPlayer from "./components/PersistentRadioPlayer";
 import PodcastPlayer from "./components/PodcastPlayer";
 import LoadingOverlay from "./components/LoadingOverlay";
 import { PodcastPlayerProvider } from "./context/PodcastPlayerContext";
 
-const queryClient = new QueryClient();
+// Créer le client de requête avec des options pour forcer le rafraîchissement
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 0, // Les données sont immédiatement considérées comme périmées
+      gcTime: 0, // Pas de cache persistant
+      refetchOnWindowFocus: true, // Refetch quand la fenêtre reprend le focus
+      refetchOnMount: true, // Refetch à chaque montage du composant
+    },
+  },
+});
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +56,7 @@ function App() {
                 <Route path="/direct" element={<Direct />} />
                 <Route path="/comments" element={<Comments />} />
                 <Route path="/articles" element={<Articles />} />
+                <Route path="/search" element={<Search />} />
                 
                 {/* Redirections pour les liens partagés */}
                 <Route path="/actualites" element={<Navigate to="/articles" replace />} />

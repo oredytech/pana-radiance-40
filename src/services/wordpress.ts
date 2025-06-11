@@ -48,12 +48,15 @@ const mockCategories: WordPressCategory[] = [
 
 export const fetchCategories = async (): Promise<WordPressCategory[]> => {
   try {
-    const response = await fetch("https://panaradio.net/wp-json/wp/v2/categories?per_page=100", {
+    // Ajouter un timestamp pour éviter le cache
+    const timestamp = new Date().getTime();
+    const response = await fetch(`https://panaradio.net/wp-json/wp/v2/categories?per_page=100&_=${timestamp}`, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      mode: 'cors'
+      mode: 'cors',
+      cache: 'no-cache' // Forcer le rafraîchissement
     });
     
     if (!response.ok) {
@@ -69,12 +72,15 @@ export const fetchCategories = async (): Promise<WordPressCategory[]> => {
 
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   try {
-    const response = await fetch("https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=100", {
+    // Ajouter un timestamp pour éviter le cache
+    const timestamp = new Date().getTime();
+    const response = await fetch(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=100&_=${timestamp}`, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
-      mode: 'cors'
+      mode: 'cors',
+      cache: 'no-cache' // Forcer le rafraîchissement
     });
     
     if (!response.ok) {
@@ -90,14 +96,16 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
 
 export const fetchPostsByCategory = async (categoryId: number): Promise<WordPressPost[]> => {
   try {
+    const timestamp = new Date().getTime();
     const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=100`,
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=100&_=${timestamp}`,
       {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        mode: 'cors'
+        mode: 'cors',
+        cache: 'no-cache' // Forcer le rafraîchissement
       }
     );
     
@@ -112,16 +120,48 @@ export const fetchPostsByCategory = async (categoryId: number): Promise<WordPres
   }
 };
 
-export const fetchPost = async (id: string): Promise<WordPressPost> => {
+export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
   try {
+    const timestamp = new Date().getTime();
     const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed`,
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&search=${encodeURIComponent(query)}&per_page=50&_=${timestamp}`,
       {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        mode: 'cors'
+        mode: 'cors',
+        cache: 'no-cache'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error("Failed to search posts");
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Error searching posts:", error);
+    // Retourner des articles filtrés localement en cas d'erreur
+    return mockPosts.filter(post => 
+      post.title.rendered.toLowerCase().includes(query.toLowerCase()) ||
+      post.content.rendered.toLowerCase().includes(query.toLowerCase())
+    );
+  }
+};
+
+export const fetchPost = async (id: string): Promise<WordPressPost> => {
+  try {
+    const timestamp = new Date().getTime();
+    const response = await fetch(
+      `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed&_=${timestamp}`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors',
+        cache: 'no-cache'
       }
     );
     
@@ -142,14 +182,16 @@ export const fetchPost = async (id: string): Promise<WordPressPost> => {
 
 export const fetchLatestComments = async (limit: number = 10): Promise<WordPressComment[]> => {
   try {
+    const timestamp = new Date().getTime();
     const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/comments?per_page=${limit}&orderby=date&order=desc`,
+      `https://panaradio.net/wp-json/wp/v2/comments?per_page=${limit}&orderby=date&order=desc&_=${timestamp}`,
       {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        mode: 'cors'
+        mode: 'cors',
+        cache: 'no-cache'
       }
     );
     
@@ -169,14 +211,16 @@ export const fetchAllComments = async (page: number = 1, perPage: number = 20): 
   totalPages: number;
 }> => {
   try {
+    const timestamp = new Date().getTime();
     const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/comments?page=${page}&per_page=${perPage}&orderby=date&order=desc`,
+      `https://panaradio.net/wp-json/wp/v2/comments?page=${page}&per_page=${perPage}&orderby=date&order=desc&_=${timestamp}`,
       {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        mode: 'cors'
+        mode: 'cors',
+        cache: 'no-cache'
       }
     );
     

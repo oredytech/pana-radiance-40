@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
@@ -8,6 +9,7 @@ import Footer from "@/components/Footer";
 import ArticlesHeader from "@/components/articles/ArticlesHeader";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticlesContent from "@/components/articles/ArticlesContent";
+
 const Articles = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -15,12 +17,15 @@ const Articles = () => {
     toast
   } = useToast();
   const postsPerPage = 12;
+  
   const {
     data: wpCategories,
     isLoading: isCategoriesLoading
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
+    staleTime: 0, // Forcer le rafraîchissement
+    gcTime: 0,
     meta: {
       onError: () => {
         toast({
@@ -31,6 +36,7 @@ const Articles = () => {
       }
     }
   });
+  
   const categories = [{
     id: "all",
     name: "Tous les articles",
@@ -40,9 +46,11 @@ const Articles = () => {
     name: cat.name,
     count: cat.count
   })) || [])];
+  
   if (categories.length > 1 && wpCategories) {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
+  
   const {
     data: posts,
     isLoading,
@@ -56,6 +64,9 @@ const Articles = () => {
         return fetchPostsByCategory(parseInt(activeCategory));
       }
     },
+    staleTime: 0, // Forcer le rafraîchissement
+    gcTime: 0,
+    refetchOnWindowFocus: true,
     meta: {
       onError: () => {
         toast({
@@ -66,9 +77,11 @@ const Articles = () => {
       }
     }
   });
+  
   useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory]);
+  
   if (error) {
     return <div className="min-h-screen bg-gray-50">
         <Header />
@@ -79,17 +92,20 @@ const Articles = () => {
         <Footer />
       </div>;
   }
+  
   const filteredPosts = posts || [];
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+  
   const paginate = (pageNumber: number) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
       window.scrollTo(0, 0);
     }
   };
+  
   if (isCategoriesLoading) {
     return <div className="min-h-screen bg-gray-50">
         <Header />
@@ -100,6 +116,7 @@ const Articles = () => {
         <Footer />
       </div>;
   }
+  
   return <div className="min-h-screen bg-gray-50">
       <Header />
       
@@ -117,4 +134,5 @@ const Articles = () => {
       <Footer />
     </div>;
 };
+
 export default Articles;

@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -25,6 +26,8 @@ const Index = () => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
+    staleTime: 0, // Forcer le rafraîchissement
+    gcTime: 0,
     meta: {
       onError: () => {
         toast({
@@ -57,6 +60,9 @@ const Index = () => {
   } = useQuery({
     queryKey: ["posts"],
     queryFn: fetchPosts,
+    staleTime: 0, // Forcer le rafraîchissement
+    gcTime: 0,
+    refetchOnWindowFocus: true,
     meta: {
       onError: () => {
         toast({

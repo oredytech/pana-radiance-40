@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { Menu, X, Play, Pause } from "lucide-react";
+import { Menu, X, Play, Pause, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
@@ -38,6 +39,10 @@ const Header = () => {
     }
   };
 
+  const handleSearchClick = () => {
+    navigate('/search');
+  };
+
   const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
 
   return <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 px-[9px]">
@@ -57,7 +62,16 @@ const Header = () => {
             />
           </div>
 
-          <div className="flex items-center md:order-last">
+          <div className="flex items-center md:order-last gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleSearchClick}
+              className="hover:text-pana-red"
+              aria-label="Rechercher"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
             <Button onClick={handleDirectClick} className="bg-pana-red hover:bg-pana-purple transition-colors mx-[10px]">
               {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
               EN DIRECT {isPlaying && "• EN COURS"}
@@ -107,6 +121,9 @@ const Header = () => {
             }, {
               label: "Actualités",
               path: "/articles"
+            }, {
+              label: "Recherche",
+              path: "/search"
             }, {
               label: "Contact",
               path: "/#contact",
