@@ -1,14 +1,15 @@
-
 import { useState } from "react";
 import { Menu, X, Play, Pause, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const {
     currentPodcast,
     stopPodcast
@@ -72,9 +73,20 @@ const Header = () => {
             >
               <Search className="h-5 w-5" />
             </Button>
-            <Button onClick={handleDirectClick} className="bg-pana-red hover:bg-pana-purple transition-colors mx-[10px]">
-              {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-              EN DIRECT {isPlaying && "• EN COURS"}
+            <Button 
+              onClick={handleDirectClick} 
+              className="bg-pana-red hover:bg-pana-purple transition-colors mx-[10px] animate-pulse"
+              size={isMobile ? "icon" : "default"}
+              aria-label={isMobile ? (isPlaying ? "Pause" : "Play") : undefined}
+            >
+              {isMobile ? (
+                isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />
+              ) : (
+                <>
+                  {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+                  EN DIRECT {isPlaying && "• EN COURS"}
+                </>
+              )}
             </Button>
           </div>
 
