@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Menu, X, Play, Pause, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,48 +50,26 @@ const Header = () => {
   return <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 px-[9px]">
       <div className="container mx-auto px-0">
         <div className="flex items-center justify-between h-16">
-          <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+          {/* Menu hamburger à gauche sur mobile */}
+          <div className="flex items-center">
+            <div className="md:hidden mr-3">
+              <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
+
+            {/* Logo toujours à gauche */}
+            <div className="flex items-center">
+              <img 
+                src="/lovable-uploads/cb273fa4-08f7-4b02-aa9c-1d04fafad2e7.png" 
+                alt="PANA RADIO" 
+                className="h-12 w-auto rounded-[7px]"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center md:order-first">
-            <img 
-              src="/lovable-uploads/cb273fa4-08f7-4b02-aa9c-1d04fafad2e7.png" 
-              alt="PANA RADIO" 
-              className="h-12 w-auto rounded-[7px]"
-            />
-          </div>
-
-          <div className="flex items-center md:order-last gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleSearchClick}
-              className="hover:text-pana-red"
-              aria-label="Rechercher"
-            >
-              <Search className="h-5 w-5" />
-            </Button>
-            <Button 
-              onClick={handleDirectClick} 
-              className="bg-pana-red hover:bg-pana-purple transition-colors mx-[10px] animate-pulse"
-              size={isMobile ? "icon" : "default"}
-              aria-label={isMobile ? (isPlaying ? "Pause" : "Play") : undefined}
-            >
-              {isMobile ? (
-                isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />
-              ) : (
-                <>
-                  {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-                  EN DIRECT {isPlaying && "• EN COURS"}
-                </>
-              )}
-            </Button>
-          </div>
-
-          <nav className="hidden md:flex space-x-8 mx-8">
+          {/* Navigation desktop au centre */}
+          <nav className="hidden md:flex space-x-8">
             {[{
               label: "Accueil",
               path: "/"
@@ -118,6 +97,34 @@ const Header = () => {
               </Link>
             ))}
           </nav>
+
+          {/* Icônes à droite */}
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleSearchClick}
+              className="hover:text-pana-red"
+              aria-label="Rechercher"
+            >
+              <Search className="h-5 w-5" />
+            </Button>
+            <Button 
+              onClick={handleDirectClick} 
+              className="bg-pana-red hover:bg-pana-purple transition-colors animate-pulse"
+              size={isMobile ? "icon" : "default"}
+              aria-label={isMobile ? (isPlaying ? "Pause" : "Play") : undefined}
+            >
+              {isMobile ? (
+                isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />
+              ) : (
+                <>
+                  {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
+                  EN DIRECT {isPlaying && "• EN COURS"}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {isMenuOpen && <nav className="md:hidden py-4 animate-fade-in">
