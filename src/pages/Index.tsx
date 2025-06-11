@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -6,27 +5,26 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import ArticlesGrid from "@/components/ArticlesGrid";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPosts, fetchCategories } from "@/services/wordpress";
+import { fetchRecentPosts, fetchOlderPosts, fetchCategories } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import AdvertisementSection from "@/components/AdvertisementSection";
 import YouTubeSubscriptionCTA from "@/components/YouTubeVideoSection";
 import PodcastSection from "@/components/PodcastSection";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CategoryTabs from "@/components/articles/CategoryTabs";
+import ArticleLoadingSkeleton from "@/components/articles/ArticleLoadingSkeleton";
 
 const Index = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
+  const [allPosts, setAllPosts] = useState<any[]>([]);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
 
-  const {
-    data: wpCategories
-  } = useQuery({
+  const { data: wpCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: 0, // Forcer le rafraîchissement
+    staleTime: 0,
     gcTime: 0,
     meta: {
       onError: () => {
@@ -53,30 +51,48 @@ const Index = () => {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
 
-  const {
-    data: posts,
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ["posts"],
-    queryFn: fetchPosts,
-    staleTime: 0, // Forcer le rafraîchissement
+  // Charger d'abord les articles récents
+  const { data: recentPosts, isLoading: isLoadingRecent } = useQuery({
+    queryKey: ["recent-posts"],
+    queryFn: () => fetchRecentPosts(20),
+    staleTime: 0,
     gcTime: 0,
     refetchOnWindowFocus: true,
     meta: {
       onError: () => {
         toast({
           title: "Erreur",
-          description: "Impossible de charger les articles",
+          description: "Impossible de charger les articles récents",
           variant: "destructive"
         });
       }
     }
   });
 
-  const articlesForGrid = posts ? posts.slice(5, 17) : [];
+  // Charger les articles plus anciens en arrière-plan
+  useEffect(() => {
+    if (recentPosts && recentPosts.length > 0) {
+      setAllPosts(recentPosts);
+      
+      // Charger les articles plus anciens après un délai
+      setTimeout(async () => {
+        setIsLoadingOlder(true);
+        try {
+          const olderPosts = await fetchOlderPosts(2, 80); // Page 2 et suivantes
+          setAllPosts(prev => [...prev, ...olderPosts]);
+        } catch (error) {
+          console.error("Error loading older posts:", error);
+        } finally {
+          setIsLoadingOlder(false);
+        }
+      }, 1000);
+    }
+  }, [recentPosts]);
 
-  return <div className="min-h-screen bg-gray-50">
+  const articlesForGrid = allPosts ? allPosts.slice(5, 17) : [];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
       <section className="pt-[104px] pb-12 px-4">
@@ -87,10 +103,39 @@ const Index = () => {
 
       <section className="px-4 bg-gray-100 py-0">
         <div className="container mx-auto px-0">
-          
           <div className="w-full">
             <CategoryTabs categories={categories.slice(0, 5)} activeCategory={activeCategory} setActiveCategory={setActiveCategory}>
-              <ArticlesGrid posts={articlesForGrid} isLoading={isLoading} getImageUrl={getImageUrl} stripHtml={stripHtml} getSlug={getSlug} truncateText={truncateText} displayCount={12} />
+              {isLoadingRecent ? (
+                <div className="mt-6">
+                  <div className="text-center mb-4">
+                    <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
+                      <span className="text-sm text-gray-600">Chargement des articles récents...</span>
+                    </div>
+                  </div>
+                  <ArticleLoadingSkeleton />
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <ArticlesGrid 
+                    posts={articlesForGrid} 
+                    isLoading={false} 
+                    getImageUrl={getImageUrl} 
+                    stripHtml={stripHtml} 
+                    getSlug={getSlug} 
+                    truncateText={truncateText} 
+                    displayCount={12} 
+                  />
+                  {isLoadingOlder && (
+                    <div className="text-center mt-6">
+                      <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
+                        <span className="text-sm text-gray-600">Chargement d'articles supplémentaires...</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </CategoryTabs>
           </div>
         </div>
@@ -123,7 +168,8 @@ const Index = () => {
       <div className="pb-[70px]">
         <Footer />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default Index;

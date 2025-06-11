@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { fetchPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
+import { fetchRecentPosts, fetchOlderPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import Header from "@/components/Header";
@@ -9,26 +10,25 @@ import Footer from "@/components/Footer";
 import ArticlesHeader from "@/components/articles/ArticlesHeader";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticlesContent from "@/components/articles/ArticlesContent";
+import ArticleLoadingSkeleton from "@/components/articles/ArticleLoadingSkeleton";
 
 const Articles = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchParams] = useSearchParams();
   const categoryFromUrl = searchParams.get('category');
   const [activeCategory, setActiveCategory] = useState(categoryFromUrl || "all");
+  const [allPosts, setAllPosts] = useState<any[]>([]);
+  const [isLoadingOlder, setIsLoadingOlder] = useState(false);
   const { toast } = useToast();
   const postsPerPage = 12;
 
-  // Update active category when URL changes
   useEffect(() => {
     if (categoryFromUrl) {
       setActiveCategory(categoryFromUrl);
     }
   }, [categoryFromUrl]);
   
-  const {
-    data: wpCategories,
-    isLoading: isCategoriesLoading
-  } = useQuery({
+  const { data: wpCategories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
     staleTime: 0,
@@ -58,15 +58,12 @@ const Articles = () => {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
   
-  const {
-    data: posts,
-    isLoading,
-    error
-  } = useQuery({
-    queryKey: ["posts", activeCategory],
+  // Charger d'abord les articles récents
+  const { data: recentPosts, isLoading: isLoadingRecent, error } = useQuery({
+    queryKey: ["recent-posts", activeCategory],
     queryFn: async () => {
       if (activeCategory === "all") {
-        return fetchPosts();
+        return fetchRecentPosts(20);
       } else {
         return fetchPostsByCategory(parseInt(activeCategory));
       }
@@ -84,9 +81,31 @@ const Articles = () => {
       }
     }
   });
+
+  // Charger les articles plus anciens en arrière-plan
+  useEffect(() => {
+    if (recentPosts && recentPosts.length > 0 && activeCategory === "all") {
+      setAllPosts(recentPosts);
+      
+      setTimeout(async () => {
+        setIsLoadingOlder(true);
+        try {
+          const olderPosts = await fetchOlderPosts(2, 80);
+          setAllPosts(prev => [...prev, ...olderPosts]);
+        } catch (error) {
+          console.error("Error loading older posts:", error);
+        } finally {
+          setIsLoadingOlder(false);
+        }
+      }, 1000);
+    } else if (recentPosts) {
+      setAllPosts(recentPosts);
+    }
+  }, [recentPosts, activeCategory]);
   
   useEffect(() => {
     setCurrentPage(1);
+    setAllPosts([]);
   }, [activeCategory]);
   
   if (error) {
@@ -102,7 +121,7 @@ const Articles = () => {
     );
   }
   
-  const filteredPosts = posts || [];
+  const filteredPosts = allPosts || [];
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
@@ -142,18 +161,40 @@ const Articles = () => {
         
         <div className="container mx-auto px-0 sm:px-4 py-8">
           <div className="bg-white p-2 sm:p-6 rounded-lg shadow-sm">
-            <ArticlesContent 
-              filteredPosts={filteredPosts} 
-              currentPosts={currentPosts} 
-              isLoading={isLoading} 
-              currentPage={currentPage} 
-              totalPages={totalPages} 
-              paginate={paginate} 
-              getImageUrl={getImageUrl} 
-              stripHtml={stripHtml} 
-              getSlug={getSlug} 
-              truncateText={truncateText} 
-            />
+            {isLoadingRecent ? (
+              <div>
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
+                    <span className="text-sm text-gray-600">Chargement des articles récents...</span>
+                  </div>
+                </div>
+                <ArticleLoadingSkeleton />
+              </div>
+            ) : (
+              <div>
+                <ArticlesContent 
+                  filteredPosts={filteredPosts} 
+                  currentPosts={currentPosts} 
+                  isLoading={false} 
+                  currentPage={currentPage} 
+                  totalPages={totalPages} 
+                  paginate={paginate} 
+                  getImageUrl={getImageUrl} 
+                  stripHtml={stripHtml} 
+                  getSlug={getSlug} 
+                  truncateText={truncateText} 
+                />
+                {isLoadingOlder && (
+                  <div className="text-center mt-6">
+                    <div className="inline-flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-full">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
+                      <span className="text-sm text-gray-600">Chargement d'articles supplémentaires...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -1,4 +1,3 @@
-
 import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
 export type { WordPressPost, WordPressComment };
@@ -67,6 +66,53 @@ export const fetchCategories = async (): Promise<WordPressCategory[]> => {
   } catch (error) {
     console.error("Error fetching categories:", error);
     return mockCategories;
+  }
+};
+
+// Nouvelles fonctions pour le chargement progressif
+export const fetchRecentPosts = async (limit: number = 20): Promise<WordPressPost[]> => {
+  try {
+    const timestamp = new Date().getTime();
+    const response = await fetch(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc&_=${timestamp}`, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      cache: 'no-cache'
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch recent posts");
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching recent posts:", error);
+    return mockPosts.slice(0, limit);
+  }
+};
+
+export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): Promise<WordPressPost[]> => {
+  try {
+    const timestamp = new Date().getTime();
+    const response = await fetch(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc&_=${timestamp}`, {
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      cache: 'no-cache'
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch older posts");
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error("Error fetching older posts:", error);
+    return [];
   }
 };
 
