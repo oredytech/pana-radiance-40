@@ -1,6 +1,6 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { fetchPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
@@ -12,11 +12,18 @@ import ArticlesContent from "@/components/articles/ArticlesContent";
 
 const Articles = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [activeCategory, setActiveCategory] = useState("all");
-  const {
-    toast
-  } = useToast();
+  const [searchParams] = useSearchParams();
+  const categoryFromUrl = searchParams.get('category');
+  const [activeCategory, setActiveCategory] = useState(categoryFromUrl || "all");
+  const { toast } = useToast();
   const postsPerPage = 12;
+
+  // Update active category when URL changes
+  useEffect(() => {
+    if (categoryFromUrl) {
+      setActiveCategory(categoryFromUrl);
+    }
+  }, [categoryFromUrl]);
   
   const {
     data: wpCategories,
@@ -24,7 +31,7 @@ const Articles = () => {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: 0, // Forcer le rafraîchissement
+    staleTime: 0,
     gcTime: 0,
     meta: {
       onError: () => {
@@ -64,7 +71,7 @@ const Articles = () => {
         return fetchPostsByCategory(parseInt(activeCategory));
       }
     },
-    staleTime: 0, // Forcer le rafraîchissement
+    staleTime: 0,
     gcTime: 0,
     refetchOnWindowFocus: true,
     meta: {
@@ -83,14 +90,16 @@ const Articles = () => {
   }, [activeCategory]);
   
   if (error) {
-    return <div className="min-h-screen bg-gray-50">
+    return (
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container mx-auto px-4 py-20 text-center">
           <h2 className="text-2xl font-bold text-red-500 mb-2">Erreur de chargement</h2>
           <p>Impossible de charger les articles. Veuillez réessayer plus tard.</p>
         </div>
         <Footer />
-      </div>;
+      </div>
+    );
   }
   
   const filteredPosts = posts || [];
@@ -107,32 +116,51 @@ const Articles = () => {
   };
   
   if (isCategoriesLoading) {
-    return <div className="min-h-screen bg-gray-50">
+    return (
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container mx-auto px-4 py-20 text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pana-red mx-auto mb-4"></div>
           <p>Chargement des catégories...</p>
         </div>
         <Footer />
-      </div>;
+      </div>
+    );
   }
   
-  return <div className="min-h-screen bg-gray-50">
+  return (
+    <div className="min-h-screen bg-gray-50">
       <Header />
       
       <section className="pt-[104px] py-[64px]">
         <ArticlesHeader />
-        <CategoryTabs categories={categories} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
+        <CategoryTabs 
+          categories={categories} 
+          activeCategory={activeCategory} 
+          setActiveCategory={setActiveCategory} 
+        />
         
         <div className="container mx-auto px-0 sm:px-4 py-8">
           <div className="bg-white p-2 sm:p-6 rounded-lg shadow-sm">
-            <ArticlesContent filteredPosts={filteredPosts} currentPosts={currentPosts} isLoading={isLoading} currentPage={currentPage} totalPages={totalPages} paginate={paginate} getImageUrl={getImageUrl} stripHtml={stripHtml} getSlug={getSlug} truncateText={truncateText} />
+            <ArticlesContent 
+              filteredPosts={filteredPosts} 
+              currentPosts={currentPosts} 
+              isLoading={isLoading} 
+              currentPage={currentPage} 
+              totalPages={totalPages} 
+              paginate={paginate} 
+              getImageUrl={getImageUrl} 
+              stripHtml={stripHtml} 
+              getSlug={getSlug} 
+              truncateText={truncateText} 
+            />
           </div>
         </div>
       </section>
       
       <Footer />
-    </div>;
+    </div>
+  );
 };
 
 export default Articles;
