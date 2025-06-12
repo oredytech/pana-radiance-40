@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchRecentPosts } from "@/services/wordpress";
-import { stripHtml, getSlug } from "@/utils/textUtils";
+import { stripHtml, getSlug, getImageUrl } from "@/utils/textUtils";
 import { Link } from "react-router-dom";
 
 const ScrollingNewsBanner = () => {
@@ -16,35 +16,53 @@ const ScrollingNewsBanner = () => {
     return null;
   }
 
+  // Créer plusieurs copies pour un défilement vraiment infini
+  const repeatedPosts = Array(5).fill(recentPosts).flat();
+
   return (
-    <div className="bg-pana-red text-white py-2 overflow-hidden relative">
-      <div className="flex animate-scroll whitespace-nowrap">
-        {/* Dupliquer les articles pour créer un défilement continu */}
-        {[...recentPosts, ...recentPosts, ...recentPosts].map((post, index) => (
-          <Link
-            key={`${post.id}-${index}`}
-            to={`/${getSlug(post.title.rendered)}`}
-            className="inline-flex items-center mx-8 hover:text-gray-200 transition-colors duration-200"
-          >
-            <span className="text-sm font-medium">
-              🔥 {stripHtml(post.title.rendered)}
-            </span>
-          </Link>
-        ))}
+    <div className="bg-pana-red text-white py-3 overflow-hidden relative">
+      <div className="flex items-center">
+        {/* Titre fixe à gauche */}
+        <div className="bg-white text-pana-red px-4 py-1 font-bold text-sm whitespace-nowrap mr-4 z-10">
+          À LA UNE :
+        </div>
+        
+        {/* Contenu défilant */}
+        <div className="flex animate-scroll whitespace-nowrap">
+          {repeatedPosts.map((post, index) => (
+            <Link
+              key={`${post.id}-${index}`}
+              to={`/${getSlug(post.title.rendered)}`}
+              className="inline-flex items-center mx-6 hover:text-gray-200 transition-colors duration-200"
+            >
+              <img
+                src={getImageUrl(post)}
+                alt=""
+                className="w-8 h-8 rounded object-cover mr-3"
+              />
+              <span className="text-sm font-medium">
+                {stripHtml(post.title.rendered)}
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
-      <style jsx>{`
-        @keyframes scroll {
-          0% {
-            transform: translateX(100%);
+      
+      <style>
+        {`
+          @keyframes scroll {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-33.33%);
+            }
           }
-          100% {
-            transform: translateX(-100%);
+          .animate-scroll {
+            animation: scroll 120s linear infinite;
           }
-        }
-        .animate-scroll {
-          animation: scroll 60s linear infinite;
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };

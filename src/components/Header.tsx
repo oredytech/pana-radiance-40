@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, Play, Pause, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link, useLocation } from "react-router-dom";
@@ -10,6 +10,8 @@ import LanguageSelector from "./LanguageSelector";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -17,6 +19,26 @@ const Header = () => {
     currentPodcast,
     stopPodcast
   } = usePodcastPlayer();
+
+  // Gérer l'affichage de l'en-tête au scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scroll vers le bas - cacher l'en-tête
+        setIsHeaderVisible(false);
+      } else {
+        // Scroll vers le haut - afficher l'en-tête
+        setIsHeaderVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const handleDirectClick = () => {
     if (currentPodcast) {
@@ -51,7 +73,9 @@ const Header = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 bg-white shadow-md z-50 px-[9px]">
+      <header className={`fixed top-0 left-0 right-0 bg-white shadow-md z-50 px-[9px] transition-transform duration-300 ${
+        isHeaderVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}>
         <div className="container mx-auto px-0">
           <div className="flex items-center justify-between h-16">
             {/* Menu hamburger à gauche sur mobile */}
@@ -171,8 +195,10 @@ const Header = () => {
         </div>
       </header>
       
-      {/* Bande de défilement des actualités */}
-      <div className="fixed top-16 left-0 right-0 z-40">
+      {/* Bande de défilement des actualités - reste fixe en haut */}
+      <div className={`fixed left-0 right-0 z-40 transition-all duration-300 ${
+        isHeaderVisible ? 'top-16' : 'top-0'
+      }`}>
         <ScrollingNewsBanner />
       </div>
     </>
