@@ -95,13 +95,13 @@ const Index = () => {
   return <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <section className="pt-[84px] pb-12 px-4 py-[95px]">
+      <section className="pt-[95px] pb-5 px-4 py-[95px]">
         <div className="container mx-auto px-0">
           <BlogPreview />
         </div>
       </section>
 
-      <section className="px-4 bg-gray-100 py-0">
+      <section className="px-4 bg-gray-100 py-[3px]">
         <div className="container mx-auto px-0">
           <div className="w-full">
             <CategoryTabs categories={categories.slice(0, 5)} activeCategory={activeCategory} setActiveCategory={setActiveCategory}>
