@@ -14,14 +14,16 @@ import PodcastSection from "@/components/PodcastSection";
 import { useState, useEffect } from "react";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticleLoadingSkeleton from "@/components/articles/ArticleLoadingSkeleton";
-
 const Index = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
-
-  const { data: wpCategories } = useQuery({
+  const {
+    data: wpCategories
+  } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
     staleTime: 0,
@@ -36,7 +38,6 @@ const Index = () => {
       }
     }
   });
-
   const categories = [{
     id: "all",
     name: "Tous les articles",
@@ -46,13 +47,15 @@ const Index = () => {
     name: cat.name,
     count: cat.count
   })) || [])];
-
   if (categories.length > 1 && wpCategories) {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
 
   // Charger d'abord les articles récents
-  const { data: recentPosts, isLoading: isLoadingRecent } = useQuery({
+  const {
+    data: recentPosts,
+    isLoading: isLoadingRecent
+  } = useQuery({
     queryKey: ["recent-posts"],
     queryFn: () => fetchRecentPosts(20),
     staleTime: 0,
@@ -73,7 +76,7 @@ const Index = () => {
   useEffect(() => {
     if (recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
-      
+
       // Charger les articles plus anciens après un délai
       setTimeout(async () => {
         setIsLoadingOlder(true);
@@ -88,14 +91,11 @@ const Index = () => {
       }, 1000);
     }
   }, [recentPosts]);
-
   const articlesForGrid = allPosts ? allPosts.slice(5, 17) : [];
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  return <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <section className="pt-[84px] pb-12 px-4">
+      <section className="pt-[84px] pb-12 px-4 py-[94px]">
         <div className="container mx-auto px-0">
           <BlogPreview />
         </div>
@@ -105,8 +105,7 @@ const Index = () => {
         <div className="container mx-auto px-0">
           <div className="w-full">
             <CategoryTabs categories={categories.slice(0, 5)} activeCategory={activeCategory} setActiveCategory={setActiveCategory}>
-              {isLoadingRecent ? (
-                <div className="mt-6">
+              {isLoadingRecent ? <div className="mt-6">
                   <div className="text-center mb-4">
                     <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
@@ -114,28 +113,15 @@ const Index = () => {
                     </div>
                   </div>
                   <ArticleLoadingSkeleton />
-                </div>
-              ) : (
-                <div className="mt-6">
-                  <ArticlesGrid 
-                    posts={articlesForGrid} 
-                    isLoading={false} 
-                    getImageUrl={getImageUrl} 
-                    stripHtml={stripHtml} 
-                    getSlug={getSlug} 
-                    truncateText={truncateText} 
-                    displayCount={12} 
-                  />
-                  {isLoadingOlder && (
-                    <div className="text-center mt-6">
+                </div> : <div className="mt-6">
+                  <ArticlesGrid posts={articlesForGrid} isLoading={false} getImageUrl={getImageUrl} stripHtml={stripHtml} getSlug={getSlug} truncateText={truncateText} displayCount={12} />
+                  {isLoadingOlder && <div className="text-center mt-6">
                       <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
                         <span className="text-sm text-gray-600">Chargement d'articles supplémentaires...</span>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                    </div>}
+                </div>}
             </CategoryTabs>
           </div>
         </div>
@@ -168,8 +154,6 @@ const Index = () => {
       <div className="pb-[70px]">
         <Footer />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
