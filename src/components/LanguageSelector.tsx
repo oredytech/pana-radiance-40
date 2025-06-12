@@ -38,14 +38,28 @@ const languages: Language[] = [
 
 const LanguageSelector = () => {
   const [open, setOpen] = useState(false);
-  const { currentLanguage, translatePage } = useTranslation();
+  const { currentLanguage, translatePage, isGoogleTranslateLoaded } = useTranslation();
 
   const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   const handleLanguageSelect = (languageCode: string) => {
-    translatePage(languageCode);
-    setOpen(false);
+    if (isGoogleTranslateLoaded) {
+      translatePage(languageCode);
+      setOpen(false);
+    } else {
+      console.warn('Google Translate pas encore chargé');
+    }
   };
+
+  // Appliquer automatiquement la langue du navigateur au chargement
+  useEffect(() => {
+    if (isGoogleTranslateLoaded && currentLanguage !== 'fr') {
+      // Petite attente pour s'assurer que Google Translate est complètement initialisé
+      setTimeout(() => {
+        translatePage(currentLanguage);
+      }, 1000);
+    }
+  }, [isGoogleTranslateLoaded, currentLanguage, translatePage]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -74,6 +88,7 @@ const LanguageSelector = () => {
                     currentLanguage === language.code ? 'bg-gray-100' : ''
                   }`}
                   onClick={() => handleLanguageSelect(language.code)}
+                  disabled={!isGoogleTranslateLoaded}
                 >
                   <span className="mr-3 text-lg">{language.flag}</span>
                   <div className="flex flex-col items-start">
@@ -87,6 +102,11 @@ const LanguageSelector = () => {
               ))}
             </div>
           </ScrollArea>
+          {!isGoogleTranslateLoaded && (
+            <div className="text-xs text-gray-500 text-center mt-2">
+              Chargement du traducteur...
+            </div>
+          )}
         </div>
       </PopoverContent>
     </Popover>
