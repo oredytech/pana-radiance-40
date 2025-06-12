@@ -20,27 +20,27 @@ const ScrollingNewsBanner = () => {
   const repeatedPosts = Array(5).fill(recentPosts).flat();
 
   return (
-    <div className="bg-pana-red text-white py-3 overflow-hidden relative">
-      <div className="flex items-center">
-        {/* Titre fixe à gauche */}
-        <div className="bg-white text-pana-red px-4 py-1 font-bold text-sm whitespace-nowrap mr-4 z-10">
-          À LA UNE :
+    <div className="bg-pana-red text-white py-1 overflow-hidden relative h-[20px]">
+      <div className="flex items-center h-full">
+        {/* Titre fixe à gauche avec un style amélioré */}
+        <div className="bg-gradient-to-r from-white to-gray-100 text-pana-red px-2 py-0.5 font-bold text-xs whitespace-nowrap mr-3 z-10 rounded-r-lg shadow-md border-l-4 border-yellow-400">
+          À LA UNE
         </div>
         
         {/* Contenu défilant */}
-        <div className="flex animate-scroll whitespace-nowrap">
+        <div className="flex animate-scroll whitespace-nowrap h-full items-center">
           {repeatedPosts.map((post, index) => (
             <Link
               key={`${post.id}-${index}`}
               to={`/${getSlug(post.title.rendered)}`}
-              className="inline-flex items-center mx-6 hover:text-gray-200 transition-colors duration-200"
+              className="inline-flex items-center mx-4 hover:text-gray-200 transition-colors duration-200 h-full"
             >
               <img
                 src={getImageUrl(post)}
                 alt=""
-                className="w-8 h-8 rounded object-cover mr-3"
+                className="w-4 h-4 rounded object-cover mr-2 flex-shrink-0"
               />
-              <span className="text-sm font-medium">
+              <span className="text-xs font-medium truncate">
                 {stripHtml(post.title.rendered)}
               </span>
             </Link>

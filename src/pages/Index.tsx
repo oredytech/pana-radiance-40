@@ -95,7 +95,7 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <section className="pt-[104px] pb-12 px-4">
+      <section className="pt-[84px] pb-12 px-4">
         <div className="container mx-auto px-0">
           <BlogPreview />
         </div>
