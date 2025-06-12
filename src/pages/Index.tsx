@@ -14,6 +14,7 @@ import PodcastSection from "@/components/PodcastSection";
 import { useState, useEffect } from "react";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticleLoadingSkeleton from "@/components/articles/ArticleLoadingSkeleton";
+
 const Index = () => {
   const {
     toast
@@ -92,7 +93,8 @@ const Index = () => {
     }
   }, [recentPosts]);
   const articlesForGrid = allPosts ? allPosts.slice(5, 17) : [];
-  return <div className="min-h-screen bg-gray-50">
+  return (
+    <div className="min-h-screen bg-gray-50 pb-[80px]">
       <Header />
 
       <section className="pt-[95px] pb-5 px-4 py-[95px]">
@@ -105,7 +107,8 @@ const Index = () => {
         <div className="container mx-auto px-0">
           <div className="w-full">
             <CategoryTabs categories={categories.slice(0, 5)} activeCategory={activeCategory} setActiveCategory={setActiveCategory}>
-              {isLoadingRecent ? <div className="mt-6">
+              {isLoadingRecent ? (
+                <div className="mt-6">
                   <div className="text-center mb-4">
                     <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
@@ -113,15 +116,28 @@ const Index = () => {
                     </div>
                   </div>
                   <ArticleLoadingSkeleton />
-                </div> : <div className="mt-6">
-                  <ArticlesGrid posts={articlesForGrid} isLoading={false} getImageUrl={getImageUrl} stripHtml={stripHtml} getSlug={getSlug} truncateText={truncateText} displayCount={12} />
-                  {isLoadingOlder && <div className="text-center mt-6">
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <ArticlesGrid 
+                    posts={articlesForGrid} 
+                    isLoading={false} 
+                    getImageUrl={getImageUrl} 
+                    stripHtml={stripHtml} 
+                    getSlug={getSlug} 
+                    truncateText={truncateText} 
+                    displayCount={12} 
+                  />
+                  {isLoadingOlder && (
+                    <div className="text-center mt-6">
                       <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
                         <span className="text-sm text-gray-600">Chargement d'articles supplémentaires...</span>
                       </div>
-                    </div>}
-                </div>}
+                    </div>
+                  )}
+                </div>
+              )}
             </CategoryTabs>
           </div>
         </div>
@@ -151,9 +167,11 @@ const Index = () => {
         </div>
       </section>
 
-      <div className="pb-[70px]">
+      <div className="pb-4">
         <Footer />
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

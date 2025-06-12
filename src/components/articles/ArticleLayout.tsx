@@ -9,14 +9,14 @@ interface ArticleLayoutProps {
 
 const ArticleLayout = ({ children }: ArticleLayoutProps) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-[80px]">
       <Header />
       <main className="container mx-auto px-4 py-8 mt-16">
         <div className="max-w-6xl mx-auto">
           {children}
         </div>
       </main>
-      <div className="pb-[70px]">
+      <div className="pb-4">
         <Footer />
       </div>
     </div>

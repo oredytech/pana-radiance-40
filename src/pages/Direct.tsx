@@ -57,7 +57,7 @@ const Direct = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col pb-[80px]">
       <Header />
       <div className="container mx-auto px-4 py-8 mt-20 flex-grow">
         <div className="max-w-4xl mx-auto">

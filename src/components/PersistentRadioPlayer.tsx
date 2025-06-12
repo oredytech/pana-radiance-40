@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/components/ui/use-toast";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
+
 const PersistentRadioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(window.isGlobalPlaying || false);
   const [isMuted, setIsMuted] = useState(false);
@@ -94,31 +96,61 @@ const PersistentRadioPlayer = () => {
   if (currentPodcast) {
     return null;
   }
-  return <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 py-[12px] my-[6px]">
-      <div className="container mx-auto px-0 py-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={togglePlay} className="hover:text-pana-purple">
-              {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+
+  return (
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-[9999] min-h-[60px] max-h-[80px]">
+      <div className="container mx-auto px-2 py-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center space-x-2 min-w-0 flex-1">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={togglePlay} 
+              className="hover:text-pana-purple flex-shrink-0 h-8 w-8 p-0"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : isPlaying ? (
+                <Pause className="h-4 w-4" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
             </Button>
-            <div className="text-sm font-medium">
-              <div className="text-gray-900">PANA RADIO</div>
-              <div className="text-gray-500 text-xs">
-                {currentPodcast ? "Podcast en cours" : `En direct ${isPlaying && "• EN COURS"}`}
+            <div className="text-xs font-medium min-w-0 flex-1">
+              <div className="text-gray-900 truncate">PANA RADIO</div>
+              <div className="text-gray-500 text-[10px] truncate">
+                {currentPodcast ? "Podcast en cours" : `En direct ${isPlaying ? "• EN COURS" : ""}`}
               </div>
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="icon" onClick={toggleMute} className="hover:text-pana-purple">
-              {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={toggleMute} 
+              className="hover:text-pana-purple h-8 w-8 p-0"
+            >
+              {isMuted ? (
+                <VolumeX className="h-4 w-4" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
             </Button>
-            <div className="w-32">
-              <Slider value={volume} onValueChange={handleVolumeChange} max={100} step={1} />
+            <div className="w-16 sm:w-24">
+              <Slider 
+                value={volume} 
+                onValueChange={handleVolumeChange} 
+                max={100} 
+                step={1} 
+                className="h-2"
+              />
             </div>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default PersistentRadioPlayer;
