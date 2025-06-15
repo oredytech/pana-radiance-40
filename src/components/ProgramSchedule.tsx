@@ -1,42 +1,61 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 
 const programs = [
   {
-    time: "06:00 - 08:00",
-    title: "Réveil Panafricain",
+    time: "05:00 - 06:00",
+    title: "Réveil Africa",
     host: "Aminata Diallo",
-    description: "Le meilleur de la musique africaine pour bien commencer la journée",
+    description: "Le meilleur réveil musical pour bien commencer la journée avec les sons d'Afrique",
   },
   {
-    time: "08:00 - 10:00",
-    title: "Africa News",
-    host: "Kofi Mensah",
-    description: "L'actualité du continent en direct",
+    time: "06:00 - 09:00",
+    title: "Morning Africa",
+    host: "Kofi Mensah", 
+    description: "Informations, musique et actualités pour débuter la matinée en beauté",
   },
   {
-    time: "10:00 - 12:00",
-    title: "Culture & Traditions",
+    time: "09:00 - 12:00",
+    title: "Africa Connection",
     host: "Marie Faye",
-    description: "Découverte des cultures et traditions africaines",
+    description: "Connectez-vous à l'Afrique avec des émissions interactives et de la belle musique",
   },
   {
-    time: "14:00 - 16:00",
-    title: "Business Africa",
+    time: "12:00 - 14:00",
+    title: "Midi Africa", 
     host: "John Okafor",
-    description: "L'économie et les affaires en Afrique",
+    description: "Pause déjeuner avec les meilleurs tubes africains et internationaux",
   },
   {
-    time: "16:00 - 18:00",
-    title: "Sport Africa",
+    time: "14:00 - 17:00",
+    title: "Afternoon Africa",
     host: "Samuel Eto'o",
-    description: "Toute l'actualité du sport africain",
+    description: "L'après-midi en compagnie de vos artistes préférés d'Afrique et d'ailleurs",
   },
   {
-    time: "18:00 - 20:00",
-    title: "Musique du Soir",
-    host: "Youssou N'Dour",
-    description: "Les meilleurs sons d'Afrique",
+    time: "17:00 - 19:00",
+    title: "Drive Time Africa",
+    host: "Youssou N'Dour", 
+    description: "Accompagnez votre retour du travail avec les hits du moment",
+  },
+  {
+    time: "19:00 - 22:00",
+    title: "Evening Africa",
+    host: "Angelique Kidjo",
+    description: "Soirée détente avec les plus beaux sons d'Afrique et du monde",
+  },
+  {
+    time: "22:00 - 00:00",
+    title: "Night Africa",
+    host: "Salif Keita",
+    description: "Prolongez votre soirée avec une sélection musicale raffinée",
+  },
+  {
+    time: "00:00 - 05:00",
+    title: "Nuit Africa",
+    host: "Automatic Playlist",
+    description: "Musique douce et relaxante pour accompagner vos nuits",
   },
 ];
 
