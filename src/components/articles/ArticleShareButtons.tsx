@@ -12,20 +12,24 @@ interface ArticleShareButtonsProps {
 const ArticleShareButtons = ({ title, url }: ArticleShareButtonsProps) => {
   const { toast } = useToast();
   
-  // Construire l'URL avec le domaine panaradio.net et sans le préfixe /article
+  // Construire l'URL complète avec le bon domaine
   const getShareUrl = () => {
+    // Obtenir le domaine actuel de l'application
+    const currentDomain = window.location.origin;
+    
     // Extraire le slug de l'URL actuelle
     const currentPath = window.location.pathname;
     let slug = '';
     
     if (currentPath.startsWith('/article/')) {
       slug = currentPath.replace('/article/', '');
-    } else {
+    } else if (currentPath.startsWith('/')) {
       // Si on est déjà sur une URL sans /article, utiliser le path directement
-      slug = currentPath.startsWith('/') ? currentPath.slice(1) : currentPath;
+      slug = currentPath.slice(1);
     }
     
-    return `https://panaradio.net/${slug}`;
+    // Retourner l'URL complète avec le domaine actuel et le slug complet
+    return `${currentDomain}/${slug}`;
   };
   
   const shareUrl = getShareUrl();
