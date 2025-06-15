@@ -1,4 +1,3 @@
-
 import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
 export type { WordPressPost, WordPressComment };
@@ -46,29 +45,44 @@ const mockCategories: WordPressCategory[] = [
   { id: 4, name: "Société", slug: "societe", count: 7 }
 ];
 
-// Cache simple en mémoire
+// Cache en mémoire amélioré avec invalidation intelligente
 const cache = new Map();
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes pour les articles récents
+const LONG_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes pour les catégories (changent moins souvent)
 
 const getCacheKey = (url: string) => url;
 
-const setCache = (key: string, data: any) => {
+const setCache = (key: string, data: any, duration = CACHE_DURATION) => {
   cache.set(key, {
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    duration
   });
 };
 
 const getCache = (key: string) => {
   const cached = cache.get(key);
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+  if (cached && Date.now() - cached.timestamp < cached.duration) {
     return cached.data;
   }
-  cache.delete(key);
+  if (cached) {
+    cache.delete(key);
+  }
   return null;
 };
 
-const fetchWithTimeout = async (url: string, timeout = 5000) => {
+// Fonction pour vider le cache des articles récents (utile pour forcer une mise à jour)
+export const invalidateRecentPostsCache = () => {
+  const keysToDelete = [];
+  for (const [key] of cache) {
+    if (key.includes('recent-posts') || key.includes('all-posts')) {
+      keysToDelete.push(key);
+    }
+  }
+  keysToDelete.forEach(key => cache.delete(key));
+};
+
+const fetchWithTimeout = async (url: string, timeout = 8000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   
@@ -102,7 +116,7 @@ export const fetchCategories = async (): Promise<WordPressCategory[]> => {
     }
     
     const data = await response.json();
-    setCache(cacheKey, data);
+    setCache(cacheKey, data, LONG_CACHE_DURATION); // Cache plus long pour les catégories
     return data;
   } catch (error) {
     console.warn("Fallback to mock categories:", error);
@@ -113,9 +127,13 @@ export const fetchCategories = async (): Promise<WordPressCategory[]> => {
 export const fetchRecentPosts = async (limit: number = 20): Promise<WordPressPost[]> => {
   const cacheKey = `recent-posts-${limit}`;
   const cached = getCache(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log(`Loading ${limit} recent posts from cache`);
+    return cached;
+  }
 
   try {
+    console.log(`Fetching ${limit} recent posts from API`);
     const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`);
     
     if (!response.ok) {
@@ -123,7 +141,7 @@ export const fetchRecentPosts = async (limit: number = 20): Promise<WordPressPos
     }
     
     const data = await response.json();
-    setCache(cacheKey, data);
+    setCache(cacheKey, data); // Cache standard de 5 minutes
     return data;
   } catch (error) {
     console.warn("Fallback to mock posts:", error);
@@ -134,9 +152,13 @@ export const fetchRecentPosts = async (limit: number = 20): Promise<WordPressPos
 export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): Promise<WordPressPost[]> => {
   const cacheKey = `older-posts-${page}-${perPage}`;
   const cached = getCache(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log(`Loading older posts page ${page} from cache`);
+    return cached;
+  }
 
   try {
+    console.log(`Fetching older posts page ${page} from API`);
     const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc`);
     
     if (!response.ok) {
@@ -144,7 +166,7 @@ export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): P
     }
     
     const data = await response.json();
-    setCache(cacheKey, data);
+    setCache(cacheKey, data, LONG_CACHE_DURATION); // Cache plus long pour les articles plus anciens
     return data;
   } catch (error) {
     console.warn("Error fetching older posts:", error);

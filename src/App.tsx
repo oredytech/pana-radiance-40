@@ -20,14 +20,16 @@ import PodcastPlayer from "./components/PodcastPlayer";
 import LoadingOverlay from "./components/LoadingOverlay";
 import { PodcastPlayerProvider } from "./context/PodcastPlayerContext";
 
-// Créer le client de requête avec des options pour forcer le rafraîchissement
+// Optimiser le client de requête avec une stratégie de cache intelligente
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0, // Les données sont immédiatement considérées comme périmées
-      gcTime: 0, // Pas de cache persistant
-      refetchOnWindowFocus: true, // Refetch quand la fenêtre reprend le focus
-      refetchOnMount: true, // Refetch à chaque montage du composant
+      staleTime: 5 * 60 * 1000, // 5 minutes - les données restent fraîches pendant 5 min
+      gcTime: 30 * 60 * 1000, // 30 minutes - gardé en cache pendant 30 min
+      refetchOnWindowFocus: false, // Éviter les refetch automatiques
+      refetchOnMount: 'stale', // Refetch seulement si les données sont périmées
+      retry: 2, // Limiter les tentatives de retry
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
   },
 });

@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -25,9 +24,6 @@ const Index = () => {
   const { data: wpCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: 2,
     meta: {
       onError: () => {
         console.warn("Impossible de charger les catégories");
@@ -49,14 +45,10 @@ const Index = () => {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
 
-  // Charger d'abord les articles récents avec une stratégie de cache optimisée
+  // Charger d'abord les articles récents avec cache optimisé
   const { data: recentPosts, isLoading: isLoadingRecent } = useQuery({
     queryKey: ["recent-posts"],
     queryFn: () => fetchRecentPosts(20),
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
-    refetchOnWindowFocus: false,
     meta: {
       onError: () => {
         console.warn("Impossible de charger les articles récents");
@@ -64,23 +56,23 @@ const Index = () => {
     }
   });
 
-  // Charger les articles plus anciens en arrière-plan de manière optimisée
+  // Charger les articles plus anciens en arrière-plan avec un délai optimisé
   useEffect(() => {
     if (recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
 
-      // Réduire le délai et optimiser le chargement des articles plus anciens
+      // Réduire encore plus le délai pour une expérience plus fluide
       const timeoutId = setTimeout(async () => {
         setIsLoadingOlder(true);
         try {
-          const olderPosts = await fetchOlderPosts(2, 40); // Réduire le nombre d'articles à charger
+          const olderPosts = await fetchOlderPosts(2, 30); // Réduire encore le nombre
           setAllPosts(prev => [...prev, ...olderPosts]);
         } catch (error) {
           console.warn("Erreur lors du chargement des articles plus anciens:", error);
         } finally {
           setIsLoadingOlder(false);
         }
-      }, 500); // Réduire le délai à 500ms
+      }, 300); // Encore plus rapide
 
       return () => clearTimeout(timeoutId);
     }
@@ -111,7 +103,7 @@ const Index = () => {
                   <div className="text-center mb-4">
                     <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
-                      <span className="text-sm text-gray-600">Chargement des articles récents...</span>
+                      <span className="text-sm text-gray-600">Chargement depuis le cache...</span>
                     </div>
                   </div>
                   <ArticleLoadingSkeleton />
