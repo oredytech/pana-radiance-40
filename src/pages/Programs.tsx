@@ -16,7 +16,7 @@ const Programs = () => {
 
         <div className="bg-white rounded-lg shadow-sm overflow-hidden w-full">
           <iframe
-            src="https://www.canva.com/design/DAFULbORj0M/view?embed"
+            src="https://www.canva.com/design/DAFULbORj0M/view?embed&ui=eyJBIjp7IkIiOnRydWV9fQ"
             allowFullScreen
             className="w-full h-[800px] border-0"
             title="Grille des programmes PANA RADIO"
