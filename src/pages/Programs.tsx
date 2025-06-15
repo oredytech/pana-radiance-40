@@ -14,12 +14,13 @@ const Programs = () => {
           <h1 className="text-3xl font-bold text-pana-purple">Grille des Programmes</h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden w-full">
           <iframe
             src="https://www.canva.com/design/DAFULbORj0M/view?embed"
             allowFullScreen
             className="w-full h-[800px] border-0"
             title="Grille des programmes PANA RADIO"
+            style={{ width: '100%' }}
           />
         </div>
       </div>
