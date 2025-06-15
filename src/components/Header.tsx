@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Menu, X, Play, Pause, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -69,6 +68,10 @@ const Header = () => {
     navigate('/search');
   };
 
+  const handleLogoClick = () => {
+    navigate('/');
+  };
+
   const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
 
   return (
@@ -86,12 +89,13 @@ const Header = () => {
                 </Button>
               </div>
 
-              {/* Logo toujours à gauche */}
+              {/* Logo toujours à gauche - maintenant cliquable */}
               <div className="flex items-center">
                 <img 
                   src="/lovable-uploads/cb273fa4-08f7-4b02-aa9c-1d04fafad2e7.png" 
                   alt="PANA RADIO" 
-                  className="h-12 w-auto rounded-[7px]"
+                  className="h-12 w-auto rounded-[7px] cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={handleLogoClick}
                 />
               </div>
             </div>
