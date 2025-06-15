@@ -1,4 +1,3 @@
-
 import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
 export type { WordPressPost, WordPressComment };
@@ -156,7 +155,7 @@ export const fetchCategories = async (): Promise<WordPressCategory[]> => {
   }
 };
 
-export const fetchRecentPosts = async (limit: number = 20): Promise<WordPressPost[]> => {
+export const fetchRecentPosts = async (limit: number = 50): Promise<WordPressPost[]> => {
   const cacheKey = `recent-posts-${limit}`;
   const cached = getCache(cacheKey);
   if (cached) {
@@ -166,14 +165,16 @@ export const fetchRecentPosts = async (limit: number = 20): Promise<WordPressPos
 
   try {
     console.log(`Fetching ${limit} recent posts from API`);
-    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`);
+    // Augmenter la limite pour les articles récents
+    const actualLimit = Math.min(limit, 100); // WordPress max per page
+    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${actualLimit}&orderby=date&order=desc`);
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
     
     const data = await response.json();
-    setCache(cacheKey, data); // Cache standard de 5 minutes
+    setCache(cacheKey, data);
     return data;
   } catch (error) {
     console.warn("Fallback to mock posts:", error);
@@ -215,17 +216,55 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
   }
 
   try {
-    console.log('Fetching all posts from API with increased limit');
-    // Augmenter le nombre d'articles récupérés pour s'assurer d'avoir les nouveaux articles
-    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=100&orderby=date&order=desc`);
+    console.log('Fetching all posts from API with unlimited pagination');
     
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    let allPosts: WordPressPost[] = [];
+    let page = 1;
+    let hasMore = true;
+    const perPage = 100; // Maximum per page allowed by WordPress
+    
+    while (hasMore) {
+      console.log(`Fetching page ${page} of posts...`);
+      const response = await fetchWithTimeout(
+        `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc`
+      );
+      
+      if (!response.ok) {
+        if (response.status === 400 && page > 1) {
+          // No more pages available
+          console.log(`No more pages after page ${page - 1}`);
+          break;
+        }
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.length === 0) {
+        // No more posts
+        hasMore = false;
+      } else {
+        allPosts = [...allPosts, ...data];
+        console.log(`Page ${page} loaded: ${data.length} posts (Total: ${allPosts.length})`);
+        
+        // If we got less than perPage posts, we've reached the end
+        if (data.length < perPage) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+      
+      // Safety check to prevent infinite loops
+      if (page > 50) {
+        console.warn('Stopping at page 50 to prevent infinite loop');
+        break;
+      }
     }
     
-    const data = await response.json();
-    setCache(cacheKey, data);
-    return data;
+    console.log(`Total posts loaded: ${allPosts.length}`);
+    setCache(cacheKey, allPosts);
+    return allPosts;
   } catch (error) {
     console.warn("Fallback to mock posts:", error);
     return mockPosts;

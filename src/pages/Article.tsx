@@ -20,9 +20,10 @@ const Article = () => {
   const { data: posts, isLoading: isLoadingPosts, refetch } = useQuery({
     queryKey: ["posts"],
     queryFn: fetchPosts,
-    staleTime: 1 * 60 * 1000, // 1 minute seulement pour forcer des mises à jour plus fréquentes
-    gcTime: 5 * 60 * 1000, // 5 minutes en cache
-    refetchOnWindowFocus: true, // Refetch quand on revient sur la page
+    staleTime: 30 * 1000, // 30 secondes pour forcer des mises à jour plus fréquentes
+    gcTime: 2 * 60 * 1000, // 2 minutes en cache
+    refetchOnWindowFocus: true,
+    retry: 3, // Augmenter les tentatives
     meta: {
       onError: () => {
         toast({
@@ -34,11 +35,12 @@ const Article = () => {
     },
   });
 
-  // Refetch automatiquement toutes les 2 minutes pour s'assurer d'avoir les derniers articles
+  // Refetch automatiquement toutes les 1 minute pour s'assurer d'avoir les derniers articles
   useEffect(() => {
     const interval = setInterval(() => {
+      console.log('Auto-refetch des articles pour Article.tsx');
       refetch();
-    }, 2 * 60 * 1000); // 2 minutes
+    }, 60 * 1000); // 1 minute
 
     return () => clearInterval(interval);
   }, [refetch]);
@@ -106,17 +108,18 @@ const Article = () => {
 
   if (!post) {
     console.log("❌ Article non trouvé pour le slug:", slug);
-    console.log("Articles disponibles:", posts?.slice(0, 10).map(p => ({
+    console.log("Total articles disponibles:", posts?.length);
+    console.log("Articles disponibles:", posts?.slice(0, 20).map(p => ({
       id: p.id,
       slugFromTitle: getSlug(p.title.rendered),
       title: p.title.rendered.substring(0, 50) + "..."
     })));
     
-    // Tenter un refetch avant d'afficher l'erreur
+    // Tenter un refetch immédiat avant d'afficher l'erreur
     setTimeout(() => {
-      console.log("Tentative de refetch pour trouver l'article...");
+      console.log("Tentative de refetch immédiat pour trouver l'article...");
       refetch();
-    }, 1000);
+    }, 500);
     
     return <ArticleNotFound />;
   }
