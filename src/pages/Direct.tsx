@@ -7,6 +7,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import LoadingCircle from "@/components/LoadingCircle";
 import Footer from "@/components/Footer";
+import { Link } from "react-router-dom";
+import ProgramSchedule from "@/components/ProgramSchedule";
 
 const Direct = () => {
   const { toast } = useToast();
@@ -98,12 +100,14 @@ const Direct = () => {
                       )}
                       {isPlaying ? "Pause" : "Écouter le direct"}
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      className="bg-pana-red hover:bg-pana-red/90 text-white border-none"
-                    >
-                      Découvrez nos podcasts
-                    </Button>
+                    <Link to="/podcasts">
+                      <Button 
+                        variant="outline" 
+                        className="bg-pana-red hover:bg-pana-red/90 text-white border-none"
+                      >
+                        Découvrez nos podcasts
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -153,6 +157,12 @@ const Direct = () => {
                 </ul>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Affichage de la grille de programmes */}
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold text-pana-purple mb-6">Grille des programmes</h2>
+            <ProgramSchedule />
           </div>
         </div>
       </div>
