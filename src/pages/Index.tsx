@@ -103,7 +103,7 @@ const Index = () => {
         <div className="container mx-auto px-0">
           <div className="w-full">
             <CategoryTabs 
-              categories={categories.slice(0, 5)} 
+              categories={categories} 
               activeCategory={activeCategory} 
               setActiveCategory={setActiveCategory}
             >
