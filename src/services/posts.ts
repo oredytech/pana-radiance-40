@@ -198,28 +198,73 @@ export const fetchPostsByCategory = async (categoryId: number): Promise<WordPres
 };
 
 export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
-  const cacheKey = `search-${query}`;
+  if (!query || query.trim().length === 0) {
+    console.warn("Empty search query");
+    return [];
+  }
+
+  const trimmedQuery = query.trim();
+  const cacheKey = `search-${trimmedQuery.toLowerCase()}`;
   const cached = getCache(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log(`Returning cached search results for: ${trimmedQuery}`);
+    return cached;
+  }
 
   try {
-    const response = await fetchWithTimeout(
-      `https://panaradio.net/wp-json/wp/v2/posts?_embed&search=${encodeURIComponent(query)}&per_page=30`
-    );
+    console.log(`Searching for: "${trimmedQuery}"`);
+    
+    // Essayer plusieurs approches de recherche
+    const searchUrl = `https://panaradio.net/wp-json/wp/v2/posts?_embed&search=${encodeURIComponent(trimmedQuery)}&per_page=50&orderby=relevance`;
+    console.log(`Search URL: ${searchUrl}`);
+    
+    const response = await fetchWithTimeout(searchUrl);
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
     }
     
     const data = await response.json();
+    console.log(`Search API returned ${data.length} results for "${trimmedQuery}"`);
+    
+    // Si l'API ne retourne rien, essayer une recherche locale dans le cache
+    if (data.length === 0) {
+      console.log("No API results, trying local cache search...");
+      const allPostsCache = getCache('all-posts') || getCache('recent-posts-50') || [];
+      
+      if (allPostsCache.length > 0) {
+        const localResults = allPostsCache.filter((post: WordPressPost) => {
+          const searchText = trimmedQuery.toLowerCase();
+          const title = post.title.rendered.toLowerCase();
+          const content = post.content?.rendered?.toLowerCase() || '';
+          const excerpt = post.excerpt?.rendered?.toLowerCase() || '';
+          
+          return title.includes(searchText) || 
+                 content.includes(searchText) || 
+                 excerpt.includes(searchText);
+        });
+        
+        console.log(`Local search found ${localResults.length} results`);
+        setCache(cacheKey, localResults);
+        return localResults;
+      }
+    }
+    
     setCache(cacheKey, data);
     return data;
   } catch (error) {
-    console.warn("Error searching posts:", error);
-    return mockPosts.filter(post => 
-      post.title.rendered.toLowerCase().includes(query.toLowerCase()) ||
-      post.content.rendered.toLowerCase().includes(query.toLowerCase())
-    );
+    console.warn("Error in search, trying fallback:", error);
+    
+    // Fallback: recherche dans les articles mock
+    const mockResults = mockPosts.filter(post => {
+      const searchText = trimmedQuery.toLowerCase();
+      return post.title.rendered.toLowerCase().includes(searchText) ||
+             post.content.rendered.toLowerCase().includes(searchText) ||
+             post.excerpt.rendered.toLowerCase().includes(searchText);
+    });
+    
+    console.log(`Mock search found ${mockResults.length} results`);
+    return mockResults;
   }
 };
 

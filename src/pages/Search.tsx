@@ -16,17 +16,23 @@ const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
 
-  const { data: searchResults, isLoading, refetch } = useQuery({
-    queryKey: ["search", searchQuery],
-    queryFn: () => searchPosts(searchQuery),
+  const { data: searchResults, isLoading, refetch, error } = useQuery({
+    queryKey: ["search", searchQuery.trim()],
+    queryFn: () => {
+      console.log(`Executing search query: "${searchQuery.trim()}"`);
+      return searchPosts(searchQuery.trim());
+    },
     enabled: false, // Ne pas exécuter automatiquement
+    retry: 1,
     meta: {
-      onError: () => {
+      onError: (error: any) => {
+        console.error("Search error:", error);
         toast({
-          title: "Erreur",
-          description: "Impossible d'effectuer la recherche",
+          title: "Erreur de recherche",
+          description: `Impossible d'effectuer la recherche: ${error.message || 'Erreur inconnue'}`,
           variant: "destructive",
         });
       },
@@ -35,14 +41,17 @@ const Search = () => {
 
   useEffect(() => {
     const query = searchParams.get('q');
-    if (query) {
+    if (query && query.trim()) {
       setSearchQuery(query);
+      setHasSearched(true);
       handleSearch(query);
     }
   }, [searchParams]);
 
   const handleSearch = async (query?: string) => {
     const searchTerm = query || searchQuery;
+    console.log(`Starting search for: "${searchTerm}"`);
+    
     if (!searchTerm.trim()) {
       toast({
         title: "Recherche vide",
@@ -53,10 +62,15 @@ const Search = () => {
     }
 
     setIsSearching(true);
-    setSearchParams({ q: searchTerm });
+    setHasSearched(true);
+    setSearchParams({ q: searchTerm.trim() });
     
     try {
-      await refetch();
+      console.log("Triggering search refetch...");
+      const result = await refetch();
+      console.log("Search completed, results:", result.data?.length || 0);
+    } catch (error) {
+      console.error("Search failed:", error);
     } finally {
       setIsSearching(false);
     }
@@ -66,6 +80,9 @@ const Search = () => {
     e.preventDefault();
     handleSearch();
   };
+
+  const currentQuery = searchParams.get('q') || '';
+  const isActivelyLoading = isSearching || isLoading;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -86,10 +103,10 @@ const Search = () => {
               />
               <Button 
                 type="submit" 
-                disabled={isSearching || isLoading}
+                disabled={isActivelyLoading}
                 className="bg-pana-red hover:bg-pana-purple"
               >
-                {isSearching || isLoading ? (
+                {isActivelyLoading ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                 ) : (
                   <SearchIcon className="h-4 w-4" />
@@ -99,21 +116,34 @@ const Search = () => {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm">
-            {searchResults && searchResults.length > 0 && (
+            {hasSearched && currentQuery && (
               <div className="mb-4">
                 <p className="text-gray-600">
-                  {searchResults.length} résultat{searchResults.length > 1 ? 's' : ''} trouvé{searchResults.length > 1 ? 's' : ''} pour "{searchParams.get('q')}"
+                  {isActivelyLoading 
+                    ? `Recherche en cours pour "${currentQuery}"...`
+                    : searchResults 
+                      ? `${searchResults.length} résultat${searchResults.length > 1 ? 's' : ''} trouvé${searchResults.length > 1 ? 's' : ''} pour "${currentQuery}"`
+                      : `Recherche pour "${currentQuery}"`
+                  }
                 </p>
               </div>
             )}
 
-            {isLoading ? (
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-600">
+                  Erreur lors de la recherche: {error.message || 'Erreur inconnue'}
+                </p>
+              </div>
+            )}
+
+            {isActivelyLoading ? (
               <div className="text-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pana-red mx-auto mb-4"></div>
                 <p>Recherche en cours...</p>
               </div>
-            ) : searchResults ? (
-              searchResults.length > 0 ? (
+            ) : hasSearched ? (
+              searchResults && searchResults.length > 0 ? (
                 <ArticlesGrid 
                   posts={searchResults}
                   isLoading={false}
@@ -123,7 +153,7 @@ const Search = () => {
                   truncateText={truncateText}
                   displayCount={50}
                 />
-              ) : searchParams.get('q') ? (
+              ) : currentQuery ? (
                 <div className="text-center py-12">
                   <p className="text-gray-500">Aucun article trouvé pour votre recherche.</p>
                   <p className="text-sm text-gray-400 mt-2">Essayez avec d'autres mots-clés.</p>
