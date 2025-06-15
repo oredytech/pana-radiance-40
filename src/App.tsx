@@ -27,7 +27,7 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes - les données restent fraîches pendant 5 min
       gcTime: 30 * 60 * 1000, // 30 minutes - gardé en cache pendant 30 min
       refetchOnWindowFocus: false, // Éviter les refetch automatiques
-      refetchOnMount: 'stale', // Refetch seulement si les données sont périmées
+      refetchOnMount: true, // Refetch au montage du composant
       retry: 2, // Limiter les tentatives de retry
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
