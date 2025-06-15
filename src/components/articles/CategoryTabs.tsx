@@ -31,13 +31,18 @@ const CategoryTabs = ({
     return (b.count || 0) - (a.count || 0);
   });
 
+  const handleCategoryClick = (categoryId: string) => {
+    console.log(`Switching to category: ${categoryId}`);
+    setActiveCategory(categoryId);
+  };
+
   return (
     <div>
       <div className="flex overflow-x-auto whitespace-nowrap px-2 border-t border-b border-gray-200 bg-gray-50 py-0 my-0">
         {sortedCategories.map(category => (
           <Button
             key={category.id}
-            onClick={() => setActiveCategory(category.id)}
+            onClick={() => handleCategoryClick(category.id)}
             variant="ghost"
             className={cn(
               "min-w-fit rounded-none border-b-2 mx-1 px-3",

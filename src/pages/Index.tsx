@@ -6,13 +6,13 @@ import Footer from "@/components/Footer";
 import ArticlesGrid from "@/components/ArticlesGrid";
 import RefreshIndicator from "@/components/RefreshIndicator";
 import { useQuery } from "@tanstack/react-query";
-import { fetchRecentPosts, fetchOlderPosts, fetchCategories } from "@/services/wordpress";
+import { fetchRecentPosts, fetchOlderPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import AdvertisementSection from "@/components/AdvertisementSection";
 import YouTubeSubscriptionCTA from "@/components/YouTubeVideoSection";
 import PodcastSection from "@/components/PodcastSection";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticleLoadingSkeleton from "@/components/articles/ArticleLoadingSkeleton";
 import { useGlobalRefresh } from "@/hooks/useGlobalRefresh";
@@ -50,6 +50,24 @@ const Index = () => {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
 
+  // Query pour les articles de la catégorie active
+  const { data: categoryPosts, isLoading: isLoadingCategory } = useQuery({
+    queryKey: ["category-posts", activeCategory],
+    queryFn: async () => {
+      if (activeCategory === "all") {
+        return fetchRecentPosts(20);
+      } else {
+        return fetchPostsByCategory(parseInt(activeCategory));
+      }
+    },
+    enabled: activeCategory !== "all",
+    meta: {
+      onError: () => {
+        console.warn("Impossible de charger les articles de la catégorie");
+      }
+    }
+  });
+
   const { data: recentPosts, isLoading: isLoadingRecent } = useQuery({
     queryKey: ["recent-posts"],
     queryFn: () => fetchRecentPosts(20),
@@ -61,7 +79,7 @@ const Index = () => {
   });
 
   useEffect(() => {
-    if (recentPosts && recentPosts.length > 0) {
+    if (activeCategory === "all" && recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
 
       const olderTimeout = setTimeout(async () => {
@@ -79,10 +97,21 @@ const Index = () => {
       return () => {
         clearTimeout(olderTimeout);
       };
+    } else if (activeCategory !== "all" && categoryPosts) {
+      setAllPosts(categoryPosts);
     }
-  }, [recentPosts]);
+  }, [recentPosts, categoryPosts, activeCategory]);
 
-  const articlesForGrid = allPosts ? allPosts.slice(5, 17) : [];
+  // Articles à afficher dans la grille selon la catégorie active
+  const articlesForGrid = useMemo(() => {
+    if (activeCategory === "all") {
+      return allPosts ? allPosts.slice(5, 17) : [];
+    } else {
+      return allPosts ? allPosts.slice(0, 12) : [];
+    }
+  }, [allPosts, activeCategory]);
+
+  const isLoading = activeCategory === "all" ? isLoadingRecent : isLoadingCategory;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-[80px] py-[20px]">
@@ -107,12 +136,14 @@ const Index = () => {
               activeCategory={activeCategory} 
               setActiveCategory={setActiveCategory}
             >
-              {isLoadingRecent ? (
+              {isLoading ? (
                 <div className="mt-6">
                   <div className="text-center mb-4">
                     <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
-                      <span className="text-sm text-gray-600">Chargement depuis le cache...</span>
+                      <span className="text-sm text-gray-600">
+                        {activeCategory === "all" ? "Chargement depuis le cache..." : "Chargement des articles de la catégorie..."}
+                      </span>
                     </div>
                   </div>
                   <ArticleLoadingSkeleton />
@@ -128,7 +159,7 @@ const Index = () => {
                     truncateText={truncateText} 
                     displayCount={12} 
                   />
-                  {isLoadingOlder && (
+                  {activeCategory === "all" && isLoadingOlder && (
                     <div className="text-center mt-6">
                       <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
