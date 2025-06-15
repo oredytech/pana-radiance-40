@@ -21,7 +21,7 @@ const RelatedPodcasts = ({ episodes }: RelatedPodcastsProps) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {episodes.map((episode) => (
           <Card key={episode.id} className="hover:shadow-lg transition-shadow">
-            <Link to={`/podcast/${episode.id}`}>
+            <Link to={`/podcast/${episode.slug}`}>
               <CardContent className="p-4">
                 <div 
                   className="aspect-video bg-gray-200 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden"

@@ -78,7 +78,7 @@ const Podcasts = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {podcasts.map((podcast) => (
               <Card key={podcast.id} className="hover:shadow-lg transition-shadow">
-                <Link to={`/podcast/${podcast.id}`}>
+                <Link to={`/podcast/${podcast.slug}`}>
                   <CardContent className="p-4">
                     <div 
                       className="aspect-video bg-gray-200 rounded-lg mb-4 flex items-center justify-center relative overflow-hidden"

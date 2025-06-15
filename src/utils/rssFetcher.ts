@@ -1,8 +1,10 @@
 
 import { XMLParser } from 'fast-xml-parser';
+import { getSlug } from './textUtils';
 
 export interface PodcastEpisode {
   id: string;
+  slug: string;
   title: string;
   description: string;
   duration: string;
@@ -46,10 +48,12 @@ export async function fetchRssFeed(feedUrl: string): Promise<PodcastEpisode[]> {
       const enclosure = item.enclosure || {};
       const duration = item['itunes:duration'] || '';
       const imageUrl = item['itunes:image']?.['@_href'] || result.rss.channel['itunes:image']?.['@_href'] || '';
+      const title = item.title;
       
       return {
         id: item.guid['#text'] || item.guid,
-        title: item.title,
+        slug: getSlug(title),
+        title,
         description: cleanHtmlTags(item.description || item['itunes:summary'] || ''),
         duration: typeof duration === 'string' ? duration : '00:00',
         date: new Date(item.pubDate).toLocaleDateString('fr-FR', {

@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { fetchRssFeed, type PodcastEpisode } from "@/utils/rssFetcher";
@@ -13,7 +12,7 @@ import { PlayCircle, Calendar, Clock, ChevronLeft } from "lucide-react";
 const PODCAST_RSS_URL = "https://podcast.zenomedia.com/api/public/podcasts/dccffad2-6a72-41f0-b115-499b7a4bf255/rss";
 
 const PodcastEpisodePage = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const [episode, setEpisode] = useState<PodcastEpisode | null>(null);
   const [relatedEpisodes, setRelatedEpisodes] = useState<PodcastEpisode[]>([]);
   const { playPodcast } = usePodcastPlayer();
@@ -23,12 +22,12 @@ const PodcastEpisodePage = () => {
     const loadEpisode = async () => {
       try {
         const episodes = await fetchRssFeed(PODCAST_RSS_URL);
-        const currentEpisode = episodes.find(ep => ep.id === id);
+        const currentEpisode = episodes.find(ep => ep.slug === slug);
         if (currentEpisode) {
           setEpisode(currentEpisode);
           // Get 3 related episodes (excluding current)
           const related = episodes
-            .filter(ep => ep.id !== id)
+            .filter(ep => ep.slug !== slug)
             .slice(0, 3);
           setRelatedEpisodes(related);
         } else {
@@ -48,10 +47,10 @@ const PodcastEpisodePage = () => {
       }
     };
 
-    if (id) {
+    if (slug) {
       loadEpisode();
     }
-  }, [id, toast]);
+  }, [slug, toast]);
 
   if (!episode) {
     return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
