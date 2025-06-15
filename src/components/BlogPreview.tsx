@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts, fetchCategories, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Headphones } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getImageUrl, stripHtml, getSlug } from "@/utils/textUtils";
+import HeroLoadingIndicator from "./HeroLoadingIndicator";
 
 const BlogPreview = () => {
   const { toast } = useToast();
@@ -30,11 +30,7 @@ const BlogPreview = () => {
   });
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div>Chargement des articles...</div>
-      </div>
-    );
+    return <HeroLoadingIndicator />;
   }
 
   if (!posts) {
