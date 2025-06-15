@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
@@ -85,31 +86,6 @@ const Articles = () => {
     if (recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
       
-      // Démarrer le rechargement en arrière-plan
-      const refreshTimeout = setTimeout(() => {
-        if (activeCategory === "all") {
-          setIsRefreshing(true);
-          refreshPostsInBackground((newPosts) => {
-            setAllPosts(prev => {
-              const hasNewContent = newPosts.some(newPost => 
-                !prev.some(existingPost => existingPost.id === newPost.id)
-              );
-              
-              if (hasNewContent) {
-                toast({
-                  title: "Nouveaux articles disponibles",
-                  description: "Le contenu a été mis à jour avec les derniers articles.",
-                  duration: 3000,
-                });
-              }
-              
-              setIsRefreshing(false);
-              return newPosts;
-            });
-          }, 20);
-        }
-      }, 1000);
-      
       // Charger les articles plus anciens si catégorie "all"
       if (activeCategory === "all") {
         const olderTimeout = setTimeout(async () => {
@@ -124,13 +100,8 @@ const Articles = () => {
           }
         }, 500);
 
-        return () => {
-          clearTimeout(refreshTimeout);
-          clearTimeout(olderTimeout);
-        };
+        return () => clearTimeout(olderTimeout);
       }
-
-      return () => clearTimeout(refreshTimeout);
     }
   }, [recentPosts, activeCategory, toast]);
   
