@@ -11,9 +11,10 @@ import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 const PODCAST_RSS_URL = "https://podcast.zenomedia.com/api/public/podcasts/dccffad2-6a72-41f0-b115-499b7a4bf255/rss";
 
 // Fallback podcasts in case the RSS feed fails
-const FALLBACK_PODCASTS = [
+const FALLBACK_PODCASTS: PodcastEpisode[] = [
   {
     id: "podcast1",
+    slug: "culture-et-traditions",
     title: "Culture et Traditions",
     description: "Découvrez les richesses culturelles de l'Afrique",
     duration: "45 min",
@@ -22,6 +23,7 @@ const FALLBACK_PODCASTS = [
   },
   {
     id: "podcast2",
+    slug: "musique-africaine",
     title: "Musique Africaine",
     description: "Un voyage à travers les rythmes du continent",
     duration: "30 min",
@@ -30,6 +32,7 @@ const FALLBACK_PODCASTS = [
   },
   {
     id: "podcast3",
+    slug: "actualites-panafricaines",
     title: "Actualités Panafricaines",
     description: "Les dernières nouvelles du continent",
     duration: "60 min",
@@ -38,6 +41,7 @@ const FALLBACK_PODCASTS = [
   },
   {
     id: "podcast4",
+    slug: "economie-et-developpement",
     title: "Économie et Développement",
     description: "Analyse des tendances économiques africaines",
     duration: "40 min",
