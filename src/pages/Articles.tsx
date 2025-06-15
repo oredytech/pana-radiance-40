@@ -2,11 +2,12 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { fetchRecentPosts, fetchOlderPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
+import { fetchRecentPosts, fetchOlderPosts, fetchCategories, fetchPostsByCategory, refreshPostsInBackground } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import RefreshIndicator from "@/components/RefreshIndicator";
 import ArticlesHeader from "@/components/articles/ArticlesHeader";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticlesContent from "@/components/articles/ArticlesContent";
@@ -19,6 +20,7 @@ const Articles = () => {
   const [activeCategory, setActiveCategory] = useState(categoryFromUrl || "all");
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const postsPerPage = 12;
 
@@ -31,8 +33,8 @@ const Articles = () => {
   const { data: wpCategories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 2,
     meta: {
       onError: () => {
@@ -65,8 +67,8 @@ const Articles = () => {
         return fetchPostsByCategory(parseInt(activeCategory));
       }
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
     retry: 2,
     refetchOnWindowFocus: false,
     meta: {
@@ -78,26 +80,57 @@ const Articles = () => {
 
   // Charger les articles plus anciens en arrière-plan de manière optimisée
   useEffect(() => {
-    if (recentPosts && recentPosts.length > 0 && activeCategory === "all") {
+    if (recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
       
-      const timeoutId = setTimeout(async () => {
-        setIsLoadingOlder(true);
-        try {
-          const olderPosts = await fetchOlderPosts(2, 40); // Réduire le nombre d'articles
-          setAllPosts(prev => [...prev, ...olderPosts]);
-        } catch (error) {
-          console.warn("Erreur lors du chargement des articles plus anciens:", error);
-        } finally {
-          setIsLoadingOlder(false);
+      // Démarrer le rechargement en arrière-plan
+      const refreshTimeout = setTimeout(() => {
+        if (activeCategory === "all") {
+          setIsRefreshing(true);
+          refreshPostsInBackground((newPosts) => {
+            setAllPosts(prev => {
+              const hasNewContent = newPosts.some(newPost => 
+                !prev.some(existingPost => existingPost.id === newPost.id)
+              );
+              
+              if (hasNewContent) {
+                toast({
+                  title: "Nouveaux articles disponibles",
+                  description: "Le contenu a été mis à jour avec les derniers articles.",
+                  duration: 3000,
+                });
+              }
+              
+              setIsRefreshing(false);
+              return newPosts;
+            });
+          }, 20);
         }
-      }, 500); // Réduire le délai
+      }, 1000);
+      
+      // Charger les articles plus anciens si catégorie "all"
+      if (activeCategory === "all") {
+        const olderTimeout = setTimeout(async () => {
+          setIsLoadingOlder(true);
+          try {
+            const olderPosts = await fetchOlderPosts(2, 40);
+            setAllPosts(prev => [...prev, ...olderPosts]);
+          } catch (error) {
+            console.warn("Erreur lors du chargement des articles plus anciens:", error);
+          } finally {
+            setIsLoadingOlder(false);
+          }
+        }, 500);
 
-      return () => clearTimeout(timeoutId);
-    } else if (recentPosts) {
-      setAllPosts(recentPosts);
+        return () => {
+          clearTimeout(refreshTimeout);
+          clearTimeout(olderTimeout);
+        };
+      }
+
+      return () => clearTimeout(refreshTimeout);
     }
-  }, [recentPosts, activeCategory]);
+  }, [recentPosts, activeCategory, toast]);
   
   useEffect(() => {
     setCurrentPage(1);
@@ -146,6 +179,7 @@ const Articles = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <RefreshIndicator isRefreshing={isRefreshing} />
       
       <section className="pt-[104px] py-[64px]">
         <ArticlesHeader />

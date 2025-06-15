@@ -82,6 +82,33 @@ export const invalidateRecentPostsCache = () => {
   keysToDelete.forEach(key => cache.delete(key));
 };
 
+// Nouvelle fonction pour recharger les articles en arrière-plan
+export const refreshPostsInBackground = async (
+  onUpdate: (newPosts: WordPressPost[]) => void,
+  limit: number = 20
+): Promise<void> => {
+  try {
+    console.log('Rechargement des articles en arrière-plan...');
+    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const newPosts = await response.json();
+    
+    // Mettre à jour le cache
+    const cacheKey = `recent-posts-${limit}`;
+    setCache(cacheKey, newPosts);
+    
+    // Notifier le composant des nouveaux articles
+    onUpdate(newPosts);
+    console.log('Articles mis à jour en arrière-plan');
+  } catch (error) {
+    console.warn("Erreur lors du rechargement en arrière-plan:", error);
+  }
+};
+
 const fetchWithTimeout = async (url: string, timeout = 8000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);

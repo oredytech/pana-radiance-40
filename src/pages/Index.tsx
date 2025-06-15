@@ -4,8 +4,9 @@ import BlogPreview from "@/components/BlogPreview";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import ArticlesGrid from "@/components/ArticlesGrid";
+import RefreshIndicator from "@/components/RefreshIndicator";
 import { useQuery } from "@tanstack/react-query";
-import { fetchRecentPosts, fetchOlderPosts, fetchCategories } from "@/services/wordpress";
+import { fetchRecentPosts, fetchOlderPosts, fetchCategories, refreshPostsInBackground } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import AdvertisementSection from "@/components/AdvertisementSection";
@@ -20,6 +21,7 @@ const Index = () => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { data: wpCategories } = useQuery({
     queryKey: ["categories"],
@@ -61,28 +63,56 @@ const Index = () => {
     if (recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
 
-      // Réduire encore plus le délai pour une expérience plus fluide
-      const timeoutId = setTimeout(async () => {
+      // Démarrer le rechargement en arrière-plan après un court délai
+      const refreshTimeout = setTimeout(() => {
+        setIsRefreshing(true);
+        refreshPostsInBackground((newPosts) => {
+          setAllPosts(prev => {
+            // Vérifier s'il y a de nouveaux articles
+            const hasNewContent = newPosts.some(newPost => 
+              !prev.some(existingPost => existingPost.id === newPost.id)
+            );
+            
+            if (hasNewContent) {
+              toast({
+                title: "Nouveaux articles disponibles",
+                description: "Le contenu a été mis à jour avec les derniers articles.",
+                duration: 3000,
+              });
+            }
+            
+            setIsRefreshing(false);
+            return newPosts;
+          });
+        }, 20);
+      }, 1000);
+
+      // Charger les articles plus anciens
+      const olderTimeout = setTimeout(async () => {
         setIsLoadingOlder(true);
         try {
-          const olderPosts = await fetchOlderPosts(2, 30); // Réduire encore le nombre
+          const olderPosts = await fetchOlderPosts(2, 30);
           setAllPosts(prev => [...prev, ...olderPosts]);
         } catch (error) {
           console.warn("Erreur lors du chargement des articles plus anciens:", error);
         } finally {
           setIsLoadingOlder(false);
         }
-      }, 300); // Encore plus rapide
+      }, 300);
 
-      return () => clearTimeout(timeoutId);
+      return () => {
+        clearTimeout(refreshTimeout);
+        clearTimeout(olderTimeout);
+      };
     }
-  }, [recentPosts]);
+  }, [recentPosts, toast]);
 
   const articlesForGrid = allPosts ? allPosts.slice(5, 17) : [];
 
   return (
     <div className="min-h-screen bg-gray-50 pb-[80px] py-[20px]">
       <Header />
+      <RefreshIndicator isRefreshing={isRefreshing} />
 
       <section className="pt-[95px] pb-5 px-4 py-[95px]">
         <div className="container mx-auto px-0">
