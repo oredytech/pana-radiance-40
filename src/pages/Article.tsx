@@ -31,31 +31,53 @@ const Article = () => {
     },
   });
 
-  // Normalise le slug courant
-  const normalizedCurrentSlug = normalizeSlug(slug);
-  
-  useEffect(() => {
-    // Si le slug n'est pas normalisé, rediriger vers la version normalisée
-    if (slug && normalizedCurrentSlug !== slug) {
-      navigate(`/article/${normalizedCurrentSlug}`, { replace: true });
-    }
-  }, [slug, normalizedCurrentSlug, navigate]);
-
   if (isLoadingPosts) {
     return <ArticleLoading />;
   }
 
+  // Rechercher l'article avec une logique de correspondance améliorée
   const post = posts?.find(p => {
     const postSlug = getSlug(p.title.rendered);
-    return postSlug === normalizedCurrentSlug;
+    const currentSlug = slug || '';
+    
+    console.log("Comparaison:", { postSlug, currentSlug, title: p.title.rendered });
+    
+    // Comparaison exacte d'abord
+    if (postSlug === currentSlug) {
+      return true;
+    }
+    
+    // Comparaison avec normalisation
+    const normalizedPostSlug = normalizeSlug(postSlug);
+    const normalizedCurrentSlug = normalizeSlug(currentSlug);
+    
+    if (normalizedPostSlug === normalizedCurrentSlug) {
+      return true;
+    }
+    
+    // Comparaison partielle pour les slugs tronqués
+    if (currentSlug.length > 50 && postSlug.startsWith(currentSlug.substring(0, 50))) {
+      return true;
+    }
+    
+    if (postSlug.length > 50 && currentSlug.startsWith(postSlug.substring(0, 50))) {
+      return true;
+    }
+    
+    return false;
   });
 
   if (!post) {
     console.log("Article non trouvé:", slug);
-    console.log("Articles disponibles:", posts?.map(p => getSlug(p.title.rendered)));
+    console.log("Articles disponibles:", posts?.map(p => ({
+      slug: getSlug(p.title.rendered),
+      title: p.title.rendered
+    })));
     
     return <ArticleNotFound />;
   }
+
+  console.log("Article trouvé:", post.title.rendered);
 
   const recentPosts = posts?.filter(p => p.id !== post.id).slice(0, 5) || [];
   const similarPosts = posts?.filter(p => p.id !== post.id).slice(0, 4) || [];
