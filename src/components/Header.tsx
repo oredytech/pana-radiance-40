@@ -1,28 +1,19 @@
 
 import { useState, useEffect } from "react";
-import { Menu, X, Play, Pause, Search, RefreshCw } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate, Link, useLocation } from "react-router-dom";
-import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate, useLocation } from "react-router-dom";
 import ScrollingNewsBanner from "./ScrollingNewsBanner";
-import LanguageSelector from "./LanguageSelector";
-import { useQueryClient } from "@tanstack/react-query";
-import { invalidateRecentPostsCache } from "@/services/wordpress";
+import DesktopNavigation from "./DesktopNavigation";
+import MobileNavigation from "./MobileNavigation";
+import HeaderActions from "./HeaderActions";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const queryClient = useQueryClient();
-  const {
-    currentPodcast,
-    stopPodcast
-  } = usePodcastPlayer();
 
   // Gérer l'affichage de l'en-tête au scroll
   useEffect(() => {
@@ -44,22 +35,6 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  const handleDirectClick = () => {
-    if (currentPodcast) {
-      stopPodcast();
-    }
-    if (window.globalAudio) {
-      if (window.globalAudio.paused) {
-        window.globalAudio.play().catch(error => {
-          console.error("Playback error:", error);
-        });
-      } else {
-        window.globalAudio.pause();
-      }
-    }
-    navigate('/direct');
-  };
-
   const handleContactClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (location.pathname !== '/') {
@@ -69,33 +44,9 @@ const Header = () => {
     }
   };
 
-  const handleSearchClick = () => {
-    navigate('/search');
-  };
-
   const handleLogoClick = () => {
     navigate('/');
   };
-
-  const handleRefreshClick = async () => {
-    setIsRefreshing(true);
-    
-    try {
-      // Effacer tous les caches
-      invalidateRecentPostsCache();
-      await queryClient.clear();
-      
-      // Recharger la page après un court délai
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
-    } catch (error) {
-      console.error("Erreur lors du rafraîchissement:", error);
-      setIsRefreshing(false);
-    }
-  };
-
-  const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
 
   return (
     <>
@@ -124,111 +75,17 @@ const Header = () => {
             </div>
 
             {/* Navigation desktop au centre */}
-            <nav className="hidden md:flex space-x-8">
-              {[{
-                label: "Accueil",
-                path: "/"
-              }, {
-                label: "Programmes",
-                path: "/programs"
-              }, {
-                label: "Podcasts",
-                path: "/podcasts"
-              }, {
-                label: "Actualités",
-                path: "/articles"
-              }, {
-                label: "Contact",
-                path: "/#contact",
-                onClick: handleContactClick
-              }].map(item => (
-                <Link 
-                  key={item.label} 
-                  to={item.path} 
-                  onClick={item.onClick}
-                  className="text-gray-700 hover:text-pana-red transition-colors duration-200"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <DesktopNavigation handleContactClick={handleContactClick} />
 
             {/* Icônes à droite */}
-            <div className="flex items-center gap-2">
-              <LanguageSelector />
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleRefreshClick}
-                disabled={isRefreshing}
-                className="hover:text-pana-red"
-                aria-label="Rafraîchir le site"
-              >
-                <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={handleSearchClick}
-                className="hover:text-pana-red"
-                aria-label="Rechercher"
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-              <Button 
-                onClick={handleDirectClick} 
-                className="bg-pana-red hover:bg-pana-purple transition-colors animate-pulse"
-                size={isMobile ? "icon" : "default"}
-                aria-label={isMobile ? (isPlaying ? "Pause" : "Play") : undefined}
-              >
-                {isMobile ? (
-                  isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />
-                ) : (
-                  <>
-                    {isPlaying ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-                    EN DIRECT {isPlaying && "• EN COURS"}
-                  </>
-                )}
-              </Button>
-            </div>
+            <HeaderActions />
           </div>
 
-          {isMenuOpen && (
-            <nav className="md:hidden py-4 animate-fade-in">
-              {[{
-                label: "Accueil",
-                path: "/"
-              }, {
-                label: "Programmes",
-                path: "/programs"
-              }, {
-                label: "Podcasts",
-                path: "/podcasts"
-              }, {
-                label: "Actualités",
-                path: "/articles"
-              }, {
-                label: "Recherche",
-                path: "/search"
-              }, {
-                label: "Contact",
-                path: "/#contact",
-                onClick: handleContactClick
-              }].map(item => (
-                <Link 
-                  key={item.label} 
-                  to={item.path} 
-                  onClick={(e) => {
-                    setIsMenuOpen(false);
-                    item.onClick?.(e);
-                  }}
-                  className="block py-2 text-gray-700 hover:text-pana-red transition-colors duration-200"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          )}
+          <MobileNavigation 
+            isMenuOpen={isMenuOpen}
+            setIsMenuOpen={setIsMenuOpen}
+            handleContactClick={handleContactClick}
+          />
         </div>
       </header>
       
