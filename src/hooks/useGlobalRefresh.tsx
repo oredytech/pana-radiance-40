@@ -1,61 +1,47 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { refreshPostsInBackground, invalidateRecentPostsCache } from '@/services/wordpress';
-import { useToast } from '@/hooks/use-toast';
+import { useCallback } from 'react';
+import { useRefreshState } from './useRefreshState';
+import { useContentUpdater } from './useContentUpdater';
+import { useAutoRefresh } from './useAutoRefresh';
+import { performBackgroundRefresh } from '@/utils/refreshUtils';
 
 export const useGlobalRefresh = () => {
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [hasNewContent, setHasNewContent] = useState(false);
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const {
+    isRefreshing,
+    hasNewContent,
+    startRefreshing,
+    stopRefreshing,
+    markContentAsNew,
+    clearNewContent
+  } = useRefreshState();
+
+  const { applyUpdates: baseApplyUpdates } = useContentUpdater();
 
   const startRefresh = useCallback(async () => {
     if (isRefreshing) return;
     
-    setIsRefreshing(true);
-    setHasNewContent(false);
+    startRefreshing();
 
     try {
-      // Invalider le cache existant
-      invalidateRecentPostsCache();
-      
-      // Charger les nouveaux articles en arrière-plan
-      await refreshPostsInBackground((newPosts) => {
+      await performBackgroundRefresh((newPosts) => {
         console.log('Nouveaux articles chargés:', newPosts.length);
-        setHasNewContent(true);
+        markContentAsNew();
       }, 50); // Charger plus d'articles pour s'assurer d'avoir du nouveau contenu
       
     } catch (error) {
       console.warn('Erreur lors du rafraîchissement:', error);
     } finally {
-      setIsRefreshing(false);
+      stopRefreshing();
     }
-  }, [isRefreshing]);
+  }, [isRefreshing, startRefreshing, stopRefreshing, markContentAsNew]);
 
   const applyUpdates = useCallback(() => {
-    // Invalider toutes les requêtes liées aux articles pour forcer un rechargement
-    queryClient.invalidateQueries({ queryKey: ['posts'] });
-    queryClient.invalidateQueries({ queryKey: ['recent-posts'] });
-    
-    // Afficher une notification de succès
-    toast({
-      title: "Articles mis à jour",
-      description: "Le contenu a été actualisé avec les derniers articles.",
-      duration: 3000,
-    });
-    
-    setHasNewContent(false);
-  }, [queryClient, toast]);
+    baseApplyUpdates();
+    clearNewContent();
+  }, [baseApplyUpdates, clearNewContent]);
 
   // Démarrer automatiquement le rafraîchissement toutes les 10 minutes
-  useEffect(() => {
-    const interval = setInterval(() => {
-      startRefresh();
-    }, 10 * 60 * 1000); // 10 minutes
-
-    return () => clearInterval(interval);
-  }, [startRefresh]);
+  useAutoRefresh(startRefresh, 10 * 60 * 1000);
 
   return {
     isRefreshing,
