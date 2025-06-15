@@ -1,19 +1,24 @@
+
 import { useState, useEffect } from "react";
-import { Menu, X, Play, Pause, Search } from "lucide-react";
+import { Menu, X, Play, Pause, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { usePodcastPlayer } from "@/context/PodcastPlayerContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ScrollingNewsBanner from "./ScrollingNewsBanner";
 import LanguageSelector from "./LanguageSelector";
+import { useQueryClient } from "@tanstack/react-query";
+import { invalidateRecentPostsCache } from "@/services/wordpress";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const queryClient = useQueryClient();
   const {
     currentPodcast,
     stopPodcast
@@ -70,6 +75,24 @@ const Header = () => {
 
   const handleLogoClick = () => {
     navigate('/');
+  };
+
+  const handleRefreshClick = async () => {
+    setIsRefreshing(true);
+    
+    try {
+      // Effacer tous les caches
+      invalidateRecentPostsCache();
+      await queryClient.clear();
+      
+      // Recharger la page après un court délai
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } catch (error) {
+      console.error("Erreur lors du rafraîchissement:", error);
+      setIsRefreshing(false);
+    }
   };
 
   const isPlaying = window.globalAudio ? !window.globalAudio.paused : false;
@@ -133,6 +156,16 @@ const Header = () => {
             {/* Icônes à droite */}
             <div className="flex items-center gap-2">
               <LanguageSelector />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleRefreshClick}
+                disabled={isRefreshing}
+                className="hover:text-pana-red"
+                aria-label="Rafraîchir le site"
+              >
+                <RefreshCw className={`h-5 w-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
