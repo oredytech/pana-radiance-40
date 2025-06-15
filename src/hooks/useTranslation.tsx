@@ -1,86 +1,69 @@
 
 import { useState, useEffect } from "react";
-import { translationService } from "@/services/translationService";
+
+declare global {
+  interface Window {
+    google: any;
+    googleTranslateElementInit: () => void;
+  }
+}
 
 export const useTranslation = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState("fr");
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [translationError, setTranslationError] = useState<string | null>(null);
-  const [isApiKeyConfigured, setIsApiKeyConfigured] = useState(false);
 
-  // Vérifier si une clé API est déjà configurée
   useEffect(() => {
-    const savedApiKey = localStorage.getItem('google-translate-api-key');
-    if (savedApiKey) {
-      translationService.setApiKey(savedApiKey);
-      setIsApiKeyConfigured(true);
+    // Charger le script Google Translate
+    if (!document.querySelector('#google-translate-script')) {
+      const script = document.createElement('script');
+      script.id = 'google-translate-script';
+      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+      script.async = true;
+      document.head.appendChild(script);
     }
 
-    // Détecter la langue du navigateur
-    const browserLanguage = navigator.language.split('-')[0];
-    const supportedLanguages = ['fr', 'en', 'es', 'de', 'it', 'pt', 'ar', 'zh', 'ja', 'ko', 'ru', 'hi', 'sw', 'yo', 'ig', 'ha'];
-    
-    if (supportedLanguages.includes(browserLanguage)) {
-      setCurrentLanguage(browserLanguage);
+    // Fonction d'initialisation globale
+    window.googleTranslateElementInit = () => {
+      if (window.google && window.google.translate) {
+        new window.google.translate.TranslateElement({
+          pageLanguage: 'fr',
+          includedLanguages: 'fr,en,es,de,it,pt,ar,zh,ja,ko,ru,hi,sw,yo,ig,ha',
+          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+          autoDisplay: false,
+          multilanguagePage: true
+        }, 'google_translate_element');
+        setIsLoaded(true);
+      }
+    };
+
+    // Si Google Translate est déjà chargé
+    if (window.google && window.google.translate) {
+      window.googleTranslateElementInit();
     }
   }, []);
 
-  const configureApiKey = () => {
-    setIsApiKeyConfigured(true);
+  const translateTo = (languageCode: string) => {
+    const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    if (selectElement) {
+      selectElement.value = languageCode;
+      selectElement.dispatchEvent(new Event('change'));
+      setCurrentLanguage(languageCode);
+    }
   };
 
-  const translatePage = async (languageCode: string) => {
-    if (!isApiKeyConfigured) {
-      setTranslationError('Clé API non configurée');
-      return;
-    }
-
-    if (languageCode === currentLanguage) {
-      return;
-    }
-
-    setIsTranslating(true);
-    setTranslationError(null);
-
-    try {
-      if (languageCode === 'fr') {
-        // Recharger la page pour revenir au français original
-        window.location.reload();
-        return;
-      }
-
-      // Identifier les éléments à traduire
-      const elementsToTranslate = document.querySelectorAll(
-        'h1, h2, h3, h4, h5, h6, p, span, a, button, li, td, th, label, [data-translate]'
-      );
-
-      // Traduire chaque élément
-      for (const element of elementsToTranslate) {
-        if (element.children.length === 0 && element.textContent?.trim()) {
-          try {
-            await translationService.translateElement(element, languageCode);
-          } catch (error) {
-            console.warn('Erreur lors de la traduction d\'un élément:', error);
-          }
-        }
-      }
-
-      setCurrentLanguage(languageCode);
-      
-    } catch (error) {
-      console.error('Erreur de traduction:', error);
-      setTranslationError('Erreur lors de la traduction');
-    } finally {
-      setIsTranslating(false);
+  const resetToOriginal = () => {
+    const selectElement = document.querySelector('.goog-te-combo') as HTMLSelectElement;
+    if (selectElement) {
+      selectElement.value = '';
+      selectElement.dispatchEvent(new Event('change'));
+      setCurrentLanguage('fr');
     }
   };
 
   return {
+    isLoaded,
     currentLanguage,
-    translatePage,
-    isTranslating,
-    translationError,
-    isApiKeyConfigured,
-    configureApiKey,
+    translateTo,
+    resetToOriginal
   };
 };
