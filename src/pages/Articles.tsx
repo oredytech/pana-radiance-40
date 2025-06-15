@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { fetchRecentPosts, fetchOlderPosts, fetchCategories, fetchPostsByCategory, refreshPostsInBackground } from "@/services/wordpress";
+import { fetchRecentPosts, fetchOlderPosts, fetchCategories, fetchPostsByCategory } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { getImageUrl, stripHtml, getSlug, truncateText } from "@/utils/textUtils";
 import Header from "@/components/Header";
@@ -12,6 +11,7 @@ import ArticlesHeader from "@/components/articles/ArticlesHeader";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticlesContent from "@/components/articles/ArticlesContent";
 import ArticleLoadingSkeleton from "@/components/articles/ArticleLoadingSkeleton";
+import { useGlobalRefresh } from "@/hooks/useGlobalRefresh";
 
 const Articles = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,9 +20,11 @@ const Articles = () => {
   const [activeCategory, setActiveCategory] = useState(categoryFromUrl || "all");
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const postsPerPage = 12;
+
+  // Utiliser le nouveau système de rafraîchissement global
+  const { isRefreshing, hasNewContent, startRefresh, applyUpdates } = useGlobalRefresh();
 
   useEffect(() => {
     if (categoryFromUrl) {
@@ -179,7 +181,11 @@ const Articles = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <RefreshIndicator isRefreshing={isRefreshing} />
+      <RefreshIndicator 
+        isRefreshing={isRefreshing} 
+        onRefresh={startRefresh}
+        onComplete={applyUpdates}
+      />
       
       <section className="pt-[104px] py-[64px]">
         <ArticlesHeader />
