@@ -1,3 +1,4 @@
+
 import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
 export type { WordPressPost, WordPressComment };
@@ -75,7 +76,7 @@ const getCache = (key: string) => {
 export const invalidateRecentPostsCache = () => {
   const keysToDelete = [];
   for (const [key] of cache) {
-    if (key.includes('recent-posts') || key.includes('all-posts')) {
+    if (key.includes('recent-posts') || key.includes('all-posts') || key.includes('posts')) {
       keysToDelete.push(key);
     }
   }
@@ -85,7 +86,7 @@ export const invalidateRecentPostsCache = () => {
 // Nouvelle fonction pour recharger les articles en arrière-plan
 export const refreshPostsInBackground = async (
   onUpdate: (newPosts: WordPressPost[]) => void,
-  limit: number = 20
+  limit: number = 60 // Augmenter pour couvrir plus d'articles
 ): Promise<void> => {
   try {
     console.log('Rechargement des articles en arrière-plan...');
@@ -97,9 +98,13 @@ export const refreshPostsInBackground = async (
     
     const newPosts = await response.json();
     
-    // Mettre à jour le cache
-    const cacheKey = `recent-posts-${limit}`;
+    // Mettre à jour le cache pour tous les articles
+    const cacheKey = `all-posts`;
     setCache(cacheKey, newPosts);
+    
+    // Mettre à jour aussi le cache des articles récents
+    const recentCacheKey = `recent-posts-20`;
+    setCache(recentCacheKey, newPosts.slice(0, 20));
     
     // Notifier le composant des nouveaux articles
     onUpdate(newPosts);
@@ -204,10 +209,15 @@ export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): P
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   const cacheKey = 'all-posts';
   const cached = getCache(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    console.log('Loading all posts from cache');
+    return cached;
+  }
 
   try {
-    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=50`);
+    console.log('Fetching all posts from API with increased limit');
+    // Augmenter le nombre d'articles récupérés pour s'assurer d'avoir les nouveaux articles
+    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=100&orderby=date&order=desc`);
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);

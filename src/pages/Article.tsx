@@ -17,9 +17,12 @@ const Article = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const { data: posts, isLoading: isLoadingPosts } = useQuery({
+  const { data: posts, isLoading: isLoadingPosts, refetch } = useQuery({
     queryKey: ["posts"],
     queryFn: fetchPosts,
+    staleTime: 1 * 60 * 1000, // 1 minute seulement pour forcer des mises à jour plus fréquentes
+    gcTime: 5 * 60 * 1000, // 5 minutes en cache
+    refetchOnWindowFocus: true, // Refetch quand on revient sur la page
     meta: {
       onError: () => {
         toast({
@@ -31,6 +34,15 @@ const Article = () => {
     },
   });
 
+  // Refetch automatiquement toutes les 2 minutes pour s'assurer d'avoir les derniers articles
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 2 * 60 * 1000); // 2 minutes
+
+    return () => clearInterval(interval);
+  }, [refetch]);
+
   if (isLoadingPosts) {
     return <ArticleLoading />;
   }
@@ -39,21 +51,22 @@ const Article = () => {
   const post = posts?.find(p => {
     const currentSlug = slug || '';
     
+    console.log("Recherche article pour slug:", currentSlug);
+    console.log("Total articles disponibles:", posts?.length);
+    
     // Le slug peut être directement le titre de l'article
     // Donc on compare le slug de l'URL avec le slug généré depuis le titre
     const postSlugFromTitle = getSlug(p.title.rendered);
     
-    console.log("Comparaison slug-titre:", { 
+    console.log("Comparaison:", { 
       currentSlug, 
       postSlugFromTitle,
-      title: p.title.rendered,
-      currentSlugLength: currentSlug.length,
-      postSlugLength: postSlugFromTitle.length
+      title: p.title.rendered
     });
     
     // 1. Comparaison exacte entre le slug URL et le slug généré du titre
     if (currentSlug === postSlugFromTitle) {
-      console.log("Correspondance exacte slug-titre trouvée");
+      console.log("✓ Correspondance exacte slug-titre trouvée");
       return true;
     }
     
@@ -62,28 +75,29 @@ const Article = () => {
     const normalizedPostSlug = normalizeSlug(postSlugFromTitle);
     
     if (normalizedCurrentSlug === normalizedPostSlug) {
-      console.log("Correspondance normalisée slug-titre trouvée");
+      console.log("✓ Correspondance normalisée slug-titre trouvée");
       return true;
     }
     
     // 3. Comparaison partielle pour les slugs très longs (WordPress peut tronquer)
-    // Comparer les 60 premiers caractères
-    const truncatedCurrentSlug = currentSlug.substring(0, 60);
-    const truncatedPostSlug = postSlugFromTitle.substring(0, 60);
+    if (currentSlug.length > 30 && postSlugFromTitle.length > 30) {
+      const truncatedCurrentSlug = currentSlug.substring(0, 50);
+      const truncatedPostSlug = postSlugFromTitle.substring(0, 50);
+      
+      if (truncatedCurrentSlug === truncatedPostSlug) {
+        console.log("✓ Correspondance tronquée slug-titre trouvée");
+        return true;
+      }
+    }
     
-    if (truncatedCurrentSlug === truncatedPostSlug && truncatedCurrentSlug.length > 30) {
-      console.log("Correspondance tronquée slug-titre trouvée");
+    // 4. Correspondance flexible - vérifier si l'un contient l'autre (pour les variations)
+    if (currentSlug.length > 15 && postSlugFromTitle.includes(currentSlug)) {
+      console.log("✓ Correspondance inclusion (current dans post) trouvée");
       return true;
     }
     
-    // 4. Correspondance flexible - le slug de l'URL contient le slug du titre ou vice versa
-    if (currentSlug.length > 20 && postSlugFromTitle.includes(currentSlug)) {
-      console.log("Correspondance inclusion (current dans post) trouvée");
-      return true;
-    }
-    
-    if (postSlugFromTitle.length > 20 && currentSlug.includes(postSlugFromTitle)) {
-      console.log("Correspondance inclusion (post dans current) trouvée");
+    if (postSlugFromTitle.length > 15 && currentSlug.includes(postSlugFromTitle)) {
+      console.log("✓ Correspondance inclusion (post dans current) trouvée");
       return true;
     }
     
@@ -91,18 +105,23 @@ const Article = () => {
   });
 
   if (!post) {
-    console.log("Article non trouvé pour le slug:", slug);
-    console.log("Articles disponibles:", posts?.map(p => ({
+    console.log("❌ Article non trouvé pour le slug:", slug);
+    console.log("Articles disponibles:", posts?.slice(0, 10).map(p => ({
       id: p.id,
       slugFromTitle: getSlug(p.title.rendered),
-      title: p.title.rendered,
-      slugLength: getSlug(p.title.rendered).length
+      title: p.title.rendered.substring(0, 50) + "..."
     })));
+    
+    // Tenter un refetch avant d'afficher l'erreur
+    setTimeout(() => {
+      console.log("Tentative de refetch pour trouver l'article...");
+      refetch();
+    }, 1000);
     
     return <ArticleNotFound />;
   }
 
-  console.log("Article trouvé:", {
+  console.log("✓ Article trouvé:", {
     id: post.id,
     title: post.title.rendered,
     slugFromTitle: getSlug(post.title.rendered)
