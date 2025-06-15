@@ -15,10 +15,10 @@ const HeroLoadingIndicator = () => {
         </div>
         
         {/* Indicateur de chargement qui circule en carré autour du logo */}
-        <div className="absolute inset-0 w-32 h-32">
-          <div className="absolute w-full h-full border-2 border-transparent">
+        <div className="absolute inset-0 w-32 h-32 pointer-events-none">
+          <div className="absolute w-full h-full">
             {/* Point qui circule en carré */}
-            <div className="absolute w-3 h-3 bg-pana-red rounded-full animate-square-path"></div>
+            <div className="absolute w-3 h-3 bg-pana-red rounded-full animate-square-path z-20"></div>
           </div>
         </div>
       </div>
