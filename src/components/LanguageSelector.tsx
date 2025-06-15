@@ -38,35 +38,58 @@ const languages: Language[] = [
 
 const LanguageSelector = () => {
   const [open, setOpen] = useState(false);
-  const { currentLanguage, translatePage, isGoogleTranslateLoaded } = useTranslation();
+  const [translating, setTranslating] = useState(false);
+  const { currentLanguage, translatePage, isGoogleTranslateLoaded, translationError } = useTranslation();
 
   const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
-  const handleLanguageSelect = (languageCode: string) => {
-    console.log('Language selected:', languageCode);
+  const handleLanguageSelect = async (languageCode: string) => {
+    console.log('Langue sélectionnée:', languageCode);
     
-    // Fermer le popover immédiatement
+    if (languageCode === currentLanguage) {
+      setOpen(false);
+      return;
+    }
+    
+    setTranslating(true);
     setOpen(false);
     
-    // Appliquer la traduction
-    translatePage(languageCode);
-    
-    // Feedback visuel pour l'utilisateur
-    if (languageCode !== currentLanguage) {
-      console.log(`Traduction vers ${languageCode} en cours...`);
+    try {
+      await translatePage(languageCode);
+      
+      // Feedback visuel
+      setTimeout(() => {
+        setTranslating(false);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Erreur de traduction:', error);
+      setTranslating(false);
     }
   };
 
   // Test de connectivité Google Translate
   useEffect(() => {
-    const testTranslateConnectivity = () => {
-      if (isGoogleTranslateLoaded) {
-        console.log('Google Translate est prêt pour les langues:', languages.map(l => l.code).join(', '));
-      }
-    };
-
-    testTranslateConnectivity();
+    if (isGoogleTranslateLoaded) {
+      console.log('Google Translate est prêt pour les langues:', languages.map(l => l.code).join(', '));
+    }
   }, [isGoogleTranslateLoaded]);
+
+  const getStatusMessage = () => {
+    if (translationError) {
+      return <span className="text-red-600">❌ {translationError}</span>;
+    }
+    
+    if (translating) {
+      return <span className="text-blue-600">🔄 Traduction en cours...</span>;
+    }
+    
+    if (!isGoogleTranslateLoaded) {
+      return <span className="text-yellow-600">⏳ Chargement du traducteur...</span>;
+    }
+    
+    return <span className="text-green-600">✅ Traducteur prêt - {languages.length} langues disponibles</span>;
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -74,12 +97,16 @@ const LanguageSelector = () => {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="hover:text-pana-red flex items-center gap-2"
+          className="hover:text-pana-red flex items-center gap-2 relative"
           aria-label="Sélectionner la langue"
+          disabled={translating}
         >
-          <Globe className="h-4 w-4" />
+          <Globe className={`h-4 w-4 ${translating ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline text-sm">{currentLang.flag} {currentLang.code.toUpperCase()}</span>
           <span className="sm:hidden">{currentLang.flag}</span>
+          {translating && (
+            <span className="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full animate-pulse"></span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="end">
@@ -91,11 +118,11 @@ const LanguageSelector = () => {
                 <Button
                   key={language.code}
                   variant="ghost"
-                  className={`w-full justify-start text-left p-2 h-auto hover:bg-gray-50 ${
+                  className={`w-full justify-start text-left p-2 h-auto hover:bg-gray-50 transition-colors ${
                     currentLanguage === language.code ? 'bg-gray-100 border border-pana-red' : ''
-                  }`}
+                  } ${translating ? 'opacity-50' : ''}`}
                   onClick={() => handleLanguageSelect(language.code)}
-                  disabled={!isGoogleTranslateLoaded}
+                  disabled={translating}
                 >
                   <span className="mr-3 text-lg">{language.flag}</span>
                   <div className="flex flex-col items-start">
@@ -110,11 +137,7 @@ const LanguageSelector = () => {
             </div>
           </ScrollArea>
           <div className="text-xs text-center mt-2 p-2 bg-gray-50 rounded">
-            {!isGoogleTranslateLoaded ? (
-              <span className="text-yellow-600">⚠️ Chargement du traducteur...</span>
-            ) : (
-              <span className="text-green-600">✅ Traducteur prêt - {languages.length} langues disponibles</span>
-            )}
+            {getStatusMessage()}
           </div>
         </div>
       </PopoverContent>
