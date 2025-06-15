@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useTranslation } from "@/hooks/useTranslation";
+import TranslationSetup from "./TranslationSetup";
 
 interface Language {
   code: string;
@@ -38,57 +39,41 @@ const languages: Language[] = [
 
 const LanguageSelector = () => {
   const [open, setOpen] = useState(false);
-  const [translating, setTranslating] = useState(false);
-  const { currentLanguage, translatePage, isGoogleTranslateLoaded, translationError } = useTranslation();
+  const { 
+    currentLanguage, 
+    translatePage, 
+    isTranslating, 
+    translationError, 
+    isApiKeyConfigured, 
+    configureApiKey 
+  } = useTranslation();
 
   const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
   const handleLanguageSelect = async (languageCode: string) => {
-    console.log('Langue sélectionnée:', languageCode);
-    
     if (languageCode === currentLanguage) {
       setOpen(false);
       return;
     }
     
-    setTranslating(true);
     setOpen(false);
-    
-    try {
-      await translatePage(languageCode);
-      
-      // Feedback visuel
-      setTimeout(() => {
-        setTranslating(false);
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Erreur de traduction:', error);
-      setTranslating(false);
-    }
+    await translatePage(languageCode);
   };
-
-  // Test de connectivité Google Translate
-  useEffect(() => {
-    if (isGoogleTranslateLoaded) {
-      console.log('Google Translate est prêt pour les langues:', languages.map(l => l.code).join(', '));
-    }
-  }, [isGoogleTranslateLoaded]);
 
   const getStatusMessage = () => {
     if (translationError) {
       return <span className="text-red-600">❌ {translationError}</span>;
     }
     
-    if (translating) {
+    if (isTranslating) {
       return <span className="text-blue-600">🔄 Traduction en cours...</span>;
     }
     
-    if (!isGoogleTranslateLoaded) {
-      return <span className="text-yellow-600">⏳ Chargement du traducteur...</span>;
+    if (!isApiKeyConfigured) {
+      return <span className="text-yellow-600">⚙️ Configuration requise</span>;
     }
     
-    return <span className="text-green-600">✅ Traducteur prêt - {languages.length} langues disponibles</span>;
+    return <span className="text-green-600">✅ Traducteur prêt</span>;
   };
 
   return (
@@ -99,46 +84,52 @@ const LanguageSelector = () => {
           size="sm" 
           className="hover:text-pana-red flex items-center gap-2 relative"
           aria-label="Sélectionner la langue"
-          disabled={translating}
+          disabled={isTranslating}
         >
-          <Globe className={`h-4 w-4 ${translating ? 'animate-spin' : ''}`} />
+          <Globe className={`h-4 w-4 ${isTranslating ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline text-sm">{currentLang.flag} {currentLang.code.toUpperCase()}</span>
           <span className="sm:hidden">{currentLang.flag}</span>
-          {translating && (
+          {isTranslating && (
             <span className="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full animate-pulse"></span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80" align="end">
         <div className="space-y-2">
-          <h4 className="font-medium text-sm">Sélectionner la langue</h4>
-          <ScrollArea className="h-60">
-            <div className="space-y-1">
-              {languages.map((language) => (
-                <Button
-                  key={language.code}
-                  variant="ghost"
-                  className={`w-full justify-start text-left p-2 h-auto hover:bg-gray-50 transition-colors ${
-                    currentLanguage === language.code ? 'bg-gray-100 border border-pana-red' : ''
-                  } ${translating ? 'opacity-50' : ''}`}
-                  onClick={() => handleLanguageSelect(language.code)}
-                  disabled={translating}
-                >
-                  <span className="mr-3 text-lg">{language.flag}</span>
-                  <div className="flex flex-col items-start">
-                    <span className="text-sm font-medium">{language.nativeName}</span>
-                    <span className="text-xs text-gray-500">{language.name}</span>
-                  </div>
-                  {currentLanguage === language.code && (
-                    <span className="ml-auto text-pana-red text-xs">✓</span>
-                  )}
-                </Button>
-              ))}
-            </div>
-          </ScrollArea>
-          <div className="text-xs text-center mt-2 p-2 bg-gray-50 rounded">
-            {getStatusMessage()}
-          </div>
+          {!isApiKeyConfigured ? (
+            <TranslationSetup onApiKeySet={configureApiKey} />
+          ) : (
+            <>
+              <h4 className="font-medium text-sm">Sélectionner la langue</h4>
+              <ScrollArea className="h-60">
+                <div className="space-y-1">
+                  {languages.map((language) => (
+                    <Button
+                      key={language.code}
+                      variant="ghost"
+                      className={`w-full justify-start text-left p-2 h-auto hover:bg-gray-50 transition-colors ${
+                        currentLanguage === language.code ? 'bg-gray-100 border border-pana-red' : ''
+                      } ${isTranslating ? 'opacity-50' : ''}`}
+                      onClick={() => handleLanguageSelect(language.code)}
+                      disabled={isTranslating}
+                    >
+                      <span className="mr-3 text-lg">{language.flag}</span>
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-medium">{language.nativeName}</span>
+                        <span className="text-xs text-gray-500">{language.name}</span>
+                      </div>
+                      {currentLanguage === language.code && (
+                        <span className="ml-auto text-pana-red text-xs">✓</span>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </ScrollArea>
+              <div className="text-xs text-center mt-2 p-2 bg-gray-50 rounded">
+                {getStatusMessage()}
+              </div>
+            </>
+          )}
         </div>
       </PopoverContent>
     </Popover>
