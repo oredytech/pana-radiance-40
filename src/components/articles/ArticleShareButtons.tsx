@@ -12,11 +12,8 @@ interface ArticleShareButtonsProps {
 const ArticleShareButtons = ({ title, url }: ArticleShareButtonsProps) => {
   const { toast } = useToast();
   
-  // Construire l'URL complète avec le bon domaine
+  // Construire l'URL avec le domaine panaradio.net
   const getShareUrl = () => {
-    // Obtenir le domaine actuel de l'application
-    const currentDomain = window.location.origin;
-    
     // Extraire le slug de l'URL actuelle
     const currentPath = window.location.pathname;
     let slug = '';
@@ -28,8 +25,8 @@ const ArticleShareButtons = ({ title, url }: ArticleShareButtonsProps) => {
       slug = currentPath.slice(1);
     }
     
-    // Retourner l'URL complète avec le domaine actuel et le slug complet
-    return `${currentDomain}/${slug}`;
+    // Retourner l'URL avec le domaine panaradio.net
+    return `https://panaradio.net/${slug}`;
   };
   
   const shareUrl = getShareUrl();
