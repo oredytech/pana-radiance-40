@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -14,30 +15,26 @@ import PodcastSection from "@/components/PodcastSection";
 import { useState, useEffect } from "react";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticleLoadingSkeleton from "@/components/articles/ArticleLoadingSkeleton";
+
 const Index = () => {
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
-  const {
-    data: wpCategories
-  } = useQuery({
+
+  const { data: wpCategories } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
     meta: {
       onError: () => {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les catégories",
-          variant: "destructive"
-        });
+        console.warn("Impossible de charger les catégories");
       }
     }
   });
+
   const categories = [{
     id: "all",
     name: "Tous les articles",
@@ -47,52 +44,52 @@ const Index = () => {
     name: cat.name,
     count: cat.count
   })) || [])];
+
   if (categories.length > 1 && wpCategories) {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
 
-  // Charger d'abord les articles récents
-  const {
-    data: recentPosts,
-    isLoading: isLoadingRecent
-  } = useQuery({
+  // Charger d'abord les articles récents avec une stratégie de cache optimisée
+  const { data: recentPosts, isLoading: isLoadingRecent } = useQuery({
     queryKey: ["recent-posts"],
     queryFn: () => fetchRecentPosts(20),
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    refetchOnWindowFocus: false,
     meta: {
       onError: () => {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les articles récents",
-          variant: "destructive"
-        });
+        console.warn("Impossible de charger les articles récents");
       }
     }
   });
 
-  // Charger les articles plus anciens en arrière-plan
+  // Charger les articles plus anciens en arrière-plan de manière optimisée
   useEffect(() => {
     if (recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
 
-      // Charger les articles plus anciens après un délai
-      setTimeout(async () => {
+      // Réduire le délai et optimiser le chargement des articles plus anciens
+      const timeoutId = setTimeout(async () => {
         setIsLoadingOlder(true);
         try {
-          const olderPosts = await fetchOlderPosts(2, 80); // Page 2 et suivantes
+          const olderPosts = await fetchOlderPosts(2, 40); // Réduire le nombre d'articles à charger
           setAllPosts(prev => [...prev, ...olderPosts]);
         } catch (error) {
-          console.error("Error loading older posts:", error);
+          console.warn("Erreur lors du chargement des articles plus anciens:", error);
         } finally {
           setIsLoadingOlder(false);
         }
-      }, 1000);
+      }, 500); // Réduire le délai à 500ms
+
+      return () => clearTimeout(timeoutId);
     }
   }, [recentPosts]);
+
   const articlesForGrid = allPosts ? allPosts.slice(5, 17) : [];
-  return <div className="min-h-screen bg-gray-50 pb-[80px] py-[20px]">
+
+  return (
+    <div className="min-h-screen bg-gray-50 pb-[80px] py-[20px]">
       <Header />
 
       <section className="pt-[95px] pb-5 px-4 py-[95px]">
@@ -104,8 +101,13 @@ const Index = () => {
       <section className="px-4 bg-gray-100 py-[3px]">
         <div className="container mx-auto px-0">
           <div className="w-full">
-            <CategoryTabs categories={categories.slice(0, 5)} activeCategory={activeCategory} setActiveCategory={setActiveCategory}>
-              {isLoadingRecent ? <div className="mt-6">
+            <CategoryTabs 
+              categories={categories.slice(0, 5)} 
+              activeCategory={activeCategory} 
+              setActiveCategory={setActiveCategory}
+            >
+              {isLoadingRecent ? (
+                <div className="mt-6">
                   <div className="text-center mb-4">
                     <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
@@ -113,15 +115,28 @@ const Index = () => {
                     </div>
                   </div>
                   <ArticleLoadingSkeleton />
-                </div> : <div className="mt-6">
-                  <ArticlesGrid posts={articlesForGrid} isLoading={false} getImageUrl={getImageUrl} stripHtml={stripHtml} getSlug={getSlug} truncateText={truncateText} displayCount={12} />
-                  {isLoadingOlder && <div className="text-center mt-6">
+                </div>
+              ) : (
+                <div className="mt-6">
+                  <ArticlesGrid 
+                    posts={articlesForGrid} 
+                    isLoading={false} 
+                    getImageUrl={getImageUrl} 
+                    stripHtml={stripHtml} 
+                    getSlug={getSlug} 
+                    truncateText={truncateText} 
+                    displayCount={12} 
+                  />
+                  {isLoadingOlder && (
+                    <div className="text-center mt-6">
                       <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
                         <span className="text-sm text-gray-600">Chargement d'articles supplémentaires...</span>
                       </div>
-                    </div>}
-                </div>}
+                    </div>
+                  )}
+                </div>
+              )}
             </CategoryTabs>
           </div>
         </div>
@@ -154,6 +169,8 @@ const Index = () => {
       <div className="pb-4 py-0">
         <Footer />
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

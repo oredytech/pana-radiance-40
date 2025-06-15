@@ -1,3 +1,4 @@
+
 import type { WordPressPost, WordPressComment } from '@/types/wordpress';
 
 export type { WordPressPost, WordPressComment };
@@ -45,150 +46,175 @@ const mockCategories: WordPressCategory[] = [
   { id: 4, name: "Société", slug: "societe", count: 7 }
 ];
 
-export const fetchCategories = async (): Promise<WordPressCategory[]> => {
+// Cache simple en mémoire
+const cache = new Map();
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+
+const getCacheKey = (url: string) => url;
+
+const setCache = (key: string, data: any) => {
+  cache.set(key, {
+    data,
+    timestamp: Date.now()
+  });
+};
+
+const getCache = (key: string) => {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  cache.delete(key);
+  return null;
+};
+
+const fetchWithTimeout = async (url: string, timeout = 5000) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
   try {
-    // Ajouter un timestamp pour éviter le cache
-    const timestamp = new Date().getTime();
-    const response = await fetch(`https://panaradio.net/wp-json/wp/v2/categories?per_page=100&_=${timestamp}`, {
+    const response = await fetch(url, {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       mode: 'cors',
-      cache: 'no-cache' // Forcer le rafraîchissement
+      signal: controller.signal
     });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
+};
+
+export const fetchCategories = async (): Promise<WordPressCategory[]> => {
+  const cacheKey = 'categories';
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/categories?per_page=100`);
     
     if (!response.ok) {
-      throw new Error("Failed to fetch categories");
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    setCache(cacheKey, data);
+    return data;
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    console.warn("Fallback to mock categories:", error);
     return mockCategories;
   }
 };
 
-// Nouvelles fonctions pour le chargement progressif
 export const fetchRecentPosts = async (limit: number = 20): Promise<WordPressPost[]> => {
+  const cacheKey = `recent-posts-${limit}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
   try {
-    const timestamp = new Date().getTime();
-    const response = await fetch(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc&_=${timestamp}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-      cache: 'no-cache'
-    });
+    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`);
     
     if (!response.ok) {
-      throw new Error("Failed to fetch recent posts");
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    setCache(cacheKey, data);
+    return data;
   } catch (error) {
-    console.error("Error fetching recent posts:", error);
+    console.warn("Fallback to mock posts:", error);
     return mockPosts.slice(0, limit);
   }
 };
 
 export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): Promise<WordPressPost[]> => {
+  const cacheKey = `older-posts-${page}-${perPage}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
   try {
-    const timestamp = new Date().getTime();
-    const response = await fetch(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc&_=${timestamp}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-      cache: 'no-cache'
-    });
+    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc`);
     
     if (!response.ok) {
-      throw new Error("Failed to fetch older posts");
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    setCache(cacheKey, data);
+    return data;
   } catch (error) {
-    console.error("Error fetching older posts:", error);
+    console.warn("Error fetching older posts:", error);
     return [];
   }
 };
 
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
+  const cacheKey = 'all-posts';
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
   try {
-    // Ajouter un timestamp pour éviter le cache
-    const timestamp = new Date().getTime();
-    const response = await fetch(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=100&_=${timestamp}`, {
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-      cache: 'no-cache' // Forcer le rafraîchissement
-    });
+    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=50`);
     
     if (!response.ok) {
-      throw new Error("Failed to fetch posts");
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    setCache(cacheKey, data);
+    return data;
   } catch (error) {
-    console.error("Error fetching posts:", error);
+    console.warn("Fallback to mock posts:", error);
     return mockPosts;
   }
 };
 
 export const fetchPostsByCategory = async (categoryId: number): Promise<WordPressPost[]> => {
+  const cacheKey = `posts-category-${categoryId}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
   try {
-    const timestamp = new Date().getTime();
-    const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=100&_=${timestamp}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-        cache: 'no-cache' // Forcer le rafraîchissement
-      }
+    const response = await fetchWithTimeout(
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=50`
     );
     
     if (!response.ok) {
-      throw new Error("Failed to fetch posts by category");
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    setCache(cacheKey, data);
+    return data;
   } catch (error) {
-    console.error("Error fetching posts by category:", error);
+    console.warn("Error fetching posts by category:", error);
     return mockPosts.filter((_, index) => index % 5 === categoryId % 5);
   }
 };
 
 export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
+  const cacheKey = `search-${query}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
   try {
-    const timestamp = new Date().getTime();
-    const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/posts?_embed&search=${encodeURIComponent(query)}&per_page=50&_=${timestamp}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-        cache: 'no-cache'
-      }
+    const response = await fetchWithTimeout(
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&search=${encodeURIComponent(query)}&per_page=30`
     );
     
     if (!response.ok) {
-      throw new Error("Failed to search posts");
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    setCache(cacheKey, data);
+    return data;
   } catch (error) {
-    console.error("Error searching posts:", error);
-    // Retourner des articles filtrés localement en cas d'erreur
+    console.warn("Error searching posts:", error);
     return mockPosts.filter(post => 
       post.title.rendered.toLowerCase().includes(query.toLowerCase()) ||
       post.content.rendered.toLowerCase().includes(query.toLowerCase())
@@ -197,27 +223,24 @@ export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
 };
 
 export const fetchPost = async (id: string): Promise<WordPressPost> => {
+  const cacheKey = `post-${id}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
   try {
-    const timestamp = new Date().getTime();
-    const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed&_=${timestamp}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-        cache: 'no-cache'
-      }
+    const response = await fetchWithTimeout(
+      `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed`
     );
     
     if (!response.ok) {
-      throw new Error("Failed to fetch post");
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    setCache(cacheKey, data);
+    return data;
   } catch (error) {
-    console.error("Error fetching post:", error);
+    console.warn("Error fetching post:", error);
     const mockPost = mockPosts.find(p => p.id === parseInt(id));
     if (!mockPost) {
       throw new Error("Post not found");
@@ -227,27 +250,24 @@ export const fetchPost = async (id: string): Promise<WordPressPost> => {
 };
 
 export const fetchLatestComments = async (limit: number = 10): Promise<WordPressComment[]> => {
+  const cacheKey = `latest-comments-${limit}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
   try {
-    const timestamp = new Date().getTime();
-    const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/comments?per_page=${limit}&orderby=date&order=desc&_=${timestamp}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-        cache: 'no-cache'
-      }
+    const response = await fetchWithTimeout(
+      `https://panaradio.net/wp-json/wp/v2/comments?per_page=${limit}&orderby=date&order=desc`
     );
     
     if (!response.ok) {
-      throw new Error("Failed to fetch comments");
+      throw new Error(`HTTP ${response.status}`);
     }
     
-    return response.json();
+    const data = await response.json();
+    setCache(cacheKey, data);
+    return data;
   } catch (error) {
-    console.error("Error fetching comments:", error);
+    console.warn("Error fetching comments:", error);
     return mockComments.slice(0, limit);
   }
 };
@@ -256,33 +276,31 @@ export const fetchAllComments = async (page: number = 1, perPage: number = 20): 
   comments: WordPressComment[];
   totalPages: number;
 }> => {
+  const cacheKey = `all-comments-${page}-${perPage}`;
+  const cached = getCache(cacheKey);
+  if (cached) return cached;
+
   try {
-    const timestamp = new Date().getTime();
-    const response = await fetch(
-      `https://panaradio.net/wp-json/wp/v2/comments?page=${page}&per_page=${perPage}&orderby=date&order=desc&_=${timestamp}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-        cache: 'no-cache'
-      }
+    const response = await fetchWithTimeout(
+      `https://panaradio.net/wp-json/wp/v2/comments?page=${page}&per_page=${perPage}&orderby=date&order=desc`
     );
     
     if (!response.ok) {
-      throw new Error("Failed to fetch comments");
+      throw new Error(`HTTP ${response.status}`);
     }
     
     const totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '1');
     const comments = await response.json();
     
-    return {
+    const result = {
       comments,
       totalPages
     };
+    
+    setCache(cacheKey, result);
+    return result;
   } catch (error) {
-    console.error("Error fetching comments:", error);
+    console.warn("Error fetching comments:", error);
     return {
       comments: mockComments.slice((page - 1) * perPage, page * perPage),
       totalPages: Math.ceil(mockComments.length / perPage)

@@ -31,15 +31,12 @@ const Articles = () => {
   const { data: wpCategories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: 2,
     meta: {
       onError: () => {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les catégories",
-          variant: "destructive"
-        });
+        console.warn("Impossible de charger les catégories");
       }
     }
   });
@@ -58,7 +55,7 @@ const Articles = () => {
     categories[0].count = wpCategories.reduce((total, cat) => total + cat.count, 0);
   }
   
-  // Charger d'abord les articles récents
+  // Charger d'abord les articles récents avec une stratégie de cache optimisée
   const { data: recentPosts, isLoading: isLoadingRecent, error } = useQuery({
     queryKey: ["recent-posts", activeCategory],
     queryFn: async () => {
@@ -68,36 +65,35 @@ const Articles = () => {
         return fetchPostsByCategory(parseInt(activeCategory));
       }
     },
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnWindowFocus: true,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
+    refetchOnWindowFocus: false,
     meta: {
       onError: () => {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les articles",
-          variant: "destructive"
-        });
+        console.warn("Impossible de charger les articles");
       }
     }
   });
 
-  // Charger les articles plus anciens en arrière-plan
+  // Charger les articles plus anciens en arrière-plan de manière optimisée
   useEffect(() => {
     if (recentPosts && recentPosts.length > 0 && activeCategory === "all") {
       setAllPosts(recentPosts);
       
-      setTimeout(async () => {
+      const timeoutId = setTimeout(async () => {
         setIsLoadingOlder(true);
         try {
-          const olderPosts = await fetchOlderPosts(2, 80);
+          const olderPosts = await fetchOlderPosts(2, 40); // Réduire le nombre d'articles
           setAllPosts(prev => [...prev, ...olderPosts]);
         } catch (error) {
-          console.error("Error loading older posts:", error);
+          console.warn("Erreur lors du chargement des articles plus anciens:", error);
         } finally {
           setIsLoadingOlder(false);
         }
-      }, 1000);
+      }, 500); // Réduire le délai
+
+      return () => clearTimeout(timeoutId);
     } else if (recentPosts) {
       setAllPosts(recentPosts);
     }
