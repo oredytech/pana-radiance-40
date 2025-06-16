@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { type WordPressPost } from "@/services/wordpress";
 import { usePostIdFromSlug, useTrackArticleView, useArticleViews } from "@/utils/otSiteStats";
 import { getSlug } from "@/utils/textUtils";
+import ArticleAudioPlayer from './ArticleAudioPlayer';
 
 interface ArticleContentProps {
   post: WordPressPost;
@@ -23,6 +24,12 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
   return (
     <article className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="p-8">
+        {/* Lecteur audio avant le titre */}
+        <ArticleAudioPlayer 
+          title={post.title.rendered}
+          content={post.content.rendered}
+        />
+
         {/* Affichage du nombre de vues */}
         {views !== null ? (
           <p className="text-gray-600 mb-4 font-medium">
