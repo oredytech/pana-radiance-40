@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button";
 import { type WordPressPost } from "@/services/wordpress";
 import { Link } from "react-router-dom";
+import { usePosts } from '@/hooks/usePosts';
 
 interface ArticlesGridProps {
   posts: WordPressPost[];
