@@ -146,3 +146,22 @@ const Article = () => {
 };
 
 export default Article;
+
+// 📁 src/pages/ArticlePage.tsx
+import { useTrackArticleView, useArticleViews } from "@/utils/otSiteStats";
+
+const ArticlePage = ({ post }: { post: any }) => {
+  useTrackArticleView(post.id); // Enregistre la vue
+
+  const views = useArticleViews(post.id); // Récupère les vues
+
+  return (
+    <div className="article-container">
+      <h1>{post.title.rendered}</h1>
+      {views !== null && <p>👁️ {views} vues</p>}
+      <div dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+    </div>
+  );
+};
+
+export default ArticlePage;
