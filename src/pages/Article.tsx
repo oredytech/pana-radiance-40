@@ -145,39 +145,4 @@ const Article = () => {
   );
 };
 
-// 📁 src/pages/ArticlePage.tsx
-import React from "react";
-import {
-  usePostIdFromSlug,
-  useTrackArticleView,
-  useArticleViews,
-} from "@/utils/otSiteStats";
-
-interface ArticlePageProps {
-  slug: string;
-}
-
-const ArticlePage: React.FC<ArticlePageProps> = ({ slug }) => {
-  const postId = usePostIdFromSlug(slug);
-
-  useTrackArticleView(postId);
-  const views = useArticleViews(postId);
-
-  return (
-    <div className="article-container">
-      <h1>Article : {slug}</h1>
-
-      {views !== null ? (
-        <p style={{ fontWeight: "bold", fontSize: "18px" }}>
-          👁️ {views} vue{views > 1 ? "s" : ""}
-        </p>
-      ) : (
-        <p>Chargement des vues...</p>
-      )}
-    </div>
-  );
-};
-
 export default Article;
-
-
