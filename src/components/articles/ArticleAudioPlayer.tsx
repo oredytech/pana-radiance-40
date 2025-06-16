@@ -1,8 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Pause, Volume2, Loader2, Settings } from 'lucide-react';
+import { Play, Pause, Volume2, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { stripHtml } from '@/utils/textUtils';
@@ -14,193 +13,166 @@ interface ArticleAudioPlayerProps {
 
 const ArticleAudioPlayer = ({ title, content }: ArticleAudioPlayerProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState('');
+  const [isPaused, setIsPaused] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState('9BWtsMINqrJLrRacOk9x'); // Aria
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-
-  // Voices disponibles
-  const voices = [
-    { id: '9BWtsMINqrJLrRacOk9x', name: 'Aria' },
-    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Sarah' },
-    { id: 'FGY2WhTYpPnrIDTdsKH5', name: 'Laura' },
-    { id: 'XB0fDUnXU5powFXDhCwa', name: 'Charlotte' },
-    { id: 'Xb7hH8MSUJpSbSDYk0k2', name: 'Alice' },
-    { id: 'cgSgspJ2msm6clMCkdW9', name: 'Jessica' },
-  ];
+  const [selectedVoice, setSelectedVoice] = useState<string>('');
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [speechRate, setSpeechRate] = useState(1);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   const cleanText = stripHtml(content).substring(0, 5000); // Limiter à 5000 caractères
   const fullText = `${stripHtml(title)}. ${cleanText}`;
 
-  const generateAudio = async () => {
-    if (!apiKey) {
-      alert('Veuillez entrer votre clé API ElevenLabs dans les paramètres');
-      setShowSettings(true);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${selectedVoice}`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'audio/mpeg',
-          'Content-Type': 'application/json',
-          'xi-api-key': apiKey,
-        },
-        body: JSON.stringify({
-          text: fullText,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.5,
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Erreur lors de la génération audio');
-      }
-
-      const audioBlob = await response.blob();
-      const url = URL.createObjectURL(audioBlob);
-      setAudioUrl(url);
-      
-      if (audioRef.current) {
-        audioRef.current.src = url;
-      }
-    } catch (error) {
-      console.error('Erreur:', error);
-      alert('Erreur lors de la génération de l\'audio. Vérifiez votre clé API.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const togglePlayPause = async () => {
-    if (!audioUrl) {
-      await generateAudio();
-      return;
-    }
-
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play();
-        setIsPlaying(true);
-      }
-    }
-  };
-
+  // Charger les voix disponibles
   useEffect(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      const handleEnded = () => setIsPlaying(false);
-      const handleLoadedData = () => {
-        if (isLoading) {
-          audio.play();
-          setIsPlaying(true);
-          setIsLoading(false);
-        }
-      };
+    const loadVoices = () => {
+      const availableVoices = speechSynthesis.getVoices();
+      setVoices(availableVoices);
+      
+      // Sélectionner la première voix française ou la première voix disponible
+      const frenchVoice = availableVoices.find(voice => voice.lang.startsWith('fr'));
+      const defaultVoice = frenchVoice || availableVoices[0];
+      if (defaultVoice) {
+        setSelectedVoice(defaultVoice.name);
+      }
+    };
 
-      audio.addEventListener('ended', handleEnded);
-      audio.addEventListener('loadeddata', handleLoadedData);
-
-      return () => {
-        audio.removeEventListener('ended', handleEnded);
-        audio.removeEventListener('loadeddata', handleLoadedData);
-      };
+    loadVoices();
+    
+    // Certains navigateurs chargent les voix de manière asynchrone
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
     }
-  }, [audioUrl, isLoading]);
+  }, []);
+
+  const togglePlayPause = () => {
+    if (isPlaying && !isPaused) {
+      // Pause
+      speechSynthesis.pause();
+      setIsPaused(true);
+    } else if (isPlaying && isPaused) {
+      // Resume
+      speechSynthesis.resume();
+      setIsPaused(false);
+    } else {
+      // Start new speech
+      const utterance = new SpeechSynthesisUtterance(fullText);
+      const voice = voices.find(v => v.name === selectedVoice);
+      
+      if (voice) {
+        utterance.voice = voice;
+      }
+      
+      utterance.rate = speechRate;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      utterance.onstart = () => {
+        setIsPlaying(true);
+        setIsPaused(false);
+      };
+
+      utterance.onend = () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+      };
+
+      utterance.onerror = () => {
+        setIsPlaying(false);
+        setIsPaused(false);
+        alert('Erreur lors de la lecture de l\'article');
+      };
+
+      utteranceRef.current = utterance;
+      speechSynthesis.speak(utterance);
+    }
+  };
+
+  const stopSpeech = () => {
+    speechSynthesis.cancel();
+    setIsPlaying(false);
+    setIsPaused(false);
+  };
 
   return (
-    <Card className="mb-6">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={togglePlayPause}
-              disabled={isLoading}
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : isPlaying ? (
-                <Pause className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-              {isLoading ? 'Génération...' : isPlaying ? 'Pause' : 'Écouter l\'article'}
-            </Button>
-            
-            <Volume2 className="h-4 w-4 text-gray-500" />
-            <span className="text-sm text-gray-600">Lecture vocale par IA</span>
-          </div>
+    <div className="inline-flex items-center gap-3">
+      <Button
+        onClick={togglePlayPause}
+        size="sm"
+        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
+      >
+        {isPlaying && !isPaused ? (
+          <Pause className="h-4 w-4" />
+        ) : (
+          <Play className="h-4 w-4" />
+        )}
+        {isPlaying && !isPaused ? 'Pause' : 'Écouter l\'article'}
+      </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowSettings(!showSettings)}
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setShowSettings(!showSettings)}
+        className="p-2"
+      >
+        <Settings className="h-4 w-4" />
+      </Button>
 
-        {showSettings && (
-          <div className="mt-4 pt-4 border-t space-y-3">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Clé API ElevenLabs
-              </label>
-              <Input
-                type="password"
-                placeholder="Entrez votre clé API ElevenLabs"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="w-full"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Obtenez votre clé API sur{' '}
-                <a 
-                  href="https://elevenlabs.io" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline"
-                >
-                  elevenlabs.io
-                </a>
-              </p>
-            </div>
-
+      {showSettings && (
+        <Card className="absolute top-12 left-0 z-10 w-80">
+          <CardContent className="p-4 space-y-3">
             <div>
               <label className="block text-sm font-medium mb-1">
                 Voix
               </label>
               <Select value={selectedVoice} onValueChange={setSelectedVoice}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Sélectionner une voix" />
                 </SelectTrigger>
                 <SelectContent>
                   {voices.map((voice) => (
-                    <SelectItem key={voice.id} value={voice.id}>
-                      {voice.name}
+                    <SelectItem key={voice.name} value={voice.name}>
+                      {voice.name} ({voice.lang})
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
-        )}
 
-        <audio ref={audioRef} style={{ display: 'none' }} />
-      </CardContent>
-    </Card>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Vitesse: {speechRate}x
+              </label>
+              <input
+                type="range"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value={speechRate}
+                onChange={(e) => setSpeechRate(Number(e.target.value))}
+                className="w-full"
+              />
+            </div>
+
+            {isPlaying && (
+              <Button
+                onClick={stopSpeech}
+                variant="destructive"
+                size="sm"
+                className="w-full"
+              >
+                Arrêter la lecture
+              </Button>
+            )}
+
+            <p className="text-xs text-gray-500">
+              <Volume2 className="h-3 w-3 inline mr-1" />
+              Lecture vocale par le navigateur (gratuit)
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 

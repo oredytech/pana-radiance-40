@@ -24,20 +24,25 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
   return (
     <article className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="p-8">
-        {/* Lecteur audio avant le titre */}
-        <ArticleAudioPlayer 
-          title={post.title.rendered}
-          content={post.content.rendered}
-        />
-
-        {/* Affichage du nombre de vues */}
-        {views !== null ? (
-          <p className="text-gray-600 mb-4 font-medium">
-            👁️ Lecteurs : {views.toLocaleString()} vue{views > 1 ? 's' : ''}
-          </p>
-        ) : (
-          <p className="text-gray-400 mb-4">Chargement des vues...</p>
-        )}
+        {/* Affichage du nombre de vues et lecteur audio */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            {views !== null ? (
+              <p className="text-gray-600 font-medium">
+                👁️ Lecteurs : {views.toLocaleString()} vue{views > 1 ? 's' : ''}
+              </p>
+            ) : (
+              <p className="text-gray-400">Chargement des vues...</p>
+            )}
+          </div>
+          
+          <div className="relative">
+            <ArticleAudioPlayer 
+              title={post.title.rendered}
+              content={post.content.rendered}
+            />
+          </div>
+        </div>
         
         <h1 
           className="text-3xl font-bold mb-6"
