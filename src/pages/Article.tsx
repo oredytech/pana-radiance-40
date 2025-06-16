@@ -148,18 +148,34 @@ const Article = () => {
 export default Article;
 
 // 📁 src/pages/ArticlePage.tsx
-import { useTrackArticleView, useArticleViews } from "@/utils/otSiteStats";
+import React from "react";
+import {
+  usePostIdFromSlug,
+  useTrackArticleView,
+  useArticleViews,
+} from "@/utils/otSiteStats";
 
-const ArticlePage = ({ post }: { post: any }) => {
-  useTrackArticleView(post.id); // Enregistre la vue
+interface ArticlePageProps {
+  slug: string;
+}
 
-  const views = useArticleViews(post.id); // Récupère les vues
+const ArticlePage: React.FC<ArticlePageProps> = ({ slug }) => {
+  const postId = usePostIdFromSlug(slug);
+
+  useTrackArticleView(postId);
+  const views = useArticleViews(postId);
 
   return (
     <div className="article-container">
-      <h1>{post.title.rendered}</h1>
-      {views !== null && <p>👁️ {views} vues</p>}
-      <div dangerouslySetInnerHTML={{ __html: post.content.rendered }} />
+      <h1>Article : {slug}</h1>
+
+      {views !== null ? (
+        <p style={{ fontWeight: "bold", fontSize: "18px" }}>
+          👁️ {views} vue{views > 1 ? "s" : ""}
+        </p>
+      ) : (
+        <p>Chargement des vues...</p>
+      )}
     </div>
   );
 };
