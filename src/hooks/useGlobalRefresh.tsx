@@ -41,7 +41,7 @@ export const useGlobalRefresh = () => {
   }, [baseApplyUpdates, clearNewContent]);
 
   // Démarrer automatiquement le rafraîchissement toutes les 10 minutes
-  useAutoRefresh(startRefresh, 10 * 60 * 1000);
+  useAutoRefresh(startRefresh, 1 * 60 * 1000);
 
   return {
     isRefreshing,
