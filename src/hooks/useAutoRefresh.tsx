@@ -1,7 +1,7 @@
 
 import { useEffect } from 'react';
 
-export const useAutoRefresh = (refreshCallback: () => void, intervalMs = 10 * 60 * 1000) => {
+export const useAutoRefresh = (refreshCallback: () => void, intervalMs = 1 * 60 * 1000) => {
   useEffect(() => {
     const interval = setInterval(() => {
       refreshCallback();
