@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 // 🛠️ Ton domaine WordPress ici
-const WORDPRESS_API_BASE = "https://ton-site-wordpress.com/wp-json";
+const WORDPRESS_API_BASE = "https://panaradio.net/wp-json";
 
 // 🔁 Récupérer le post ID depuis un slug
 export const usePostIdFromSlug = (slug: string): number | null => {
