@@ -6,6 +6,8 @@ import { Headphones } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getImageUrl, stripHtml, getSlug } from "@/utils/textUtils";
 import HeroLoadingIndicator from "./HeroLoadingIndicator";
+import { usePosts } from '@/hooks/usePosts';
+
 
 const BlogPreview = () => {
   const { toast } = useToast();
