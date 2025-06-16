@@ -145,8 +145,6 @@ const Article = () => {
   );
 };
 
-export default Article;
-
 // 📁 src/pages/ArticlePage.tsx
 import React from "react";
 import {
@@ -180,4 +178,6 @@ const ArticlePage: React.FC<ArticlePageProps> = ({ slug }) => {
   );
 };
 
-export default ArticlePage;
+export default Article;
+
+
