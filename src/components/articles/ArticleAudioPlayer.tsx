@@ -95,7 +95,7 @@ const ArticleAudioPlayer = ({ title, content }: ArticleAudioPlayerProps) => {
   };
 
   return (
-    <div className="inline-flex items-center gap-3">
+    <div className="relative inline-flex items-center gap-3">
       <Button
         onClick={togglePlayPause}
         size="sm"
@@ -119,29 +119,41 @@ const ArticleAudioPlayer = ({ title, content }: ArticleAudioPlayerProps) => {
       </Button>
 
       {showSettings && (
-        <Card className="absolute top-12 left-0 z-10 w-80">
-          <CardContent className="p-4 space-y-3">
+        <Card className="absolute top-12 right-0 z-50 w-80 shadow-lg border-2">
+          <CardContent className="p-4 space-y-4">
+            <div className="border-b pb-3">
+              <h3 className="font-semibold text-lg mb-2">Paramètres de lecture</h3>
+            </div>
+            
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Voix
+              <label className="block text-sm font-medium mb-2">
+                Sélection de la voix
               </label>
               <Select value={selectedVoice} onValueChange={setSelectedVoice}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Sélectionner une voix" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-48">
                   {voices.map((voice) => (
                     <SelectItem key={voice.name} value={voice.name}>
-                      {voice.name} ({voice.lang})
+                      <div className="flex flex-col">
+                        <span className="font-medium">{voice.name}</span>
+                        <span className="text-xs text-gray-500">
+                          {voice.lang} - {voice.localService ? 'Local' : 'Réseau'}
+                        </span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                {voices.length} voix disponibles
+              </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Vitesse: {speechRate}x
+              <label className="block text-sm font-medium mb-2">
+                Vitesse de lecture: {speechRate.toFixed(1)}x
               </label>
               <input
                 type="range"
@@ -150,8 +162,26 @@ const ArticleAudioPlayer = ({ title, content }: ArticleAudioPlayerProps) => {
                 step="0.1"
                 value={speechRate}
                 onChange={(e) => setSpeechRate(Number(e.target.value))}
-                className="w-full"
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
               />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>0.5x (Lent)</span>
+                <span>1.0x (Normal)</span>
+                <span>2.0x (Rapide)</span>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Volume2 className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  Lecture vocale gratuite
+                </span>
+              </div>
+              <p className="text-xs text-blue-700">
+                Utilise la synthèse vocale de votre navigateur. 
+                La qualité dépend des voix installées sur votre système.
+              </p>
             </div>
 
             {isPlaying && (
@@ -165,10 +195,16 @@ const ArticleAudioPlayer = ({ title, content }: ArticleAudioPlayerProps) => {
               </Button>
             )}
 
-            <p className="text-xs text-gray-500">
-              <Volume2 className="h-3 w-3 inline mr-1" />
-              Lecture vocale par le navigateur (gratuit)
-            </p>
+            <div className="text-center">
+              <Button
+                onClick={() => setShowSettings(false)}
+                variant="outline"
+                size="sm"
+                className="px-6"
+              >
+                Fermer
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
