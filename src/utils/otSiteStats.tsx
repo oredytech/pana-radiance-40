@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 
 // 🛠️ CONFIG : ici, mets l'URL de ton site WordPress
-const WORDPRESS_API_BASE = "https://ton-site-wordpress.com/wp-json/otstats/v1";
+const WORDPRESS_API_BASE = "https://panaradio.net/wp-json/otstats/v1";
 
 // 🔁 Fonction pour enregistrer une vue
 export const useTrackArticleView = (postId: number) => {
