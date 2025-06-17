@@ -37,7 +37,7 @@ export const refreshPostsInBackground = async (
 ): Promise<void> => {
   try {
     console.log('Rechargement des articles en arrière-plan...');
-    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`);
+    const response = await fetchWithTimeout(`https://totalementactus.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`);
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
