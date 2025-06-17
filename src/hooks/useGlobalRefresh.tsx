@@ -3,7 +3,7 @@ import { useCallback } from 'react';
 import { useRefreshState } from './useRefreshState';
 import { useContentUpdater } from './useContentUpdater';
 import { useAutoRefresh } from './useAutoRefresh';
-import { performBackgroundRefresh } from '@/utils/refreshUtils';
+import { refreshPostsInBackground } from '@/services/wordpress';
 
 export const useGlobalRefresh = () => {
   const {
@@ -23,10 +23,10 @@ export const useGlobalRefresh = () => {
     startRefreshing();
 
     try {
-      await performBackgroundRefresh((newPosts) => {
+      await refreshPostsInBackground((newPosts) => {
         console.log('Nouveaux articles chargés:', newPosts.length);
         markContentAsNew();
-      }, 50); // Charger plus d'articles pour s'assurer d'avoir du nouveau contenu
+      }, 50);
       
     } catch (error) {
       console.warn('Erreur lors du rafraîchissement:', error);

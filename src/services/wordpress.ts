@@ -15,8 +15,7 @@ export {
   fetchPostsByCategory,
   searchPosts,
   fetchPost,
-  refreshPostsInBackground,
-  invalidateRecentPostsCache
+  refreshPostsInBackground
 } from './posts';
 
 export {

@@ -1,7 +1,6 @@
 
 import type { WordPressPost } from '@/types/wordpress';
 import { fetchWithTimeout } from './api';
-import { getCache, setCache, CACHE_DURATION, LONG_CACHE_DURATION, invalidateRecentPostsCache } from './cache';
 
 const mockPosts: WordPressPost[] = [
   {
@@ -32,10 +31,9 @@ const mockPosts: WordPressPost[] = [
   }
 ];
 
-// Nouvelle fonction pour recharger les articles en arrière-plan
 export const refreshPostsInBackground = async (
   onUpdate: (newPosts: WordPressPost[]) => void,
-  limit: number = 60 // Augmenter pour couvrir plus d'articles
+  limit: number = 60
 ): Promise<void> => {
   try {
     console.log('Rechargement des articles en arrière-plan...');
@@ -46,16 +44,6 @@ export const refreshPostsInBackground = async (
     }
     
     const newPosts = await response.json();
-    
-    // Mettre à jour le cache pour tous les articles
-    const cacheKey = `all-posts`;
-    setCache(cacheKey, newPosts);
-    
-    // Mettre à jour aussi le cache des articles récents
-    const recentCacheKey = `recent-posts-20`;
-    setCache(recentCacheKey, newPosts.slice(0, 20));
-    
-    // Notifier le composant des nouveaux articles
     onUpdate(newPosts);
     console.log('Articles mis à jour en arrière-plan');
   } catch (error) {
@@ -64,13 +52,6 @@ export const refreshPostsInBackground = async (
 };
 
 export const fetchRecentPosts = async (limit: number = 50): Promise<WordPressPost[]> => {
-  const cacheKey = `recent-posts-${limit}`;
-  const cached = getCache(cacheKey);
-  if (cached) {
-    console.log(`Loading ${limit} recent posts from cache`);
-    return cached;
-  }
-
   try {
     console.log(`Fetching ${limit} recent posts from API`);
     const actualLimit = Math.min(limit, 100);
@@ -81,7 +62,6 @@ export const fetchRecentPosts = async (limit: number = 50): Promise<WordPressPos
     }
     
     const data = await response.json();
-    setCache(cacheKey, data);
     return data;
   } catch (error) {
     console.warn("Fallback to mock posts:", error);
@@ -90,13 +70,6 @@ export const fetchRecentPosts = async (limit: number = 50): Promise<WordPressPos
 };
 
 export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): Promise<WordPressPost[]> => {
-  const cacheKey = `older-posts-${page}-${perPage}`;
-  const cached = getCache(cacheKey);
-  if (cached) {
-    console.log(`Loading older posts page ${page} from cache`);
-    return cached;
-  }
-
   try {
     console.log(`Fetching older posts page ${page} from API`);
     const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc`);
@@ -106,7 +79,6 @@ export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): P
     }
     
     const data = await response.json();
-    setCache(cacheKey, data, LONG_CACHE_DURATION);
     return data;
   } catch (error) {
     console.warn("Error fetching older posts:", error);
@@ -115,13 +87,6 @@ export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): P
 };
 
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
-  const cacheKey = 'all-posts';
-  const cached = getCache(cacheKey);
-  if (cached) {
-    console.log('Loading all posts from cache');
-    return cached;
-  }
-
   try {
     console.log('Fetching all posts from API with unlimited pagination');
     
@@ -166,7 +131,6 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
     }
     
     console.log(`Total posts loaded: ${allPosts.length}`);
-    setCache(cacheKey, allPosts);
     return allPosts;
   } catch (error) {
     console.warn("Fallback to mock posts:", error);
@@ -175,10 +139,6 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
 };
 
 export const fetchPostsByCategory = async (categoryId: number): Promise<WordPressPost[]> => {
-  const cacheKey = `posts-category-${categoryId}`;
-  const cached = getCache(cacheKey);
-  if (cached) return cached;
-
   try {
     const response = await fetchWithTimeout(
       `https://panaradio.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=50`
@@ -189,7 +149,6 @@ export const fetchPostsByCategory = async (categoryId: number): Promise<WordPres
     }
     
     const data = await response.json();
-    setCache(cacheKey, data);
     return data;
   } catch (error) {
     console.warn("Error fetching posts by category:", error);
@@ -204,17 +163,10 @@ export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
   }
 
   const trimmedQuery = query.trim();
-  const cacheKey = `search-${trimmedQuery.toLowerCase()}`;
-  const cached = getCache(cacheKey);
-  if (cached) {
-    console.log(`Returning cached search results for: ${trimmedQuery}`);
-    return cached;
-  }
 
   try {
     console.log(`Searching for: "${trimmedQuery}"`);
     
-    // Essayer plusieurs approches de recherche
     const searchUrl = `https://panaradio.net/wp-json/wp/v2/posts?_embed&search=${encodeURIComponent(trimmedQuery)}&per_page=50&orderby=relevance`;
     console.log(`Search URL: ${searchUrl}`);
     
@@ -227,35 +179,10 @@ export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
     const data = await response.json();
     console.log(`Search API returned ${data.length} results for "${trimmedQuery}"`);
     
-    // Si l'API ne retourne rien, essayer une recherche locale dans le cache
-    if (data.length === 0) {
-      console.log("No API results, trying local cache search...");
-      const allPostsCache = getCache('all-posts') || getCache('recent-posts-50') || [];
-      
-      if (allPostsCache.length > 0) {
-        const localResults = allPostsCache.filter((post: WordPressPost) => {
-          const searchText = trimmedQuery.toLowerCase();
-          const title = post.title.rendered.toLowerCase();
-          const content = post.content?.rendered?.toLowerCase() || '';
-          const excerpt = post.excerpt?.rendered?.toLowerCase() || '';
-          
-          return title.includes(searchText) || 
-                 content.includes(searchText) || 
-                 excerpt.includes(searchText);
-        });
-        
-        console.log(`Local search found ${localResults.length} results`);
-        setCache(cacheKey, localResults);
-        return localResults;
-      }
-    }
-    
-    setCache(cacheKey, data);
     return data;
   } catch (error) {
     console.warn("Error in search, trying fallback:", error);
     
-    // Fallback: recherche dans les articles mock
     const mockResults = mockPosts.filter(post => {
       const searchText = trimmedQuery.toLowerCase();
       return post.title.rendered.toLowerCase().includes(searchText) ||
@@ -269,10 +196,6 @@ export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
 };
 
 export const fetchPost = async (id: string): Promise<WordPressPost> => {
-  const cacheKey = `post-${id}`;
-  const cached = getCache(cacheKey);
-  if (cached) return cached;
-
   try {
     const response = await fetchWithTimeout(
       `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed`
@@ -283,7 +206,6 @@ export const fetchPost = async (id: string): Promise<WordPressPost> => {
     }
     
     const data = await response.json();
-    setCache(cacheKey, data);
     return data;
   } catch (error) {
     console.warn("Error fetching post:", error);
@@ -295,4 +217,7 @@ export const fetchPost = async (id: string): Promise<WordPressPost> => {
   }
 };
 
-export { invalidateRecentPostsCache };
+// Fonction vide pour compatibilité
+export const invalidateRecentPostsCache = () => {
+  console.log("Cache invalidation called but no cache system active");
+};

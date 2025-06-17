@@ -3,7 +3,6 @@ import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
-import { invalidateRecentPostsCache } from "@/services/wordpress";
 
 const RefreshButton = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -13,8 +12,7 @@ const RefreshButton = () => {
     setIsRefreshing(true);
     
     try {
-      // Effacer tous les caches
-      invalidateRecentPostsCache();
+      // Effacer toutes les requêtes en cache de React Query
       await queryClient.clear();
       
       // Recharger la page après un court délai

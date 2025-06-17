@@ -1,7 +1,6 @@
 
 import type { WordPressComment } from '@/types/wordpress';
 import { fetchWithTimeout } from './api';
-import { getCache, setCache } from './cache';
 
 const mockComments = [
   {
@@ -34,10 +33,6 @@ const mockComments = [
 ];
 
 export const fetchLatestComments = async (limit: number = 10): Promise<WordPressComment[]> => {
-  const cacheKey = `latest-comments-${limit}`;
-  const cached = getCache(cacheKey);
-  if (cached) return cached;
-
   try {
     const response = await fetchWithTimeout(
       `https://panaradio.net/wp-json/wp/v2/comments?per_page=${limit}&orderby=date&order=desc`
@@ -48,7 +43,6 @@ export const fetchLatestComments = async (limit: number = 10): Promise<WordPress
     }
     
     const data = await response.json();
-    setCache(cacheKey, data);
     return data;
   } catch (error) {
     console.warn("Error fetching comments:", error);
@@ -60,10 +54,6 @@ export const fetchAllComments = async (page: number = 1, perPage: number = 20): 
   comments: WordPressComment[];
   totalPages: number;
 }> => {
-  const cacheKey = `all-comments-${page}-${perPage}`;
-  const cached = getCache(cacheKey);
-  if (cached) return cached;
-
   try {
     const response = await fetchWithTimeout(
       `https://panaradio.net/wp-json/wp/v2/comments?page=${page}&per_page=${perPage}&orderby=date&order=desc`
@@ -81,7 +71,6 @@ export const fetchAllComments = async (page: number = 1, perPage: number = 20): 
       totalPages
     };
     
-    setCache(cacheKey, result);
     return result;
   } catch (error) {
     console.warn("Error fetching comments:", error);
