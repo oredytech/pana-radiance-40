@@ -24,12 +24,12 @@ import { PodcastPlayerProvider } from "./context/PodcastPlayerContext";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes - les données restent fraîches pendant 5 min
-      gcTime: 30 * 60 * 1000, // 30 minutes - gardé en cache pendant 30 min
-      refetchOnWindowFocus: false, // Éviter les refetch automatiques
+      staleTime: 2 * 60 * 1000, // 2 minutes - les données restent fraîches pendant 2 min
+      gcTime: 4 * 60 * 1000, // 4 minutes - gardé en cache pendant 4 min
+      refetchOnWindowFocus: true, // Éviter les refetch automatiques
       refetchOnMount: true, // Refetch au montage du composant
-      retry: 2, // Limiter les tentatives de retry
-      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+      retry: 5, // Limiter les tentatives de retry
+      retryDelay: attemptIndex => Math.min(1000 * 5 ** attemptIndex, 30000),
     },
   },
 });
