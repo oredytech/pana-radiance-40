@@ -55,7 +55,7 @@ export const fetchRecentPosts = async (limit: number = 50): Promise<WordPressPos
   try {
     console.log(`Fetching ${limit} recent posts from API`);
     const actualLimit = Math.min(limit, 100);
-    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${actualLimit}&orderby=date&order=desc`);
+    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc&_=${Date.now()}`);
     
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
