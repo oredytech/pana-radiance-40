@@ -29,7 +29,7 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
           <div>
             {views !== null ? (
               <p className="text-gray-600 font-medium">
-                👁️ Lecteurs : {views.toLocaleString()} vue{views > 1 ? 's' : ''}
+                👁️ : {views.toLocaleString()} vue{views > 1 ? 's' : ''}
               </p>
             ) : (
               <p className="text-gray-400">Chargement des vues...</p>
