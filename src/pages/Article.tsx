@@ -21,7 +21,7 @@ const Article = () => {
     queryKey: ["posts"],
     queryFn: fetchPosts,
     staleTime: 30 * 1000, // 30 secondes pour forcer des mises à jour plus fréquentes
-    gcTime: 2 * 60 * 1000, // 2 minutes en cache
+    gcTime: 5 * 60 * 1000, // 5 minutes en cache
     refetchOnWindowFocus: true,
     retry: 3, // Augmenter les tentatives
     meta: {
