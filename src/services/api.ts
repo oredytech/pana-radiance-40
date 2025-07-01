@@ -1,5 +1,5 @@
 
-export const fetchWithTimeout = async (url: string, timeout = 20000) => {
+export const fetchWithTimeout = async (url: string, timeout = 10000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   
@@ -21,4 +21,9 @@ export const fetchWithTimeout = async (url: string, timeout = 20000) => {
     console.error(`Fetch error for ${url}:`, error);
     throw error;
   }
+};
+
+// Nouvelle fonction pour les requêtes rapides avec timeout réduit
+export const fetchFast = async (url: string, timeout = 5000) => {
+  return fetchWithTimeout(url, timeout);
 };
