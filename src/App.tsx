@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -19,16 +20,16 @@ import PodcastPlayer from "./components/PodcastPlayer";
 import LoadingOverlay from "./components/LoadingOverlay";
 import { PodcastPlayerProvider } from "./context/PodcastPlayerContext";
 
-// Configuration optimisée pour des chargements rapides
+// Configuration sans cache pour éviter les problèmes de récupération
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 0,
-      gcTime: 0,
-      refetchOnWindowFocus: false,
-      refetchOnMount: true,
-      retry: 2, // 2 tentatives au lieu de 1
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000), // Délai progressif mais limité
+      staleTime: 0, // Pas de cache - toujours frais
+      gcTime: 0, // Pas de cache en mémoire
+      refetchOnWindowFocus: false, // Pas de refetch automatique
+      refetchOnMount: true, // Refetch au montage
+      retry: 1, // Une seule tentative
+      retryDelay: 2000, // Délai de 2 secondes entre tentatives
     },
   },
 });

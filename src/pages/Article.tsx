@@ -2,7 +2,7 @@
 import React from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchRecentPosts } from "@/services/posts";
+import { fetchPosts } from "@/services/wordpress";
 import { useToast } from "@/hooks/use-toast";
 import { getSlug, stripHtml, normalizeSlug } from "@/utils/textUtils";
 import ArticleLayout from "@/components/articles/ArticleLayout";
@@ -17,14 +17,12 @@ const Article = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Utilisation de fetchRecentPosts plus rapide au lieu de fetchPosts
   const { data: posts, isLoading: isLoadingPosts, error } = useQuery({
-    queryKey: ["recent-posts-for-article"],
-    queryFn: () => fetchRecentPosts(50), // Limité à 50 articles pour plus de rapidité
+    queryKey: ["posts", slug],
+    queryFn: fetchPosts,
     staleTime: 0,
     gcTime: 0,
-    retry: 2, // Augmenté à 2 tentatives
-    retryDelay: 1000, // Délai réduit à 1 seconde
+    retry: 1,
     meta: {
       onError: (error: any) => {
         console.error("Erreur lors du chargement des articles:", error);
@@ -43,18 +41,15 @@ const Article = () => {
 
   if (error) {
     console.error("Erreur de récupération des articles:", error);
-    // Au lieu de retourner ArticleNotFound, essayons de rediriger
-    setTimeout(() => navigate('/'), 3000);
-    return <ArticleLoading />;
+    return <ArticleNotFound />;
   }
 
   if (!posts || posts.length === 0) {
-    console.log("Aucun article trouvé, redirection vers l'accueil");
-    setTimeout(() => navigate('/'), 2000);
-    return <ArticleLoading />;
+    console.log("Aucun article trouvé");
+    return <ArticleNotFound />;
   }
 
-  // Logique simplifiée et plus permissive de recherche d'article
+  // Logique simplifiée de recherche d'article
   const post = posts.find(p => {
     const currentSlug = slug || '';
     const postSlugFromTitle = getSlug(p.title.rendered);
@@ -80,26 +75,16 @@ const Article = () => {
       return true;
     }
     
-    // Comparaison partielle si pas de correspondance exacte
-    if (normalizedCurrentSlug.includes(normalizedPostSlug.substring(0, 10)) || 
-        normalizedPostSlug.includes(normalizedCurrentSlug.substring(0, 10))) {
-      console.log("✓ Correspondance partielle trouvée");
-      return true;
-    }
-    
     return false;
   });
 
   if (!post) {
     console.log("❌ Article non trouvé pour le slug:", slug);
-    // Essayons de prendre le premier article disponible comme fallback
-    const fallbackPost = posts[0];
-    if (fallbackPost) {
-      console.log("🔄 Utilisation de l'article de fallback:", fallbackPost.title.rendered);
-      const correctSlug = getSlug(fallbackPost.title.rendered);
-      navigate(`/${correctSlug}`, { replace: true });
-      return <ArticleLoading />;
-    }
+    console.log("Articles disponibles:", posts.slice(0, 5).map(p => ({
+      id: p.id,
+      slugFromTitle: getSlug(p.title.rendered),
+      title: p.title.rendered.substring(0, 30) + "..."
+    })));
     
     return <ArticleNotFound />;
   }
