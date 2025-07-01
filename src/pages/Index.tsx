@@ -26,12 +26,15 @@ const Index = () => {
   // Utiliser le nouveau système de rafraîchissement global
   const { isRefreshing, hasNewContent, startRefresh, applyUpdates } = useGlobalRefresh();
 
-  const { data: wpCategories } = useQuery({
+  const { data: wpCategories, error: categoriesError } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
+    staleTime: 0,
+    gcTime: 0,
+    retry: 1,
     meta: {
-      onError: () => {
-        console.warn("Impossible de charger les catégories");
+      onError: (error: any) => {
+        console.warn("Cannot load categories:", error);
       }
     }
   });
@@ -51,7 +54,7 @@ const Index = () => {
   }
 
   // Query pour les articles de la catégorie active
-  const { data: categoryPosts, isLoading: isLoadingCategory } = useQuery({
+  const { data: categoryPosts, isLoading: isLoadingCategory, error: categoryError } = useQuery({
     queryKey: ["category-posts", activeCategory],
     queryFn: async () => {
       if (activeCategory === "all") {
@@ -61,19 +64,25 @@ const Index = () => {
       }
     },
     enabled: activeCategory !== "all",
+    staleTime: 0,
+    gcTime: 0,
+    retry: 1,
     meta: {
-      onError: () => {
-        console.warn("Impossible de charger les articles de la catégorie");
+      onError: (error: any) => {
+        console.warn("Cannot load category posts:", error);
       }
     }
   });
 
-  const { data: recentPosts, isLoading: isLoadingRecent } = useQuery({
+  const { data: recentPosts, isLoading: isLoadingRecent, error: recentError } = useQuery({
     queryKey: ["recent-posts"],
     queryFn: () => fetchRecentPosts(20),
+    staleTime: 0,
+    gcTime: 0,
+    retry: 1,
     meta: {
-      onError: () => {
-        console.warn("Impossible de charger les articles récents");
+      onError: (error: any) => {
+        console.warn("Cannot load recent posts:", error);
       }
     }
   });
@@ -88,11 +97,11 @@ const Index = () => {
           const olderPosts = await fetchOlderPosts(2, 30);
           setAllPosts(prev => [...prev, ...olderPosts]);
         } catch (error) {
-          console.warn("Erreur lors du chargement des articles plus anciens:", error);
+          console.warn("Error loading older posts:", error);
         } finally {
           setIsLoadingOlder(false);
         }
-      }, 300);
+      }, 1000);
 
       return () => {
         clearTimeout(olderTimeout);
@@ -122,7 +131,7 @@ const Index = () => {
         onComplete={applyUpdates}
       />
 
-      <section className="pt-[95px] pb-5 px-4 py-[95px]">
+      <section className="pt-[95px] pb-5 px-4">
         <div className="container mx-auto px-0">
           <BlogPreview />
         </div>
@@ -142,7 +151,7 @@ const Index = () => {
                     <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
                       <span className="text-sm text-gray-600">
-                        {activeCategory === "all" ? "Chargement depuis le cache..." : "Chargement des articles de la catégorie..."}
+                        Chargement des articles...
                       </span>
                     </div>
                   </div>

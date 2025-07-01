@@ -2,7 +2,6 @@
 import { useCallback } from 'react';
 import { useRefreshState } from './useRefreshState';
 import { useContentUpdater } from './useContentUpdater';
-import { useAutoRefresh } from './useAutoRefresh';
 import { refreshPostsInBackground } from '@/services/wordpress';
 
 export const useGlobalRefresh = () => {
@@ -24,12 +23,12 @@ export const useGlobalRefresh = () => {
 
     try {
       await refreshPostsInBackground((newPosts) => {
-        console.log('Nouveaux articles chargés:', newPosts.length);
+        console.log('New posts loaded:', newPosts.length);
         markContentAsNew();
       }, 50);
       
     } catch (error) {
-      console.warn('Erreur lors du rafraîchissement:', error);
+      console.warn('Error during refresh:', error);
     } finally {
       stopRefreshing();
     }
@@ -39,9 +38,6 @@ export const useGlobalRefresh = () => {
     baseApplyUpdates();
     clearNewContent();
   }, [baseApplyUpdates, clearNewContent]);
-
-  // Démarrer automatiquement le rafraîchissement toutes les 10 minutes
-  useAutoRefresh(startRefresh, 1 * 60 * 1000);
 
   return {
     isRefreshing,

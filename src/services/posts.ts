@@ -31,74 +31,20 @@ const mockPosts: WordPressPost[] = [
   }
 ];
 
-export const refreshPostsInBackground = async (
-  onUpdate: (newPosts: WordPressPost[]) => void,
-  limit: number = 60
-): Promise<void> => {
-  try {
-    console.log('Rechargement des articles en arrière-plan...');
-    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc&_=${Date.now()}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const newPosts = await response.json();
-    onUpdate(newPosts);
-    console.log('Articles mis à jour en arrière-plan');
-  } catch (error) {
-    console.warn("Erreur lors du rechargement en arrière-plan:", error);
-  }
-};
-
-export const fetchRecentPosts = async (limit: number = 50): Promise<WordPressPost[]> => {
-  try {
-    console.log(`Fetching ${limit} recent posts from API`);
-    const actualLimit = Math.min(limit, 100);
-    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc&_=${Date.now()}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.warn("Fallback to mock posts:", error);
-    return mockPosts.slice(0, limit);
-  }
-};
-
-export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): Promise<WordPressPost[]> => {
-  try {
-    console.log(`Fetching older posts page ${page} from API`);
-    const response = await fetchWithTimeout(`https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.warn("Error fetching older posts:", error);
-    return [];
-  }
-};
-
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   try {
-    console.log('Fetching all posts from API with unlimited pagination');
+    console.log('Fetching all posts from API...');
     
     let allPosts: WordPressPost[] = [];
     let page = 1;
     let hasMore = true;
     const perPage = 100;
     
-    while (hasMore) {
+    while (hasMore && page <= 10) { // Limite à 10 pages max
       console.log(`Fetching page ${page} of posts...`);
       const response = await fetchWithTimeout(
-        `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc`
+        `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc`,
+        20000 // 20 secondes de timeout
       );
       
       if (!response.ok) {
@@ -106,7 +52,7 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
           console.log(`No more pages after page ${page - 1}`);
           break;
         }
-        throw new Error(`HTTP ${response.status}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
       
       const data = await response.json();
@@ -123,35 +69,74 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
           page++;
         }
       }
-      
-      if (page > 50) {
-        console.warn('Stopping at page 50 to prevent infinite loop');
-        break;
-      }
     }
     
     console.log(`Total posts loaded: ${allPosts.length}`);
     return allPosts;
   } catch (error) {
-    console.warn("Fallback to mock posts:", error);
+    console.error("Error fetching posts, using mock data:", error);
     return mockPosts;
+  }
+};
+
+export const fetchRecentPosts = async (limit: number = 50): Promise<WordPressPost[]> => {
+  try {
+    console.log(`Fetching ${limit} recent posts from API`);
+    const response = await fetchWithTimeout(
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`,
+      20000
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log(`Loaded ${data.length} recent posts`);
+    return data;
+  } catch (error) {
+    console.error("Error fetching recent posts, using mock data:", error);
+    return mockPosts.slice(0, limit);
+  }
+};
+
+export const fetchOlderPosts = async (page: number = 2, perPage: number = 20): Promise<WordPressPost[]> => {
+  try {
+    console.log(`Fetching older posts page ${page} from API`);
+    const response = await fetchWithTimeout(
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${perPage}&page=${page}&orderby=date&order=desc`,
+      20000
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log(`Loaded ${data.length} older posts from page ${page}`);
+    return data;
+  } catch (error) {
+    console.error("Error fetching older posts:", error);
+    return [];
   }
 };
 
 export const fetchPostsByCategory = async (categoryId: number): Promise<WordPressPost[]> => {
   try {
     const response = await fetchWithTimeout(
-      `https://panaradio.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=50`
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&categories=${categoryId}&per_page=50`,
+      20000
     );
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
     const data = await response.json();
+    console.log(`Loaded ${data.length} posts for category ${categoryId}`);
     return data;
   } catch (error) {
-    console.warn("Error fetching posts by category:", error);
+    console.error("Error fetching posts by category:", error);
     return mockPosts.filter((_, index) => index % 5 === categoryId % 5);
   }
 };
@@ -168,20 +153,18 @@ export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
     console.log(`Searching for: "${trimmedQuery}"`);
     
     const searchUrl = `https://panaradio.net/wp-json/wp/v2/posts?_embed&search=${encodeURIComponent(trimmedQuery)}&per_page=50&orderby=relevance`;
-    console.log(`Search URL: ${searchUrl}`);
-    
-    const response = await fetchWithTimeout(searchUrl);
+    const response = await fetchWithTimeout(searchUrl, 20000);
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
     const data = await response.json();
-    console.log(`Search API returned ${data.length} results for "${trimmedQuery}"`);
+    console.log(`Search found ${data.length} results for "${trimmedQuery}"`);
     
     return data;
   } catch (error) {
-    console.warn("Error in search, trying fallback:", error);
+    console.error("Error in search:", error);
     
     const mockResults = mockPosts.filter(post => {
       const searchText = trimmedQuery.toLowerCase();
@@ -198,17 +181,18 @@ export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
 export const fetchPost = async (id: string): Promise<WordPressPost> => {
   try {
     const response = await fetchWithTimeout(
-      `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed`
+      `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed`,
+      20000
     );
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
     const data = await response.json();
     return data;
   } catch (error) {
-    console.warn("Error fetching post:", error);
+    console.error("Error fetching post:", error);
     const mockPost = mockPosts.find(p => p.id === parseInt(id));
     if (!mockPost) {
       throw new Error("Post not found");
@@ -217,7 +201,17 @@ export const fetchPost = async (id: string): Promise<WordPressPost> => {
   }
 };
 
-// Fonction vide pour compatibilité
-export const invalidateRecentPostsCache = () => {
-  console.log("Cache invalidation called but no cache system active");
+// Fonction de rafraîchissement simplifiée
+export const refreshPostsInBackground = async (
+  onUpdate: (newPosts: WordPressPost[]) => void,
+  limit: number = 60
+): Promise<void> => {
+  try {
+    console.log('Refreshing posts in background...');
+    const newPosts = await fetchRecentPosts(limit);
+    onUpdate(newPosts);
+    console.log('Posts refreshed successfully');
+  } catch (error) {
+    console.warn("Error refreshing posts in background:", error);
+  }
 };

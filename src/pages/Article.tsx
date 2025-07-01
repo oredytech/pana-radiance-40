@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPosts } from "@/services/wordpress";
@@ -17,15 +17,15 @@ const Article = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const { data: posts, isLoading: isLoadingPosts, refetch } = useQuery({
-    queryKey: ["posts"],
+  const { data: posts, isLoading: isLoadingPosts, error } = useQuery({
+    queryKey: ["posts", slug],
     queryFn: fetchPosts,
-    staleTime: 30 * 1000, // 30 secondes pour forcer des mises à jour plus fréquentes
-    gcTime: 5 * 60 * 1000, // 5 minutes en cache
-    refetchOnWindowFocus: true,
-    retry: 3, // Augmenter les tentatives
+    staleTime: 0,
+    gcTime: 0,
+    retry: 1,
     meta: {
-      onError: () => {
+      onError: (error: any) => {
+        console.error("Erreur lors du chargement des articles:", error);
         toast({
           title: "Erreur",
           description: "Impossible de charger l'article",
@@ -35,71 +35,43 @@ const Article = () => {
     },
   });
 
-  // Refetch automatiquement toutes les 1 minute pour s'assurer d'avoir les derniers articles
-  useEffect(() => {
-    const interval = setInterval(() => {
-      console.log('Auto-refetch des articles pour Article.tsx');
-      refetch();
-    }, 60 * 1000); // 1 minute
-
-    return () => clearInterval(interval);
-  }, [refetch]);
-
   if (isLoadingPosts) {
     return <ArticleLoading />;
   }
 
-  // Rechercher l'article avec une logique de correspondance améliorée
-  const post = posts?.find(p => {
+  if (error) {
+    console.error("Erreur de récupération des articles:", error);
+    return <ArticleNotFound />;
+  }
+
+  if (!posts || posts.length === 0) {
+    console.log("Aucun article trouvé");
+    return <ArticleNotFound />;
+  }
+
+  // Logique simplifiée de recherche d'article
+  const post = posts.find(p => {
     const currentSlug = slug || '';
-    
-    console.log("Recherche article pour slug:", currentSlug);
-    console.log("Total articles disponibles:", posts?.length);
-    
-    // Le slug peut être directement le titre de l'article
-    // Donc on compare le slug de l'URL avec le slug généré depuis le titre
     const postSlugFromTitle = getSlug(p.title.rendered);
     
-    console.log("Comparaison:", { 
+    console.log("Recherche article:", { 
       currentSlug, 
       postSlugFromTitle,
-      title: p.title.rendered
+      title: p.title.rendered.substring(0, 50)
     });
     
-    // 1. Comparaison exacte entre le slug URL et le slug généré du titre
+    // Comparaison exacte
     if (currentSlug === postSlugFromTitle) {
-      console.log("✓ Correspondance exacte slug-titre trouvée");
+      console.log("✓ Correspondance exacte trouvée");
       return true;
     }
     
-    // 2. Comparaison avec normalisation des deux côtés
+    // Comparaison normalisée
     const normalizedCurrentSlug = normalizeSlug(currentSlug);
     const normalizedPostSlug = normalizeSlug(postSlugFromTitle);
     
     if (normalizedCurrentSlug === normalizedPostSlug) {
-      console.log("✓ Correspondance normalisée slug-titre trouvée");
-      return true;
-    }
-    
-    // 3. Comparaison partielle pour les slugs très longs (WordPress peut tronquer)
-    if (currentSlug.length > 30 && postSlugFromTitle.length > 30) {
-      const truncatedCurrentSlug = currentSlug.substring(0, 50);
-      const truncatedPostSlug = postSlugFromTitle.substring(0, 50);
-      
-      if (truncatedCurrentSlug === truncatedPostSlug) {
-        console.log("✓ Correspondance tronquée slug-titre trouvée");
-        return true;
-      }
-    }
-    
-    // 4. Correspondance flexible - vérifier si l'un contient l'autre (pour les variations)
-    if (currentSlug.length > 15 && postSlugFromTitle.includes(currentSlug)) {
-      console.log("✓ Correspondance inclusion (current dans post) trouvée");
-      return true;
-    }
-    
-    if (postSlugFromTitle.length > 15 && currentSlug.includes(postSlugFromTitle)) {
-      console.log("✓ Correspondance inclusion (post dans current) trouvée");
+      console.log("✓ Correspondance normalisée trouvée");
       return true;
     }
     
@@ -108,18 +80,11 @@ const Article = () => {
 
   if (!post) {
     console.log("❌ Article non trouvé pour le slug:", slug);
-    console.log("Total articles disponibles:", posts?.length);
-    console.log("Articles disponibles:", posts?.slice(0, 20).map(p => ({
+    console.log("Articles disponibles:", posts.slice(0, 5).map(p => ({
       id: p.id,
       slugFromTitle: getSlug(p.title.rendered),
-      title: p.title.rendered.substring(0, 50) + "..."
+      title: p.title.rendered.substring(0, 30) + "..."
     })));
-    
-    // Tenter un refetch immédiat avant d'afficher l'erreur
-    setTimeout(() => {
-      console.log("Tentative de refetch immédiat pour trouver l'article...");
-      refetch();
-    }, 500);
     
     return <ArticleNotFound />;
   }
@@ -130,8 +95,8 @@ const Article = () => {
     slugFromTitle: getSlug(post.title.rendered)
   });
 
-  const recentPosts = posts?.filter(p => p.id !== post.id).slice(0, 5) || [];
-  const similarPosts = posts?.filter(p => p.id !== post.id).slice(0, 4) || [];
+  const recentPosts = posts.filter(p => p.id !== post.id).slice(0, 5);
+  const similarPosts = posts.filter(p => p.id !== post.id).slice(0, 4);
 
   return (
     <ArticleLayout>
