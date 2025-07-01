@@ -114,7 +114,8 @@ const Index = () => {
   // Articles à afficher dans la grille selon la catégorie active
   const articlesForGrid = useMemo(() => {
     if (activeCategory === "all") {
-      return allPosts ? allPosts.slice(5, 17) : [];
+      // Commencer par le premier article (le plus récent) au lieu du 5ème
+      return allPosts ? allPosts.slice(0, 12) : [];
     } else {
       return allPosts ? allPosts.slice(0, 12) : [];
     }
