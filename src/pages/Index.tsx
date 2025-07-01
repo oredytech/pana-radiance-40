@@ -1,4 +1,3 @@
-
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -133,6 +132,18 @@ const Index = () => {
         onComplete={applyUpdates}
       />
 
+      {/* Barre de progression fine en dessous de la bande passante */}
+      {isLoading && (
+        <div className="fixed top-[84px] left-0 right-0 z-40 h-1 bg-gray-200">
+          <div className="h-full bg-green-500 animate-pulse" style={{ 
+            width: '100%',
+            background: 'linear-gradient(90deg, transparent 0%, #10b981 50%, transparent 100%)',
+            backgroundSize: '200% 100%',
+            animation: 'progress-wave 2s ease-in-out infinite'
+          }}></div>
+        </div>
+      )}
+
       {/* BlogPreview section - cachée pendant le chargement */}
       {!isLoading && (
         <section className="pt-[95px] pb-5 px-4">
@@ -153,14 +164,6 @@ const Index = () => {
             >
               {isLoading ? (
                 <div className="mt-6">
-                  <div className="text-center mb-4">
-                    <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
-                      <span className="text-sm text-gray-600">
-                        Chargement des articles...
-                      </span>
-                    </div>
-                  </div>
                   <ArticleLoadingSkeleton />
                 </div>
               ) : (
@@ -221,3 +224,14 @@ const Index = () => {
 };
 
 export default Index;
+
+<style jsx>{`
+  @keyframes progress-wave {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+`}</style>
