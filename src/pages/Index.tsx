@@ -1,3 +1,4 @@
+
 import Header from "@/components/Header";
 import RadioPlayer from "@/components/RadioPlayer";
 import BlogPreview from "@/components/BlogPreview";
@@ -132,13 +133,17 @@ const Index = () => {
         onComplete={applyUpdates}
       />
 
-      <section className="pt-[95px] pb-5 px-4">
-        <div className="container mx-auto px-0">
-          <BlogPreview />
-        </div>
-      </section>
+      {/* BlogPreview section - cachée pendant le chargement */}
+      {!isLoading && (
+        <section className="pt-[95px] pb-5 px-4">
+          <div className="container mx-auto px-0">
+            <BlogPreview />
+          </div>
+        </section>
+      )}
 
-      <section className="px-4 bg-gray-100 py-[3px]">
+      {/* Section des articles - prend la place du BlogPreview pendant le chargement */}
+      <section className={`px-4 bg-gray-100 py-[3px] ${isLoading ? 'pt-[95px]' : ''}`}>
         <div className="container mx-auto px-0">
           <div className="w-full">
             <CategoryTabs 
