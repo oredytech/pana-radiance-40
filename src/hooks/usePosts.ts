@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import type { WordPressPost } from '@/types/wordpress';
-import { fetchRecentPosts, refreshPostsInBackground } from '@/services/wordpress/posts';
+import { fetchRecentPosts, refreshPostsInBackground } from '@/services/posts';
 
 export function usePosts(limit = 20) {
   const [posts, setPosts] = useState<WordPressPost[]>([]);
