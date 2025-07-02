@@ -17,13 +17,29 @@ const Article = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Charger plus d'articles pour augmenter les chances de trouver l'article
+  // Stratégie optimisée : charger d'abord 20 articles, puis étendre si nécessaire
   const { data: posts, isLoading: isLoadingPosts, error } = useQuery({
     queryKey: ["article-posts", slug],
-    queryFn: () => fetchRecentPosts(100), // Augmenté à 100 articles
-    staleTime: 5 * 60 * 1000, // Cache pendant 5 minutes
-    gcTime: 10 * 60 * 1000, // Garde en mémoire 10 minutes
-    retry: 2, // Augmenté à 2 tentatives
+    queryFn: async () => {
+      // Essayer d'abord avec 30 articles pour une réponse rapide
+      let articles = await fetchRecentPosts(30);
+      
+      if (articles.length > 0) {
+        const currentSlug = slug || '';
+        const foundArticle = findArticleBySlug(articles, currentSlug);
+        
+        // Si on ne trouve pas l'article, charger plus d'articles
+        if (!foundArticle) {
+          console.log("Article non trouvé dans les 30 premiers, chargement de plus d'articles...");
+          articles = await fetchRecentPosts(80);
+        }
+      }
+      
+      return articles;
+    },
+    staleTime: 3 * 60 * 1000,
+    gcTime: 8 * 60 * 1000,
+    retry: 1, // Une seule tentative pour éviter les délais
     meta: {
       onError: (error: any) => {
         console.error("Erreur lors du chargement des articles:", error);
@@ -35,6 +51,106 @@ const Article = () => {
       },
     },
   });
+
+  // Fonction améliorée de recherche d'article
+  const findArticleBySlug = (articles: any[], searchSlug: string) => {
+    if (!articles || articles.length === 0) return null;
+    
+    console.log("Recherche pour le slug:", searchSlug);
+    
+    // 1. Recherche exacte
+    let found = articles.find(p => {
+      const postSlug = getSlug(p.title.rendered);
+      return searchSlug === postSlug;
+    });
+    
+    if (found) {
+      console.log("✓ Correspondance exacte:", found.title.rendered);
+      return found;
+    }
+    
+    // 2. Recherche avec normalisation
+    found = articles.find(p => {
+      const postSlug = normalizeSlug(getSlug(p.title.rendered));
+      const normalizedSearch = normalizeSlug(searchSlug);
+      return normalizedSearch === postSlug;
+    });
+    
+    if (found) {
+      console.log("✓ Correspondance normalisée:", found.title.rendered);
+      return found;
+    }
+    
+    // 3. Recherche par inclusion (slug contient des mots du titre)
+    found = articles.find(p => {
+      const titleWords = p.title.rendered.toLowerCase()
+        .replace(/[^\w\s-]/g, '') // Supprimer la ponctuation
+        .split(/[\s-]+/)
+        .filter(word => word.length > 2); // Mots de plus de 2 caractères
+        
+      const slugWords = searchSlug.toLowerCase()
+        .split('-')
+        .filter(word => word.length > 2);
+      
+      if (slugWords.length === 0 || titleWords.length === 0) return false;
+      
+      // Compter les correspondances
+      const matches = slugWords.filter(slugWord => 
+        titleWords.some(titleWord => 
+          titleWord.includes(slugWord) || 
+          slugWord.includes(titleWord) ||
+          levenshteinDistance(slugWord, titleWord) <= 1 // Tolérance d'une lettre
+        )
+      );
+      
+      const matchRatio = matches.length / slugWords.length;
+      return matchRatio >= 0.5; // Au moins 50% de correspondance
+    });
+    
+    if (found) {
+      console.log("✓ Correspondance partielle:", found.title.rendered);
+      return found;
+    }
+    
+    // 4. Recherche dans le contenu de l'article
+    const searchTerms = searchSlug.split('-').filter(term => term.length > 3);
+    found = articles.find(p => {
+      const content = (p.title.rendered + ' ' + p.content.rendered).toLowerCase();
+      return searchTerms.some(term => content.includes(term.toLowerCase()));
+    });
+    
+    if (found) {
+      console.log("✓ Trouvé dans le contenu:", found.title.rendered);
+      return found;
+    }
+    
+    return null;
+  };
+
+  // Fonction pour calculer la distance de Levenshtein (similarité entre mots)
+  const levenshteinDistance = (str1: string, str2: string): number => {
+    const matrix = [];
+    for (let i = 0; i <= str2.length; i++) {
+      matrix[i] = [i];
+    }
+    for (let j = 0; j <= str1.length; j++) {
+      matrix[0][j] = j;
+    }
+    for (let i = 1; i <= str2.length; i++) {
+      for (let j = 1; j <= str1.length; j++) {
+        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          );
+        }
+      }
+    }
+    return matrix[str2.length][str1.length];
+  };
 
   if (isLoadingPosts) {
     return <ArticleLoading />;
@@ -50,46 +166,8 @@ const Article = () => {
     return <ArticleNotFound />;
   }
 
-  // Améliorer la logique de recherche d'article
   const currentSlug = slug || '';
-  console.log("Recherche pour le slug:", currentSlug);
-
-  const post = posts.find(p => {
-    const postSlugFromTitle = getSlug(p.title.rendered);
-    
-    // Comparaison exacte
-    if (currentSlug === postSlugFromTitle) {
-      console.log("✓ Correspondance exacte trouvée:", p.title.rendered);
-      return true;
-    }
-    
-    // Comparaison normalisée
-    const normalizedCurrentSlug = normalizeSlug(currentSlug);
-    const normalizedPostSlug = normalizeSlug(postSlugFromTitle);
-    
-    if (normalizedCurrentSlug === normalizedPostSlug) {
-      console.log("✓ Correspondance normalisée trouvée:", p.title.rendered);
-      return true;
-    }
-    
-    // Recherche partielle - si le slug contient une partie du titre
-    const titleWords = p.title.rendered.toLowerCase().split(' ');
-    const slugWords = currentSlug.toLowerCase().split('-');
-    
-    const matchCount = slugWords.filter(word => 
-      titleWords.some(titleWord => 
-        titleWord.includes(word) || word.includes(titleWord)
-      )
-    ).length;
-    
-    // Si au moins 60% des mots correspondent
-    if (matchCount >= Math.ceil(slugWords.length * 0.6) && slugWords.length > 2) {
-      console.log("✓ Correspondance partielle trouvée:", p.title.rendered, `(${matchCount}/${slugWords.length} mots)`);
-      return true;
-    }
-    
-    return false;
-  });
+  const post = findArticleBySlug(posts, currentSlug);
 
   if (!post) {
     console.log("❌ Aucun article trouvé pour le slug:", currentSlug);

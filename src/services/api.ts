@@ -1,5 +1,5 @@
 
-export const fetchWithTimeout = async (url: string, timeout = 20000) => {
+export const fetchWithTimeout = async (url: string, timeout = 8000) => {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   

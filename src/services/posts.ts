@@ -42,7 +42,7 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
     // Charger seulement les premiers 50 articles pour améliorer les performances
     const response = await fetchWithTimeout(
       `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=50&orderby=date&order=desc`,
-      10000 // Timeout réduit à 10 secondes
+      6000 // Timeout réduit à 6 secondes
     );
     
     if (!response.ok) {
@@ -68,12 +68,12 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
   }
 };
 
-export const fetchRecentPosts = async (limit: number = 50): Promise<WordPressPost[]> => {
+export const fetchRecentPosts = async (limit: number = 30): Promise<WordPressPost[]> => {
   try {
     console.log(`Fetching ${limit} recent posts from API`);
     const response = await fetchWithTimeout(
       `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`,
-      8000 // Timeout réduit
+      4000 // Timeout très réduit à 4 secondes
     );
     
     if (!response.ok) {

@@ -10,7 +10,21 @@ interface LoadingCircleProps {
 const LoadingCircle = ({ className, size = 24 }: LoadingCircleProps) => {
   return (
     <div className="flex items-center justify-center">
-      <Loader2 className={cn("animate-spin text-white", className)} size={size} />
+      <div className="relative">
+        {/* Cercle de fond */}
+        <div 
+          className={cn("rounded-full border-4 border-gray-200", className)}
+          style={{ width: size, height: size }}
+        />
+        {/* Cercle animé qui tourne */}
+        <div 
+          className={cn(
+            "absolute top-0 left-0 rounded-full border-4 border-transparent border-t-current animate-spin",
+            className
+          )}
+          style={{ width: size, height: size }}
+        />
+      </div>
     </div>
   );
 };
