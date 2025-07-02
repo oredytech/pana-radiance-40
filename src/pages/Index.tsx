@@ -88,6 +88,20 @@ const Index = () => {
     }
   });
 
+  // Query spécifique pour les 5 premiers articles du BlogPreview
+  const { data: blogPreviewPosts, isLoading: isLoadingBlogPreview, error: blogPreviewError } = useQuery({
+    queryKey: ["blog-preview-posts"],
+    queryFn: () => fetchRecentPosts(5),
+    staleTime: 0,
+    gcTime: 0,
+    retry: 1,
+    meta: {
+      onError: (error: any) => {
+        console.warn("Cannot load blog preview posts:", error);
+      }
+    }
+  });
+
   useEffect(() => {
     if (activeCategory === "all" && recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
@@ -115,7 +129,6 @@ const Index = () => {
   // Articles à afficher dans la grille selon la catégorie active
   const articlesForGrid = useMemo(() => {
     if (activeCategory === "all") {
-      // Commencer par le premier article (le plus récent) au lieu du 5ème
       return allPosts ? allPosts.slice(0, 12) : [];
     } else {
       return allPosts ? allPosts.slice(0, 12) : [];
@@ -123,6 +136,9 @@ const Index = () => {
   }, [allPosts, activeCategory]);
 
   const isLoading = activeCategory === "all" ? isLoadingRecent : isLoadingCategory;
+
+  // Vérifier si les 5 articles du BlogPreview sont disponibles
+  const isBlogPreviewReady = blogPreviewPosts && blogPreviewPosts.length >= 5;
 
   return (
     <div className="min-h-screen bg-gray-50 pb-[80px] py-[20px]">
@@ -133,8 +149,8 @@ const Index = () => {
         onComplete={applyUpdates}
       />
 
-      {/* BlogPreview section - cachée pendant le chargement */}
-      {!isLoading && (
+      {/* BlogPreview section - affichée seulement quand les 5 articles sont disponibles */}
+      {isBlogPreviewReady && (
         <section className="pt-[95px] pb-5 px-4">
           <div className="container mx-auto px-0">
             <BlogPreview />
@@ -142,8 +158,8 @@ const Index = () => {
         </section>
       )}
 
-      {/* Section des articles - prend la place du BlogPreview pendant le chargement */}
-      <section className={`px-4 bg-gray-100 py-[3px] ${isLoading ? 'pt-[95px]' : ''}`}>
+      {/* Section des articles - prend la place du BlogPreview si pas prêt */}
+      <section className={`px-4 bg-gray-100 py-[3px] ${!isBlogPreviewReady ? 'pt-[95px]' : ''}`}>
         <div className="container mx-auto px-0">
           <div className="w-full">
             <CategoryTabs 
