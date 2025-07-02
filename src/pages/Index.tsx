@@ -17,12 +17,14 @@ import { useState, useEffect, useMemo } from "react";
 import CategoryTabs from "@/components/articles/CategoryTabs";
 import ArticleLoadingSkeleton from "@/components/articles/ArticleLoadingSkeleton";
 import { useGlobalRefresh } from "@/hooks/useGlobalRefresh";
+import { Progress } from "@/components/ui/progress";
 
 const Index = () => {
   const { toast } = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [isLoadingOlder, setIsLoadingOlder] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   
   // Utiliser le nouveau système de rafraîchissement global
   const { isRefreshing, hasNewContent, startRefresh, applyUpdates } = useGlobalRefresh();
@@ -102,6 +104,24 @@ const Index = () => {
     }
   });
 
+  // Simuler la progression du chargement
+  useEffect(() => {
+    if (isLoadingBlogPreview || isLoadingRecent) {
+      setLoadingProgress(0);
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 90) return prev;
+          return prev + Math.random() * 20;
+        });
+      }, 200);
+
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(100);
+      setTimeout(() => setLoadingProgress(0), 500);
+    }
+  }, [isLoadingBlogPreview, isLoadingRecent]);
+
   useEffect(() => {
     if (activeCategory === "all" && recentPosts && recentPosts.length > 0) {
       setAllPosts(recentPosts);
@@ -143,6 +163,17 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-[80px] py-[20px]">
       <Header />
+      
+      {/* Barre de progression fine en haut */}
+      {(isLoadingBlogPreview || isLoadingRecent) && (
+        <div className="fixed top-[64px] left-0 right-0 z-40">
+          <Progress 
+            value={loadingProgress} 
+            className="h-1 rounded-none bg-transparent"
+          />
+        </div>
+      )}
+
       <RefreshIndicator 
         isRefreshing={isRefreshing} 
         onRefresh={startRefresh}
@@ -167,17 +198,9 @@ const Index = () => {
               activeCategory={activeCategory} 
               setActiveCategory={setActiveCategory}
             >
-              {isLoading ? (
-                <div className="mt-6">
-                  <div className="text-center mb-4">
-                    <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-pana-red"></div>
-                      <span className="text-sm text-gray-600">
-                        Chargement des articles...
-                      </span>
-                    </div>
-                  </div>
-                  <ArticleLoadingSkeleton />
+              {!isBlogPreviewReady ? (
+                <div className="mt-6 text-center py-12">
+                  <p className="text-gray-500">Chargement des articles en cours...</p>
                 </div>
               ) : (
                 <div className="mt-6">

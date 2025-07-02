@@ -1,13 +1,11 @@
+
 import { useQuery } from "@tanstack/react-query";
-import { fetchPosts, fetchCategories, type WordPressPost } from "@/services/wordpress";
+import { fetchCategories, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Headphones } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getImageUrl, stripHtml, getSlug } from "@/utils/textUtils";
-import HeroLoadingIndicator from "./HeroLoadingIndicator";
-import { usePosts } from '@/hooks/usePosts';
-
 
 const BlogPreview = () => {
   const { toast } = useToast();
@@ -17,30 +15,26 @@ const BlogPreview = () => {
     queryFn: fetchCategories,
   });
 
-  const { data: posts, isLoading, error } = useQuery({
-    queryKey: ["posts"],
-    queryFn: fetchPosts,
-    meta: {
-      onError: () => {
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les articles",
-          variant: "destructive",
-        });
-      },
-    },
+  // Utiliser les posts spécifiques pour BlogPreview depuis le parent
+  const { data: posts } = useQuery({
+    queryKey: ["blog-preview-posts"],
+    queryFn: () => Promise.resolve([]), // Pas de requête directe ici
+    enabled: false // Désactiver cette query car elle est gérée par le parent
   });
 
-  if (isLoading) {
-    return <HeroLoadingIndicator />;
+  // Récupérer les posts depuis la query du parent via React Query
+  const { data: blogPosts } = useQuery({
+    queryKey: ["blog-preview-posts"],
+    staleTime: 0,
+    gcTime: 0,
+  });
+
+  if (!blogPosts || blogPosts.length === 0) {
+    return null; // Ne rien afficher si pas d'articles
   }
 
-  if (!posts) {
-    return null;
-  }
-
-  const mainArticle = posts[0];
-  const otherArticles = posts.slice(1, 5); // Get only 4 more articles for a total of 5
+  const mainArticle = blogPosts[0];
+  const otherArticles = blogPosts.slice(1, 5); // Get only 4 more articles for a total of 5
 
   const getArticleCategory = (post: WordPressPost) => {
     if (!post._embedded?.["wp:term"]?.[0] || !categories) {
