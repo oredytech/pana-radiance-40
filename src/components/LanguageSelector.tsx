@@ -38,7 +38,7 @@ const languages: Language[] = [
 
 const LanguageSelector = () => {
   const [open, setOpen] = useState(false);
-  const { isLoaded, currentLanguage, translateTo, resetToOriginal } = useTranslation();
+  const { isLoaded, currentLanguage, translateTo, resetToOriginal, retranslateContent } = useTranslation();
 
   const currentLang = languages.find(lang => lang.code === currentLanguage) || languages[0];
 
@@ -49,6 +49,11 @@ const LanguageSelector = () => {
     } else {
       translateTo(languageCode);
     }
+    
+    // Forcer la retraduction du contenu après un court délai
+    setTimeout(() => {
+      retranslateContent();
+    }, 1000);
   };
 
   return (
@@ -104,7 +109,7 @@ const LanguageSelector = () => {
               </ScrollArea>
             )}
             <div className="text-xs text-center mt-2 p-2 bg-gray-50 rounded">
-              <span className="text-green-600">✅ Traduction gratuite par Google</span>
+              <span className="text-green-600">✅ Traduction complète par Google</span>
             </div>
           </div>
         </PopoverContent>

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 declare global {
   interface Window {
@@ -11,6 +11,25 @@ declare global {
 export const useTranslation = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState("fr");
+
+  // Fonction pour forcer la retraduction du contenu dynamique
+  const retranslateContent = useCallback(() => {
+    if (window.google && window.google.translate) {
+      // Attendre un peu que le DOM soit mis à jour
+      setTimeout(() => {
+        try {
+          // Forcer Google Translate à scanner le nouveau contenu
+          const translateWidget = window.google.translate.TranslateElement;
+          if (translateWidget) {
+            // Déclencher une nouvelle analyse du DOM
+            window.google.translate.TranslateService.getInstance().translatePage();
+          }
+        } catch (error) {
+          console.log('Retranslation attempt:', error);
+        }
+      }, 100);
+    }
+  }, []);
 
   useEffect(() => {
     // Charger le script Google Translate
@@ -48,6 +67,9 @@ export const useTranslation = () => {
       selectElement.value = languageCode;
       selectElement.dispatchEvent(new Event('change'));
       setCurrentLanguage(languageCode);
+      
+      // Retraduire le contenu après changement de langue
+      setTimeout(retranslateContent, 500);
     }
   };
 
@@ -64,6 +86,7 @@ export const useTranslation = () => {
     isLoaded,
     currentLanguage,
     translateTo,
-    resetToOriginal
+    resetToOriginal,
+    retranslateContent
   };
 };

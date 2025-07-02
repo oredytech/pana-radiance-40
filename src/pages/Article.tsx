@@ -2,7 +2,7 @@
 import React from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchPosts } from "@/services/wordpress";
+import { fetchRecentPosts } from "@/services/posts";
 import { useToast } from "@/hooks/use-toast";
 import { getSlug, stripHtml, normalizeSlug } from "@/utils/textUtils";
 import ArticleLayout from "@/components/articles/ArticleLayout";
@@ -17,11 +17,12 @@ const Article = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
+  // Une seule requête optimisée pour charger les articles
   const { data: posts, isLoading: isLoadingPosts, error } = useQuery({
-    queryKey: ["posts", slug],
-    queryFn: fetchPosts,
-    staleTime: 0,
-    gcTime: 0,
+    queryKey: ["article-posts", slug],
+    queryFn: () => fetchRecentPosts(50), // Limité à 50 articles pour la performance
+    staleTime: 2 * 60 * 1000, // Cache pendant 2 minutes
+    gcTime: 5 * 60 * 1000, // Garde en mémoire 5 minutes
     retry: 1,
     meta: {
       onError: (error: any) => {

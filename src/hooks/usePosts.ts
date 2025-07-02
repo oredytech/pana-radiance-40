@@ -1,27 +1,36 @@
 
 import { useState, useEffect } from 'react';
 import type { WordPressPost } from '@/types/wordpress';
-import { fetchRecentPosts, refreshPostsInBackground } from '@/services/posts';
+import { fetchRecentPosts } from '@/services/posts';
 
 export function usePosts(limit = 20) {
   const [posts, setPosts] = useState<WordPressPost[]>([]);
   const [loading, setLoading] = useState(true);
-  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    // 1. Charge rapide depuis cache ou API
-    fetchRecentPosts(limit).then(data => {
-      setPosts(data);
-      setLoading(false);
-    });
+    let isMounted = true;
 
-    // 2. Mise à jour silencieuse en fond
-    setUpdating(true);
-    refreshPostsInBackground(newPosts => {
-      setPosts(newPosts.slice(0, limit));
-      setUpdating(false);
-    }, limit);
+    const loadPosts = async () => {
+      try {
+        const data = await fetchRecentPosts(Math.min(limit, 30)); // Limiter pour la performance
+        if (isMounted) {
+          setPosts(data);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadPosts();
+
+    return () => {
+      isMounted = false;
+    };
   }, [limit]);
 
-  return { posts, loading, updating };
+  return { posts, loading, updating: false };
 }

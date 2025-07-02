@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { type WordPressPost } from "@/services/wordpress";
 import { usePostIdFromSlug, useTrackArticleView, useArticleViews } from "@/utils/otSiteStats";
 import { getSlug } from "@/utils/textUtils";
+import { useTranslation } from "@/hooks/useTranslation";
 import ArticleAudioPlayer from './ArticleAudioPlayer';
 
 interface ArticleContentProps {
@@ -12,6 +13,7 @@ interface ArticleContentProps {
 
 const ArticleContent = ({ post }: ArticleContentProps) => {
   const { slug } = useParams();
+  const { retranslateContent } = useTranslation();
   
   // Générer le slug à partir du titre si pas de slug dans l'URL
   const articleSlug = slug || getSlug(post.title.rendered);
@@ -20,6 +22,17 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
   const postId = usePostIdFromSlug(articleSlug);
   useTrackArticleView(postId);
   const views = useArticleViews(postId);
+
+  // Déclencher la retraduction quand le contenu de l'article change
+  useEffect(() => {
+    if (post && post.content) {
+      const timer = setTimeout(() => {
+        retranslateContent();
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [post.id, retranslateContent]);
 
   return (
     <article className="bg-white rounded-lg shadow-lg overflow-hidden">
