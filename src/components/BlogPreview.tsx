@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories, type WordPressPost } from "@/services/wordpress";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,15 +14,8 @@ const BlogPreview = () => {
     queryFn: fetchCategories,
   });
 
-  // Utiliser les posts spécifiques pour BlogPreview depuis le parent
-  const { data: posts } = useQuery({
-    queryKey: ["blog-preview-posts"],
-    queryFn: () => Promise.resolve([]), // Pas de requête directe ici
-    enabled: false // Désactiver cette query car elle est gérée par le parent
-  });
-
-  // Récupérer les posts depuis la query du parent via React Query
-  const { data: blogPosts } = useQuery({
+  // Properly typed query for blog preview posts
+  const { data: blogPosts } = useQuery<WordPressPost[]>({
     queryKey: ["blog-preview-posts"],
     staleTime: 0,
     gcTime: 0,

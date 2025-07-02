@@ -1,4 +1,3 @@
-
 export interface WordPressPost {
   id: number;
   date: string;
@@ -23,6 +22,7 @@ export interface WordPressPost {
     }>>;
   };
   categories?: number[];
+  _cacheTime?: number; // Added for caching functionality
 }
 
 export interface WordPressComment {
