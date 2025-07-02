@@ -17,13 +17,13 @@ const Article = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Une seule requête optimisée pour charger les articles
+  // Charger plus d'articles pour augmenter les chances de trouver l'article
   const { data: posts, isLoading: isLoadingPosts, error } = useQuery({
     queryKey: ["article-posts", slug],
-    queryFn: () => fetchRecentPosts(50), // Limité à 50 articles pour la performance
-    staleTime: 2 * 60 * 1000, // Cache pendant 2 minutes
-    gcTime: 5 * 60 * 1000, // Garde en mémoire 5 minutes
-    retry: 1,
+    queryFn: () => fetchRecentPosts(100), // Augmenté à 100 articles
+    staleTime: 5 * 60 * 1000, // Cache pendant 5 minutes
+    gcTime: 10 * 60 * 1000, // Garde en mémoire 10 minutes
+    retry: 2, // Augmenté à 2 tentatives
     meta: {
       onError: (error: any) => {
         console.error("Erreur lors du chargement des articles:", error);
@@ -50,20 +50,16 @@ const Article = () => {
     return <ArticleNotFound />;
   }
 
-  // Logique simplifiée de recherche d'article
+  // Améliorer la logique de recherche d'article
+  const currentSlug = slug || '';
+  console.log("Recherche pour le slug:", currentSlug);
+
   const post = posts.find(p => {
-    const currentSlug = slug || '';
     const postSlugFromTitle = getSlug(p.title.rendered);
-    
-    console.log("Recherche article:", { 
-      currentSlug, 
-      postSlugFromTitle,
-      title: p.title.rendered.substring(0, 50)
-    });
     
     // Comparaison exacte
     if (currentSlug === postSlugFromTitle) {
-      console.log("✓ Correspondance exacte trouvée");
+      console.log("✓ Correspondance exacte trouvée:", p.title.rendered);
       return true;
     }
     
@@ -72,7 +68,23 @@ const Article = () => {
     const normalizedPostSlug = normalizeSlug(postSlugFromTitle);
     
     if (normalizedCurrentSlug === normalizedPostSlug) {
-      console.log("✓ Correspondance normalisée trouvée");
+      console.log("✓ Correspondance normalisée trouvée:", p.title.rendered);
+      return true;
+    }
+    
+    // Recherche partielle - si le slug contient une partie du titre
+    const titleWords = p.title.rendered.toLowerCase().split(' ');
+    const slugWords = currentSlug.toLowerCase().split('-');
+    
+    const matchCount = slugWords.filter(word => 
+      titleWords.some(titleWord => 
+        titleWord.includes(word) || word.includes(titleWord)
+      )
+    ).length;
+    
+    // Si au moins 60% des mots correspondent
+    if (matchCount >= Math.ceil(slugWords.length * 0.6) && slugWords.length > 2) {
+      console.log("✓ Correspondance partielle trouvée:", p.title.rendered, `(${matchCount}/${slugWords.length} mots)`);
       return true;
     }
     
@@ -80,11 +92,11 @@ const Article = () => {
   });
 
   if (!post) {
-    console.log("❌ Article non trouvé pour le slug:", slug);
-    console.log("Articles disponibles:", posts.slice(0, 5).map(p => ({
+    console.log("❌ Aucun article trouvé pour le slug:", currentSlug);
+    console.log("Articles disponibles (premiers 10):", posts.slice(0, 10).map(p => ({
       id: p.id,
       slugFromTitle: getSlug(p.title.rendered),
-      title: p.title.rendered.substring(0, 30) + "..."
+      title: p.title.rendered.substring(0, 50) + "..."
     })));
     
     return <ArticleNotFound />;

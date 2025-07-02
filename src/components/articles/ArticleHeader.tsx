@@ -10,6 +10,15 @@ interface ArticleHeaderProps {
 const ArticleHeader = ({ post }: ArticleHeaderProps) => {
   return (
     <div className="w-full bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+      {/* Titre de l'article affiché avant l'image */}
+      <div className="p-6 pb-4">
+        <h1 
+          className="text-3xl font-bold text-gray-900 leading-tight"
+          dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
+        />
+      </div>
+      
+      {/* Image mise en avant */}
       <img
         src={getImageUrl(post)}
         alt={stripHtml(post.title.rendered)}

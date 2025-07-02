@@ -57,10 +57,7 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
           </div>
         </div>
         
-        <h1 
-          className="text-3xl font-bold mb-6"
-          dangerouslySetInnerHTML={{ __html: post.title.rendered }} 
-        />
+        {/* Contenu de l'article sans le titre */}
         <div 
           className="prose max-w-none space-y-6"
           dangerouslySetInnerHTML={{ __html: post.content.rendered }}
