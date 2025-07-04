@@ -18,10 +18,14 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
   // Générer le slug à partir du titre si pas de slug dans l'URL
   const articleSlug = slug || getSlug(post.title.rendered);
   
-  // Utiliser les hooks pour les statistiques
+  // Utiliser les hooks optimisés avec délais échelonnés
   const postId = usePostIdFromSlug(articleSlug);
-  useTrackArticleView(postId);
-  const views = useArticleViews(postId);
+  
+  // Tracking différé de 1.5 secondes après le chargement du contenu
+  useTrackArticleView(postId, 1500);
+  
+  // Chargement des vues différé de 3 secondes pour éviter la concurrence
+  const views = useArticleViews(postId, 3000);
 
   // Déclencher la retraduction quand le contenu de l'article change
   useEffect(() => {
