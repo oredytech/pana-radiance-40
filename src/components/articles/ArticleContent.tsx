@@ -34,18 +34,6 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
     }
   }, [post.id, retranslateContent]);
 
-  // Améliorer la visibilité des titres dans le contenu HTML
-  const enhanceContentTitles = (content: string) => {
-    return content
-      // Remplacer les balises h1, h2, h3, etc. avec des styles améliorés
-      .replace(/<h1([^>]*)>/gi, '<h1$1 class="text-3xl font-bold text-gray-900 mt-8 mb-4 leading-tight">')
-      .replace(/<h2([^>]*)>/gi, '<h2$1 class="text-2xl font-bold text-gray-800 mt-6 mb-3 leading-tight">')
-      .replace(/<h3([^>]*)>/gi, '<h3$1 class="text-xl font-semibold text-gray-800 mt-5 mb-3 leading-tight">')
-      .replace(/<h4([^>]*)>/gi, '<h4$1 class="text-lg font-semibold text-gray-700 mt-4 mb-2 leading-tight">')
-      .replace(/<h5([^>]*)>/gi, '<h5$1 class="text-base font-semibold text-gray-700 mt-4 mb-2 leading-tight">')
-      .replace(/<h6([^>]*)>/gi, '<h6$1 class="text-sm font-semibold text-gray-600 mt-3 mb-2 leading-tight">');
-  };
-
   return (
     <article className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="p-8">
@@ -69,10 +57,10 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
           </div>
         </div>
         
-        {/* Contenu de l'article avec titres améliorés */}
+        {/* Contenu de l'article sans le titre */}
         <div 
           className="prose max-w-none space-y-6"
-          dangerouslySetInnerHTML={{ __html: enhanceContentTitles(post.content.rendered) }}
+          dangerouslySetInnerHTML={{ __html: post.content.rendered }}
         />
       </div>
     </article>

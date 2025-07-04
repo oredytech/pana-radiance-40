@@ -1,3 +1,4 @@
+
 import type { WordPressPost } from '@/types/wordpress';
 import { fetchWithTimeout } from './api';
 
@@ -30,17 +31,18 @@ const mockPosts: WordPressPost[] = [
   }
 ];
 
-// Cache amélioré pour les articles
+// Cache pour les articles individuels
 const articleCache = new Map<string, WordPressPost>();
-const cacheTimeout = 2 * 60 * 1000; // Réduit à 2 minutes pour plus de fraîcheur
+const cacheTimeout = 5 * 60 * 1000; // 5 minutes
 
 export const fetchPosts = async (): Promise<WordPressPost[]> => {
   try {
-    console.log('🚀 Fetching optimized posts from API...');
+    console.log('Fetching optimized posts from API...');
     
+    // Charger seulement les premiers 50 articles pour améliorer les performances
     const response = await fetchWithTimeout(
-      `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=100&orderby=date&order=desc`,
-      4000 // Timeout réduit à 4 secondes
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=50&orderby=date&order=desc`,
+      6000 // Timeout réduit à 6 secondes
     );
     
     if (!response.ok) {
@@ -49,7 +51,7 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
     
     const data = await response.json();
     
-    // Mise en cache immédiate et optimisée
+    // Mettre en cache les articles pour un accès rapide
     data.forEach((post: WordPressPost) => {
       const cacheKey = `post-${post.id}`;
       articleCache.set(cacheKey, {
@@ -58,24 +60,20 @@ export const fetchPosts = async (): Promise<WordPressPost[]> => {
       });
     });
     
-    console.log(`✅ Loaded and cached ${data.length} posts`);
+    console.log(`Loaded and cached ${data.length} posts`);
     return data;
   } catch (error) {
-    console.error("❌ Error fetching posts:", error);
+    console.error("Error fetching posts:", error);
     return mockPosts;
   }
 };
 
-export const fetchRecentPosts = async (limit: number = 100): Promise<WordPressPost[]> => {
+export const fetchRecentPosts = async (limit: number = 30): Promise<WordPressPost[]> => {
   try {
-    console.log(`🔄 Fetching ${limit} recent posts from API`);
-    
-    // Ajuster la limite pour optimiser les performances
-    const optimizedLimit = Math.min(limit, 500); // Plafonner à 500 pour éviter les timeouts
-    
+    console.log(`Fetching ${limit} recent posts from API`);
     const response = await fetchWithTimeout(
-      `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${optimizedLimit}&orderby=date&order=desc`,
-      6000 // Timeout légèrement augmenté pour les gros volumes
+      `https://panaradio.net/wp-json/wp/v2/posts?_embed&per_page=${limit}&orderby=date&order=desc`,
+      4000 // Timeout très réduit à 4 secondes
     );
     
     if (!response.ok) {
@@ -84,7 +82,7 @@ export const fetchRecentPosts = async (limit: number = 100): Promise<WordPressPo
     
     const data = await response.json();
     
-    // Mise en cache ultra-rapide
+    // Mise en cache immédiate
     data.forEach((post: WordPressPost) => {
       const cacheKey = `post-${post.id}`;
       articleCache.set(cacheKey, {
@@ -93,15 +91,11 @@ export const fetchRecentPosts = async (limit: number = 100): Promise<WordPressPo
       });
     });
     
-    console.log(`✅ Loaded ${data.length} recent posts successfully`);
+    console.log(`Loaded ${data.length} recent posts`);
     return data;
   } catch (error) {
-    console.error("❌ Error fetching recent posts:", error);
-    // Retourner plus d'articles mock en cas d'erreur
-    return Array(Math.min(limit, 10)).fill(null).map((_, index) => ({
-      ...mockPosts[index % mockPosts.length],
-      id: index + 1
-    }));
+    console.error("Error fetching recent posts:", error);
+    return mockPosts.slice(0, limit);
   }
 };
 
@@ -185,20 +179,20 @@ export const searchPosts = async (query: string): Promise<WordPressPost[]> => {
 
 // Nouvelle fonction optimisée pour charger un article individuel
 export const fetchPost = async (id: string): Promise<WordPressPost> => {
-  // Vérification de cache optimisée
+  // Vérifier d'abord le cache
   const cacheKey = `post-${id}`;
   const cachedPost = articleCache.get(cacheKey);
   
   if (cachedPost && cachedPost._cacheTime && (Date.now() - cachedPost._cacheTime < cacheTimeout)) {
-    console.log(`⚡ Returning cached post ${id}`);
+    console.log(`Returning cached post ${id}`);
     return cachedPost;
   }
 
   try {
-    console.log(`🔍 Fetching post ${id} from API`);
+    console.log(`Fetching post ${id} from API`);
     const response = await fetchWithTimeout(
       `https://panaradio.net/wp-json/wp/v2/posts/${id}?_embed`,
-      3000 // Timeout très court pour un article individuel
+      5000 // Timeout très court pour un article individuel
     );
     
     if (!response.ok) {
@@ -207,16 +201,16 @@ export const fetchPost = async (id: string): Promise<WordPressPost> => {
     
     const data = await response.json();
     
-    // Mise en cache immédiate
+    // Mettre en cache
     articleCache.set(cacheKey, {
       ...data,
       _cacheTime: Date.now()
     });
     
-    console.log(`✅ Loaded and cached post ${id}`);
+    console.log(`Loaded and cached post ${id}`);
     return data;
   } catch (error) {
-    console.error("❌ Error fetching post:", error);
+    console.error("Error fetching post:", error);
     const mockPost = mockPosts.find(p => p.id === parseInt(id));
     if (!mockPost) {
       throw new Error("Post not found");
