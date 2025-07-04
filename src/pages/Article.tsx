@@ -17,32 +17,34 @@ const Article = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Stratégie optimisée : charger d'abord 20 articles, puis étendre si nécessaire
+  // Stratégie agressive : charger beaucoup plus d'articles pour éviter "Article non trouvé"
   const { data: posts, isLoading: isLoadingPosts, error } = useQuery({
     queryKey: ["article-posts", slug],
     queryFn: async () => {
-      // Essayer d'abord avec 30 articles pour une réponse rapide
-      let articles = await fetchRecentPosts(30);
+      console.log("🔍 Recherche d'article pour le slug:", slug);
+      
+      // Commencer par 200 articles pour maximiser les chances de trouver l'article
+      let articles = await fetchRecentPosts(200);
       
       if (articles.length > 0) {
         const currentSlug = slug || '';
         const foundArticle = findArticleBySlug(articles, currentSlug);
         
-        // Si on ne trouve pas l'article, charger plus d'articles
+        // Si toujours pas trouvé, essayer avec encore plus d'articles
         if (!foundArticle) {
-          console.log("Article non trouvé dans les 30 premiers, chargement de plus d'articles...");
-          articles = await fetchRecentPosts(80);
+          console.log("⚡ Article non trouvé dans les 200 premiers, chargement maximal...");
+          articles = await fetchRecentPosts(500); // Augmenter drastiquement
         }
       }
       
       return articles;
     },
-    staleTime: 3 * 60 * 1000,
-    gcTime: 8 * 60 * 1000,
-    retry: 1, // Une seule tentative pour éviter les délais
+    staleTime: 30 * 1000, // 30 secondes seulement
+    gcTime: 2 * 60 * 1000, // 2 minutes en mémoire
+    retry: 3, // Plus de tentatives
     meta: {
       onError: (error: any) => {
-        console.error("Erreur lors du chargement des articles:", error);
+        console.error("❌ Erreur lors du chargement des articles:", error);
         toast({
           title: "Erreur",
           description: "Impossible de charger l'article",
@@ -52,103 +54,132 @@ const Article = () => {
     },
   });
 
-  // Fonction améliorée de recherche d'article
+  // Fonction ultra-agressive de recherche d'article
   const findArticleBySlug = (articles: any[], searchSlug: string) => {
     if (!articles || articles.length === 0) return null;
     
-    console.log("Recherche pour le slug:", searchSlug);
+    console.log("🔎 Recherche ultra pour le slug:", searchSlug);
+    console.log("📚 Nombre d'articles à analyser:", articles.length);
     
-    // 1. Recherche exacte
+    // 1. Recherche exacte (case insensitive)
     let found = articles.find(p => {
       const postSlug = getSlug(p.title.rendered);
-      return searchSlug === postSlug;
+      return searchSlug.toLowerCase() === postSlug.toLowerCase();
     });
     
     if (found) {
-      console.log("✓ Correspondance exacte:", found.title.rendered);
+      console.log("✅ Correspondance exacte trouvée:", found.title.rendered);
       return found;
     }
     
-    // 2. Recherche avec normalisation
+    // 2. Recherche avec normalisation avancée
     found = articles.find(p => {
       const postSlug = normalizeSlug(getSlug(p.title.rendered));
       const normalizedSearch = normalizeSlug(searchSlug);
-      return normalizedSearch === postSlug;
+      const match = normalizedSearch === postSlug || postSlug.includes(normalizedSearch) || normalizedSearch.includes(postSlug);
+      return match;
     });
     
     if (found) {
-      console.log("✓ Correspondance normalisée:", found.title.rendered);
+      console.log("✅ Correspondance normalisée trouvée:", found.title.rendered);
       return found;
     }
     
-    // 3. Recherche par inclusion (slug contient des mots du titre)
+    // 3. Recherche par mots-clés du slug dans le titre
+    const slugKeywords = searchSlug.toLowerCase()
+      .split('-')
+      .filter(word => word.length > 2);
+    
     found = articles.find(p => {
-      const titleWords = p.title.rendered.toLowerCase()
-        .replace(/[^\w\s-]/g, '') // Supprimer la ponctuation
-        .split(/[\s-]+/)
-        .filter(word => word.length > 2); // Mots de plus de 2 caractères
-        
-      const slugWords = searchSlug.toLowerCase()
-        .split('-')
-        .filter(word => word.length > 2);
+      const title = p.title.rendered.toLowerCase();
+      const matchCount = slugKeywords.filter(keyword => 
+        title.includes(keyword) || 
+        keyword.includes(title.substring(0, Math.min(title.length, 10)))
+      ).length;
       
-      if (slugWords.length === 0 || titleWords.length === 0) return false;
+      return matchCount >= Math.max(1, Math.floor(slugKeywords.length * 0.4)); // 40% des mots-clés
+    });
+    
+    if (found) {
+      console.log("✅ Correspondance par mots-clés trouvée:", found.title.rendered);
+      return found;
+    }
+    
+    // 4. Recherche fuzzy ultra-permissive
+    found = articles.find(p => {
+      const postSlug = getSlug(p.title.rendered);
+      const similarity = calculateSimilarity(searchSlug, postSlug);
+      return similarity > 0.3; // Seuil très bas pour être permissif
+    });
+    
+    if (found) {
+      console.log("✅ Correspondance fuzzy trouvée:", found.title.rendered);
+      return found;
+    }
+    
+    // 5. Recherche dans le contenu et l'extrait
+    const searchTerms = searchSlug.split('-').filter(term => term.length > 2);
+    found = articles.find(p => {
+      const fullText = (
+        p.title.rendered + ' ' + 
+        p.content.rendered + ' ' + 
+        (p.excerpt?.rendered || '')
+      ).toLowerCase();
       
-      // Compter les correspondances
-      const matches = slugWords.filter(slugWord => 
-        titleWords.some(titleWord => 
-          titleWord.includes(slugWord) || 
-          slugWord.includes(titleWord) ||
-          levenshteinDistance(slugWord, titleWord) <= 1 // Tolérance d'une lettre
-        )
+      return searchTerms.some(term => fullText.includes(term.toLowerCase()));
+    });
+    
+    if (found) {
+      console.log("✅ Trouvé dans le contenu:", found.title.rendered);
+      return found;
+    }
+    
+    // 6. Dernier recours : recherche par ID si le slug contient des chiffres
+    const numbersInSlug = searchSlug.match(/\d+/g);
+    if (numbersInSlug) {
+      found = articles.find(p => 
+        numbersInSlug.some(num => p.id.toString().includes(num))
       );
       
-      const matchRatio = matches.length / slugWords.length;
-      return matchRatio >= 0.5; // Au moins 50% de correspondance
-    });
-    
-    if (found) {
-      console.log("✓ Correspondance partielle:", found.title.rendered);
-      return found;
+      if (found) {
+        console.log("✅ Trouvé par ID:", found.title.rendered);
+        return found;
+      }
     }
     
-    // 4. Recherche dans le contenu de l'article
-    const searchTerms = searchSlug.split('-').filter(term => term.length > 3);
-    found = articles.find(p => {
-      const content = (p.title.rendered + ' ' + p.content.rendered).toLowerCase();
-      return searchTerms.some(term => content.includes(term.toLowerCase()));
-    });
-    
-    if (found) {
-      console.log("✓ Trouvé dans le contenu:", found.title.rendered);
-      return found;
-    }
-    
+    console.log("❌ Aucune correspondance trouvée après recherche exhaustive");
     return null;
   };
 
-  // Fonction pour calculer la distance de Levenshtein (similarité entre mots)
+  // Fonction de calcul de similarité améliorée
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const distance = levenshteinDistance(longer, shorter);
+    return (longer.length - distance) / longer.length;
+  };
+
+  // Fonction pour calculer la distance de Levenshtein optimisée
   const levenshteinDistance = (str1: string, str2: string): number => {
-    const matrix = [];
-    for (let i = 0; i <= str2.length; i++) {
-      matrix[i] = [i];
-    }
-    for (let j = 0; j <= str1.length; j++) {
-      matrix[0][j] = j;
-    }
-    for (let i = 1; i <= str2.length; i++) {
-      for (let j = 1; j <= str1.length; j++) {
-        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1,
-            matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
-          );
-        }
+    const matrix = Array(str2.length + 1).fill(null).map(() => Array(str1.length + 1).fill(null));
+    
+    for (let i = 0; i <= str1.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= str2.length; j++) matrix[j][0] = j;
+    
+    for (let j = 1; j <= str2.length; j++) {
+      for (let i = 1; i <= str1.length; i++) {
+        const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1,     // insertion
+          matrix[j - 1][i] + 1,     // deletion
+          matrix[j - 1][i - 1] + cost // substitution
+        );
       }
     }
+    
     return matrix[str2.length][str1.length];
   };
 
@@ -157,12 +188,12 @@ const Article = () => {
   }
 
   if (error) {
-    console.error("Erreur de récupération des articles:", error);
+    console.error("❌ Erreur de récupération des articles:", error);
     return <ArticleNotFound />;
   }
 
   if (!posts || posts.length === 0) {
-    console.log("Aucun article trouvé");
+    console.log("📭 Aucun article trouvé dans la base");
     return <ArticleNotFound />;
   }
 
@@ -170,17 +201,19 @@ const Article = () => {
   const post = findArticleBySlug(posts, currentSlug);
 
   if (!post) {
-    console.log("❌ Aucun article trouvé pour le slug:", currentSlug);
-    console.log("Articles disponibles (premiers 10):", posts.slice(0, 10).map(p => ({
+    console.log("💥 ÉCHEC TOTAL - Aucun article trouvé pour le slug:", currentSlug);
+    console.log("📊 Statistiques de recherche:");
+    console.log("- Articles analysés:", posts.length);
+    console.log("- Premiers 5 articles:", posts.slice(0, 5).map(p => ({
       id: p.id,
-      slugFromTitle: getSlug(p.title.rendered),
-      title: p.title.rendered.substring(0, 50) + "..."
+      title: p.title.rendered.substring(0, 60) + "...",
+      slugFromTitle: getSlug(p.title.rendered)
     })));
     
     return <ArticleNotFound />;
   }
 
-  console.log("✓ Article trouvé:", {
+  console.log("🎉 SUCCÈS - Article trouvé:", {
     id: post.id,
     title: post.title.rendered,
     slugFromTitle: getSlug(post.title.rendered)
