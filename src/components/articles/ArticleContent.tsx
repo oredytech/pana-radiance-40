@@ -57,9 +57,21 @@ const ArticleContent = ({ post }: ArticleContentProps) => {
           </div>
         </div>
         
-        {/* Contenu de l'article sans le titre */}
+        {/* Contenu de l'article avec styles personnalisés pour les titres */}
         <div 
-          className="prose max-w-none space-y-6"
+          className="prose max-w-none space-y-6 
+            [&_h1]:text-3xl [&_h1]:font-bold [&_h1]:text-gray-900 [&_h1]:mt-8 [&_h1]:mb-4 [&_h1]:border-b [&_h1]:border-gray-200 [&_h1]:pb-2
+            [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-gray-800 [&_h2]:mt-6 [&_h2]:mb-3
+            [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-gray-800 [&_h3]:mt-5 [&_h3]:mb-3
+            [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-gray-700 [&_h4]:mt-4 [&_h4]:mb-2
+            [&_h5]:text-base [&_h5]:font-medium [&_h5]:text-gray-700 [&_h5]:mt-3 [&_h5]:mb-2
+            [&_h6]:text-sm [&_h6]:font-medium [&_h6]:text-gray-600 [&_h6]:mt-3 [&_h6]:mb-2
+            [&_p]:text-gray-700 [&_p]:leading-relaxed [&_p]:mb-4
+            [&_ul]:ml-6 [&_ul]:mb-4 [&_li]:mb-2
+            [&_ol]:ml-6 [&_ol]:mb-4
+            [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:text-gray-600
+            [&_strong]:font-semibold [&_strong]:text-gray-900
+            [&_em]:italic"
           dangerouslySetInnerHTML={{ __html: post.content.rendered }}
         />
       </div>
