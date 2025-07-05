@@ -31,13 +31,27 @@ const ArticleShareButtons = ({ title, url }: ArticleShareButtonsProps) => {
   
   const shareUrl = getShareUrl();
   
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl).then(() => {
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
       toast({
         title: "Lien copié !",
         description: "Le lien de l'article a été copié dans le presse-papier.",
       });
-    });
+    } catch (error) {
+      // Fallback pour les navigateurs qui ne supportent pas clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      toast({
+        title: "Lien copié !",
+        description: "Le lien de l'article a été copié dans le presse-papier.",
+      });
+    }
   };
 
   return (
