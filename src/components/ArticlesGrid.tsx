@@ -47,6 +47,15 @@ const ArticlesGrid = ({
     setShowShareDialog(true);
   };
 
+  const handleImageRightClick = (e: React.MouseEvent, post: WordPressPost) => {
+    e.preventDefault();
+    setSelectedArticle({
+      title: stripHtml(post.title.rendered),
+      slug: getSlug(post.title.rendered)
+    });
+    setShowShareDialog(true);
+  };
+
   const getShareUrl = (slug: string) => {
     return `https://panaradio.net/${slug}`;
   };
@@ -131,7 +140,9 @@ const ArticlesGrid = ({
                   <img
                     src={getImageUrl(post)}
                     alt={stripHtml(post.title.rendered)}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110 cursor-pointer select-none"
+                    onContextMenu={(e) => handleImageRightClick(e, post)}
+                    title="Clic droit pour partager l'article"
                   />
                 </div>
                 <CardHeader className="pb-2">
