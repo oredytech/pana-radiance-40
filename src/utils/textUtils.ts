@@ -1,49 +1,50 @@
 
-import { type WordPressPost } from "@/services/wordpress";
-
-export const getImageUrl = (post: WordPressPost) => {
-  return post._embedded?.["wp:featuredmedia"]?.[0]?.source_url || 
-    "https://source.unsplash.com/random/800x600/?african-music";
+export const stripHtml = (html: string): string => {
+  return html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim();
 };
 
-export const stripHtml = (html: string) => {
-  const tmp = document.createElement("DIV");
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || "";
-};
-
-export const getSlug = (title: string) => {
-  // Convertit d'abord le HTML en texte simple
-  const plainText = stripHtml(title);
-  
-  // Normalise le texte en supprimant les accents et caractères spéciaux
-  return plainText
+export const getSlug = (title: string): string => {
+  return stripHtml(title)
     .toLowerCase()
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
-    .replace(/[^a-z0-9]+/g, '-')     // Remplace les caractères non alphanumériques par des tirets
-    .replace(/(^-|-$)/g, '')         // Supprime les tirets au début et à la fin
-    .replace(/-+/g, '-');            // Remplace les séquences de tirets par un seul tiret
+    .replace(/[\u0300-\u036f]/g, '') // Retire les accents
+    .replace(/[^a-z0-9\s-]/g, '') // Garde seulement lettres, chiffres, espaces et tirets
+    .replace(/\s+/g, '-') // Remplace espaces par tirets
+    .replace(/-+/g, '-') // Évite les tirets multiples
+    .replace(/^-+|-+$/g, ''); // Retire tirets en début/fin
 };
 
-export const truncateText = (text: string, wordLimit: number) => {
-  const words = text.split(' ');
-  if (words.length > wordLimit) {
-    return words.slice(0, wordLimit).join(' ') + '...';
+export const truncateText = (text: string, wordLimit: number): string => {
+  const words = stripHtml(text).split(' ');
+  if (words.length <= wordLimit) return stripHtml(text);
+  return words.slice(0, wordLimit).join(' ') + '...';
+};
+
+export const getImageUrl = (post: any): string => {
+  // Vérifier d'abord si l'image est dans _embedded
+  if (post._embedded && post._embedded['wp:featuredmedia'] && post._embedded['wp:featuredmedia'][0]) {
+    const media = post._embedded['wp:featuredmedia'][0];
+    if (media.media_details && media.media_details.sizes) {
+      // Essayer d'obtenir une taille appropriée
+      if (media.media_details.sizes.medium_large) {
+        return media.media_details.sizes.medium_large.source_url;
+      }
+      if (media.media_details.sizes.large) {
+        return media.media_details.sizes.large.source_url;
+      }
+      if (media.media_details.sizes.medium) {
+        return media.media_details.sizes.medium.source_url;
+      }
+      if (media.media_details.sizes.full) {
+        return media.media_details.sizes.full.source_url;
+      }
+    }
+    // Fallback vers l'URL source si pas de tailles spécifiques
+    if (media.source_url) {
+      return media.source_url;
+    }
   }
-  return text;
-};
-
-// Fonction pour normaliser et valider les slugs d'URL
-export const normalizeSlug = (slug: string | undefined): string => {
-  if (!slug) return '';
   
-  // Applique les mêmes règles que getSlug pour normaliser un slug existant
-  return slug
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '')
-    .replace(/-+/g, '-');
+  // Fallback vers une image par défaut
+  return '/placeholder.svg';
 };

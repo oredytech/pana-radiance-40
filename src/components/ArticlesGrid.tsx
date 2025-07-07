@@ -130,8 +130,15 @@ const ArticlesGrid = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {postsToDisplay.map((post) => {
           const articleSlug = getSlug(post.title.rendered);
-          // Nouveau format de lien sans le préfixe /article
           const articleLink = `/${articleSlug}`;
+          
+          // Debug: Log de l'article et de son lien
+          console.log('Article mapping:', {
+            id: post.id,
+            title: stripHtml(post.title.rendered),
+            slug: articleSlug,
+            link: articleLink
+          });
           
           return (
             <Card key={post.id} className="overflow-hidden hover:shadow-md transition-shadow duration-300">

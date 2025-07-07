@@ -69,6 +69,15 @@ const Search = () => {
       console.log("Triggering search refetch...");
       const result = await refetch();
       console.log("Search completed, results:", result.data?.length || 0);
+      
+      // Debug: Log les premiers résultats pour vérifier les slugs
+      if (result.data && result.data.length > 0) {
+        console.log("First search result:", {
+          id: result.data[0].id,
+          title: result.data[0].title.rendered,
+          slug: getSlug(result.data[0].title.rendered)
+        });
+      }
     } catch (error) {
       console.error("Search failed:", error);
     } finally {
