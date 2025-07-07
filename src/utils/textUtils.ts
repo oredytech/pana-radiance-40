@@ -14,6 +14,16 @@ export const getSlug = (title: string): string => {
     .replace(/^-+|-+$/g, ''); // Retire tirets en début/fin
 };
 
+export const normalizeSlug = (slug: string): string => {
+  return slug
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Retire les accents
+    .replace(/[^a-z0-9-]/g, '') // Garde seulement lettres, chiffres et tirets
+    .replace(/-+/g, '-') // Évite les tirets multiples
+    .replace(/^-+|-+$/g, ''); // Retire tirets en début/fin
+};
+
 export const truncateText = (text: string, wordLimit: number): string => {
   const words = stripHtml(text).split(' ');
   if (words.length <= wordLimit) return stripHtml(text);
@@ -25,7 +35,6 @@ export const getImageUrl = (post: any): string => {
   if (post._embedded && post._embedded['wp:featuredmedia'] && post._embedded['wp:featuredmedia'][0]) {
     const media = post._embedded['wp:featuredmedia'][0];
     if (media.media_details && media.media_details.sizes) {
-      // Essayer d'obtenir une taille appropriée
       if (media.media_details.sizes.medium_large) {
         return media.media_details.sizes.medium_large.source_url;
       }
@@ -39,12 +48,10 @@ export const getImageUrl = (post: any): string => {
         return media.media_details.sizes.full.source_url;
       }
     }
-    // Fallback vers l'URL source si pas de tailles spécifiques
     if (media.source_url) {
       return media.source_url;
     }
   }
   
-  // Fallback vers une image par défaut
   return '/placeholder.svg';
 };
