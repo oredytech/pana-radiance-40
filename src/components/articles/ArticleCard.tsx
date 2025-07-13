@@ -38,13 +38,16 @@ const ArticleCard = ({
            post.id % 5 === 2 ? "Culture" : "Société";
   };
 
-  const articleSlug = getSlug(post.title.rendered);
+  // Utiliser le vrai slug WordPress si disponible, sinon générer un slug
+  const articleSlug = post.slug || getSlug(post.title.rendered);
   const articleLink = `/${articleSlug}`;
   
-  console.log('Article mapping:', {
+  console.log('Article Card mapping:', {
     id: post.id,
     title: stripHtml(post.title.rendered),
-    slug: articleSlug,
+    originalSlug: post.slug,
+    generatedSlug: getSlug(post.title.rendered),
+    finalSlug: articleSlug,
     link: articleLink
   });
 

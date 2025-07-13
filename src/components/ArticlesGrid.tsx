@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { type WordPressPost } from "@/services/wordpress";
 import { getSlug, stripHtml } from "@/utils/textUtils";
@@ -29,18 +28,20 @@ const ArticlesGrid = ({
 
   const handleTitleRightClick = (e: React.MouseEvent, post: WordPressPost) => {
     e.preventDefault();
+    const articleSlug = post.slug || getSlug(post.title.rendered);
     setSelectedArticle({
       title: stripHtml(post.title.rendered),
-      slug: getSlug(post.title.rendered)
+      slug: articleSlug
     });
     setShowShareDialog(true);
   };
 
   const handleImageRightClick = (e: React.MouseEvent, post: WordPressPost) => {
     e.preventDefault();
+    const articleSlug = post.slug || getSlug(post.title.rendered);
     setSelectedArticle({
       title: stripHtml(post.title.rendered),
-      slug: getSlug(post.title.rendered)
+      slug: articleSlug
     });
     setShowShareDialog(true);
   };
