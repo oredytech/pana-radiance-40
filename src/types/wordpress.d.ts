@@ -1,6 +1,8 @@
+
 export interface WordPressPost {
   id: number;
   date: string;
+  slug?: string; // Added slug property
   title: {
     rendered: string;
   };
