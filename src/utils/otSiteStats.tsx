@@ -1,141 +1,54 @@
+import React, { useEffect, useState } from "react";
 
-// 📁 src/utils/otSiteStats.tsx
-import { useEffect, useState, useCallback } from "react";
-
-// 🛠️ Ton domaine WordPress ici
 const WORDPRESS_API_BASE = "https://panaradio.net/wp-json";
 
-// Cache pour éviter les appels répétés
-const postIdCache = new Map<string, number>();
-const viewsCache = new Map<number, { views: number; timestamp: number }>();
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
-
-// 🔁 Récupérer le post ID depuis un slug avec cache
-export const usePostIdFromSlug = (slug: string): number | null => {
-  const [postId, setPostId] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!slug) return;
-
-    // Vérifier le cache d'abord
-    if (postIdCache.has(slug)) {
-      setPostId(postIdCache.get(slug)!);
-      return;
-    }
-
-    const controller = new AbortController();
-    
-    fetch(`${WORDPRESS_API_BASE}/wp/v2/posts?slug=${slug}`, {
-      signal: controller.signal,
-      headers: {
-        'Accept': 'application/json',
-      }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          const id = data[0].id;
-          postIdCache.set(slug, id);
-          setPostId(id);
-        } else {
-          console.warn("Aucun article trouvé pour le slug :", slug);
-        }
-      })
-      .catch(err => {
-        if (err.name !== 'AbortError') {
-          console.error("Erreur récupération ID par slug :", err);
-        }
-      });
-
-    return () => controller.abort();
-  }, [slug]);
-
-  return postId;
+type Props = {
+  slug?: string;      // Si tu as le slug
+  postId?: number;    // Ou directement l'ID WordPress
 };
 
-// 🔁 Hook pour tracking différé
-export const useTrackArticleView = (postId: number | null, delay: number = 1000) => {
-  const [hasTracked, setHasTracked] = useState(false);
+const OtViews: React.FC<Props> = ({ slug, postId }) => {
+  const [resolvedId, setResolvedId] = useState<number | null>(postId || null);
+  const [views, setViews] = useState<number | null>(null);
 
+  // Résoudre l'ID si on a le slug
   useEffect(() => {
-    if (!postId || hasTracked) return;
-
-    const timer = setTimeout(() => {
-      fetch(`${WORDPRESS_API_BASE}/otstats/v1/track`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ post_id: postId }),
-      })
+    if (postId) {
+      setResolvedId(postId);
+    } else if (slug) {
+      fetch(`${WORDPRESS_API_BASE}/wp/v2/posts?slug=${encodeURIComponent(slug)}`)
         .then(res => res.json())
         .then(data => {
-          if (!data.success) {
-            console.warn("Tracking échoué :", data);
-          }
-          setHasTracked(true);
-        })
-        .catch(err => console.error("Erreur tracking :", err));
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [postId, delay, hasTracked]);
-};
-
-// 👁️ Hook pour charger les vues avec délai et cache
-export const useArticleViews = (postId: number | null, delay: number = 2000): number | null => {
-  const [views, setViews] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const loadViews = useCallback(async () => {
-    if (!postId || isLoading) return;
-
-    // Vérifier le cache
-    const cached = viewsCache.get(postId);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      setViews(cached.views);
-      return;
+          if (Array.isArray(data) && data.length > 0) setResolvedId(data[0].id);
+        });
     }
+  }, [slug, postId]);
 
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${WORDPRESS_API_BASE}/otstats/v1/views/${postId}`, {
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      const data = await response.json();
-      
-      if (typeof data.views === "number") {
-        const viewCount = data.views;
-        setViews(viewCount);
-        // Mettre en cache
-        viewsCache.set(postId, { views: viewCount, timestamp: Date.now() });
-      }
-    } catch (err) {
-      console.error("Erreur chargement vues :", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [postId, isLoading]);
-
+  // Charger les vues et tracker
   useEffect(() => {
-    if (!postId) return;
+    if (!resolvedId) return;
 
-    const timer = setTimeout(() => {
-      loadViews();
-    }, delay);
+    // 1. Afficher le nombre de vues personnalisées (ou par défaut)
+    fetch(`${WORDPRESS_API_BASE}/otstats/v1/display-views/${resolvedId}`)
+      .then(res => res.json())
+      .then(data => setViews(data.views));
 
-    return () => clearTimeout(timer);
-  }, [postId, delay, loadViews]);
+    // 2. Tracker la vue réelle (non personnalisée)
+    fetch(`${WORDPRESS_API_BASE}/otstats/v1/track`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post_id: resolvedId })
+    }).catch(() => {});
+  }, [resolvedId]);
 
-  return views;
+  if (!resolvedId) return <span>Chargement…</span>;
+  if (views === null) return <span>Chargement des vues…</span>;
+
+  return (
+    <div className="ot-views">
+      <strong>Vues :</strong> {views}
+    </div>
+  );
 };
+
+export default OtViews;
