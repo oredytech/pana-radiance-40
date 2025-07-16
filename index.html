@@ -40,5 +40,73 @@
         });
       });
     </script>
+    <script>
+(function() {
+  const WORDPRESS_API_BASE = "https://panaradio.net/wp-json";
+
+  // 1. Trouver le slug dans l'URL (ex: /mon-article/ => 'mon-article')
+  function getSlugFromUrl() {
+    const path = window.location.pathname.replace(/\\/$/, ''); // retire le slash final
+    const parts = path.split('/');
+    let slug = parts.pop() || parts.pop(); // retire '' si slash final
+    return slug || null;
+  }
+
+  // 2. Créer ou cibler le conteneur d'affichage
+  function getOrCreateViewsContainer() {
+    let el = document.querySelector('.ot-views');
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'ot-views';
+      // Ajoute en haut du contenu principal (adapte selon ton HTML)
+      const main = document.querySelector('main') || document.body;
+      main.insertBefore(el, main.firstChild);
+    }
+    return el;
+  }
+
+  // 3. Récupérer l'ID WordPress depuis le slug
+  function fetchPostIdFromSlug(slug) {
+    return fetch(`${WORDPRESS_API_BASE}/wp/v2/posts?slug=${encodeURIComponent(slug)}`)
+      .then(res => res.json())
+      .then(data => (Array.isArray(data) && data.length > 0) ? data[0].id : null);
+  }
+
+  // 4. Afficher les vues et tracker
+  function displayAndTrackViews(postId, el) {
+    if (!postId) {
+      el.textContent = "Article introuvable";
+      return;
+    }
+
+    // Afficher le nombre de vues personnalisées (ou par défaut)
+    fetch(`${WORDPRESS_API_BASE}/otstats/v1/display-views/${postId}`)
+      .then(res => res.json())
+      .then(data => {
+        el.textContent = `Nombre de vues : ${data.views}`;
+      })
+      .catch(() => {
+        el.textContent = "Erreur chargement vues";
+      });
+
+    // Tracker la vue réelle (non personnalisée)
+    fetch(`${WORDPRESS_API_BASE}/otstats/v1/track`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ post_id: postId })
+    }).catch(() => {});
+  }
+
+  // 5. Initialisation automatique
+  document.addEventListener("DOMContentLoaded", function() {
+    const slug = getSlugFromUrl();
+    if (!slug) return;
+
+    const el = getOrCreateViewsContainer();
+
+    fetchPostIdFromSlug(slug).then(postId => displayAndTrackViews(postId, el));
+  });
+})();
+</script>
   </body>
 </html>
